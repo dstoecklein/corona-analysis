@@ -21,5 +21,7 @@ files/
 __pycache__/
 *.py[cod]
 
-# db login data
+# db stuff
 src/mysql_db/config.py
+sql/
+paths.py
