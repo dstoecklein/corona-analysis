@@ -17,8 +17,9 @@
 # data dumps
 files/
 
-# pycache
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
 
 # db login data
 src/mysql_db/config.py
