@@ -27,7 +27,7 @@ def daily_covid(save_file: bool):
     )
 
     if save_file:
-        file_name = datetime.now().strftime('RKI_COVID19_%Y-%m-%d.csv')
+        file_name = datetime.now().strftime('RKI_COVID19_%Y-%m-%d.csv.xz')
 
         df.to_csv(
             PATH +
@@ -47,7 +47,7 @@ def daily_rvalue(save_file: bool):
     )
 
     if save_file:
-        file_name = datetime.now().strftime('RKI_RVALUE_%Y-%m-%d.csv')
+        file_name = datetime.now().strftime('RKI_RVALUE_%Y-%m-%d.csv.xz')
 
         df.to_csv(
             PATH +
@@ -67,7 +67,7 @@ def weekly_tests(save_file: bool):
     df = df[df.filter(regex='^(?!Unnamed)').columns]
 
     if save_file:
-        file_name = datetime.now().strftime('RKI_TESTS_%Y-%m-%d.csv')
+        file_name = datetime.now().strftime('RKI_TESTS_%Y-%m-%d.csv.xz')
 
         df.to_csv(
             PATH +
@@ -87,7 +87,7 @@ def weekly_tests_states(save_file: bool):
     #df = df[df.filter(regex='^(?!Unnamed)').columns]
 
     if save_file:
-        file_name = datetime.now().strftime('RKI_TESTS_STATES_%Y-%m-%d.csv')
+        file_name = datetime.now().strftime('RKI_TESTS_STATES_%Y-%m-%d.csv.xz')
 
         df.to_csv(
             PATH +
