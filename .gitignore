@@ -1,0 +1,21 @@
+# JetBrains IDE
+.idea/
+
+# applications
+*.app
+*.exe
+*.war
+
+# large media files
+*.mp4
+*.tiff
+*.avi
+*.flv
+*.mov
+*.wmv
+
+# data dumps
+files/
+
+# db login data
+src/mysql_db/config.py
