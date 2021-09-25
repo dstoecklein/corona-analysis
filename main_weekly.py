@@ -1,9 +1,9 @@
 import src.web_scraper.estat_scrap as estat_scrap
 import src.web_scraper.rki_scrap as rki_scrap
 import src.web_scraper.oecd_scrap as oecd_scrap
-import src.covid19.rki_transform as rki_transform
-import src.covid19.estat_transform as estat_transform
-import src.covid19.oecd_transform as oecd_transform
+import src.corona.rki_transform as rki_transform
+import src.corona.estat_transform as estat_transform
+import src.corona.oecd_transform as oecd_transform
 
 """
 Runs weekly via batch

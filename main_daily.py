@@ -1,7 +1,7 @@
 import src.web_scraper.rki_scrap as rki_scrap
 import src.web_scraper.owid_scrap as owid_scrap
-import src.covid19.rki_transform as rki_transform
-import src.covid19.owid_transform as owid_transform
+import src.corona.rki_transform as rki_transform
+import src.corona.owid_transform as owid_transform
 
 """
 Runs daily via batch

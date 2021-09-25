@@ -1,48 +1,33 @@
 # Author: Daniel Stöcklein
 
-import os
-import re
 import pandas as pd
 import datetime as dt
-from src.mysql_db import db_helper as database
+from src.database import db_helper as database
 from src.utils import paths
+from src.web_scraper import rki_scrap
 
 PATH = paths.get_covid19_ger_path()
 
 
 def main():
-    for filename in os.listdir(PATH):
+    date = dt.datetime.now()
+    df = rki_scrap.daily_covid(save_file=True)
 
-        if filename.endswith('.csv'):
-            extract = re.search(r'\d{4}-\d{2}-\d{2}', filename)
-            date = dt.datetime.strptime(extract.group(), '%Y-%m-%d')
+    try:
+        df['Meldedatum'] = pd.to_datetime(df['Meldedatum'], infer_datetime_format=True)
 
-            try:
-                df = pd.read_csv(PATH + filename, engine='python', sep=',', encoding='utf8')
-            except UnicodeDecodeError:
-                df = pd.read_csv(PATH + filename, engine='python', sep=',', encoding='ISO-8859-1')
+        if 'Refdatum' in df.columns:
+            df['Refdatum'] = pd.to_datetime(df['Refdatum'], infer_datetime_format=True)
+    except (KeyError, TypeError):
+        print('Error trying to convert Date columns')
 
-            try:
-                # first convert to date then to datetime, because of different date values in older .csv files
-                df['Meldedatum'] = pd.to_datetime(df['Meldedatum'], infer_datetime_format=True).dt.date
-                df['Meldedatum'] = pd.to_datetime(df['Meldedatum'], infer_datetime_format=True)
+    # remove whitespaces from header
+    df.columns = df.columns.str.replace(' ', '')
 
-                if 'Refdatum' in df.columns:
-                    df['Refdatum'] = pd.to_datetime(df['Refdatum'], infer_datetime_format=True).dt.date
-                    df['Refdatum'] = pd.to_datetime(df['Refdatum'], infer_datetime_format=True)
-            except (KeyError, TypeError):
-                print(filename)
-
-            # remove whitespaces from header
-            df.columns = df.columns.str.replace(' ', '')
-
-            daily_covid_cumulative(df, date, insert_into='rki_daily_covid_ger')
-            daily_covid_cumulative_agegroups(df, date, insert_into='rki_daily_covid_agegroups_ger')
-            daily_covid_cumulative_states(df, date, insert_into='rki_daily_covid_states_ger')
-            weekly_covid(df, df['Meldedatum'], insert_into='rki_weekly_covid_ger')
-
-    # calc covid numbers per year
-    annual_covid(insert_into='rki_annual_covid_ger')
+    daily_covid_cumulative(df, date, insert_into='rki_daily_covid_ger')
+    #daily_covid_cumulative_agegroups(df, date, insert_into='rki_daily_covid_agegroups_ger')
+    #daily_covid_cumulative_states(df, date, insert_into='rki_daily_covid_states_ger')
+    #weekly_covid(df, df['Meldedatum'], insert_into='rki_weekly_covid_ger')
 
 
 def daily_covid_cumulative(df: pd.DataFrame, date: dt.datetime, insert_into: str):
@@ -52,7 +37,7 @@ def daily_covid_cumulative(df: pd.DataFrame, date: dt.datetime, insert_into: str
     # get ger population
     population = db.get_destatis_annual_population(year='2020')
 
-    # calculate rki covid19 numbers
+    # calculate rki corona numbers
     tmp = calc_numbers(df, date)
     tmp = tmp.groupby('reporting_date').sum().reset_index()
 
@@ -72,18 +57,20 @@ def daily_covid_cumulative(df: pd.DataFrame, date: dt.datetime, insert_into: str
                       table_fk='iso_key',
                       drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
                       )
-
+    df.to_csv("test.csv", index=False)
     # insert only new rows
-    db.insert_only_new_rows(tmp, insert_into)
+    #db.insert_only_new_rows(tmp, insert_into)
 
     db.db_close()
 
+if __name__ == "__main__":
+    main()
 
 def daily_covid_cumulative_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str):
     # create db connection
     db = database.ProjDB()
 
-    # calculate rki covid19 numbers
+    # calculate rki corona numbers
     tmp = calc_numbers(df, date)
     tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
 
@@ -450,7 +437,7 @@ def calc_numbers(df: pd.DataFrame, date: dt.datetime):
             df['recovered'] = 0
             df['recovered_delta'] = 0
 
-    # covid19 active cases
+    # corona active cases
     df['active_cases'] = df['cases'] - (df['deaths'] + df['recovered'])
     df['active_cases_delta'] = df['cases_delta'] - (df['deaths_delta'] + df['recovered_delta'])
 

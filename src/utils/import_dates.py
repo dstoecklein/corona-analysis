@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from src.mysql_db import db_helper as database
+from src.database import db_helper as database
 
 prj_db = database.ProjDB()
 

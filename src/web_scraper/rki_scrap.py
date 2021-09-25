@@ -78,13 +78,14 @@ def weekly_tests(save_file: bool):
         )
     return df
 
+
 def weekly_tests_states(save_file: bool):
     df = pd.read_excel(
         web_scrap_helper.http_request(URL_TESTS_STATES, decode=False),
         sheet_name='Abb. 3 Bundesland',
     )
 
-    #df = df[df.filter(regex='^(?!Unnamed)').columns]
+    # df = df[df.filter(regex='^(?!Unnamed)').columns]
 
     if save_file:
         file_name = datetime.now().strftime('RKI_TESTS_STATES_%Y-%m-%d.csv.xz')

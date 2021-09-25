@@ -22,6 +22,6 @@ __pycache__/
 *.py[cod]
 
 # db stuff
-src/mysql_db/config.py
-sql/
+src/database/config.py
+src/database/sql/
 paths.py

@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.schema import MetaData
-from src.mysql_db import config
+from src.database import config
 import pandas as pd
 import time
 
 
-class MysqlDB:
+class DB:
 
     def __init__(self, db_name: str):
         self.engine = create_engine(
@@ -53,7 +53,7 @@ class MysqlDB:
         return cols
 
 
-class RawDB(MysqlDB):
+class RawDB(DB):
 
     def __init__(self):
         super().__init__('rohdaten')
@@ -195,10 +195,10 @@ class RawDB(MysqlDB):
         return pd.read_sql(query, self.connection)
 
 
-class ProjDB(MysqlDB):
+class PopulationDB(DB):
 
     def __init__(self):
-        super().__init__('projektarbeit')
+        super().__init__('population')
 
     def get_table(self, table: str):
         return pd.read_sql("SELECT * FROM " + table, self.connection)
@@ -216,25 +216,26 @@ class ProjDB(MysqlDB):
             return df.drop(drop_columns, axis=1)
         return df
 
-    def get_destatis_annual_population(self, year: str):
+    def get_population_germany(self, year: str):
         query = \
             '''
-            SELECT ger_states_id, SUM(population) AS population
-            FROM destatis_annual_population_ger a
-            INNER JOIN calendar_yr b  ON a.calendar_yr_id = b.calendar_yr_id 
-            WHERE b.iso_year = ''' + year + '''
+            SELECT germany_agegroups_id, SUM(population) AS population
+            FROM germany_agegroups
+            INNER JOIN calendar.years ON germany_agegroups.years_id = years.years_id 
+            WHERE years.iso_year = ''' + year + '''
             ;
             '''
         return int(self.connection.execute(query).fetchone()[1])
 
-    def get_destatis_annual_population_states(self, year: str):
+    def get_population_germany_states(self, year: str):
         query = \
             '''
-            SELECT ger_states_id, SUM(population) AS population
-            FROM destatis_annual_population_ger a
-            INNER JOIN calendar_yr b  ON a.calendar_yr_id = b.calendar_yr_id 
-            WHERE b.iso_year = ''' + year + ''' 
-            GROUP BY a.ger_states_id;
+            SELECT states_id, SUM(population) AS population
+            FROM germany_agegroups_states
+            INNER JOIN calendar.years ON germany_agegroups.years_id = years.years_id 
+            WHERE years.iso_year = ''' + year + '''
+            GROUP BY states_id
+            ;
             '''
 
         # save states population in dataframe

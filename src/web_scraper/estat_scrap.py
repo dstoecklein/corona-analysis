@@ -2,7 +2,7 @@
 
 import eurostat
 import pandas as pd
-from src.mysql_db import db_helper
+from src.database import db_helper
 
 
 def weekly_deaths(insert_into: str):

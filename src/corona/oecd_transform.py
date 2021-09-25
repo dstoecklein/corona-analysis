@@ -1,7 +1,7 @@
 # Author: Daniel Stöcklein
 
 import pandas as pd
-from src.mysql_db import db_helper as database
+from src.database import db_helper as database
 
 
 def weekly_deaths(insert_into: str, country_code: str):

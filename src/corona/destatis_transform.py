@@ -2,7 +2,7 @@
 # TODO: Get data from Genesis API
 
 import pandas as pd
-from src.mysql_db import db_helper
+from src.database import db_helper
 from src.utils import paths
 
 FILE = 'destatis_population_ger_states.csv'
@@ -92,3 +92,5 @@ def annual_population(insert_into: str):
     db_proj.insert_and_append(df, insert_into)
 
     db_proj.db_close()
+
+annual_population

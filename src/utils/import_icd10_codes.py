@@ -1,7 +1,7 @@
 # Author: Daniel Stöcklein
 
 import pandas as pd
-from src.mysql_db import db_helper as database
+from src.database import db_helper as database
 from src.utils import paths
 
 PATH = paths.get_utils_path()
