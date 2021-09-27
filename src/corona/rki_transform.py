@@ -32,10 +32,10 @@ def main():
 
 def daily_covid_cumulative(df: pd.DataFrame, date: dt.datetime, insert_into: str):
     # create db connection
-    db = database.ProjDB()
+    db = database.PopulationDB()
 
     # get ger population
-    population = db.get_destatis_annual_population(year='2020')
+    population = db.get_population_germany(year='2020')
 
     # calculate rki corona numbers
     tmp = calc_numbers(df, date)

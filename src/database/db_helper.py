@@ -195,10 +195,10 @@ class RawDB(DB):
         return pd.read_sql(query, self.connection)
 
 
-class PopulationDB(DB):
+class ProjDB(DB):
 
     def __init__(self):
-        super().__init__('population')
+        super().__init__('corona_analysis')
 
     def get_table(self, table: str):
         return pd.read_sql("SELECT * FROM " + table, self.connection)

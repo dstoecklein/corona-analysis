@@ -2,6 +2,7 @@
 
 import pandas as pd
 import numpy as np
+import eurostat
 from src.database import db_helper as database
 
 
@@ -71,14 +72,41 @@ def weekly_deaths(insert_into: str, country_code: str, iso_year: int):
     db_proj.db_close()
 
 
+def clear_data(df: pd.DataFrame):
+    for i in df.columns:
+        if i not in ('age', 'sex', 'unit', 'geo\\time', 'icd10', 'resid'):
+            df[i] = df[i].fillna(0)
+            df[i] = df[i].astype(int)
+    df.rename(columns={'geo\\time': 'geo'}, inplace=True)
+    return df
+
+
 def annual_deaths_causes(insert_into: str, country_code: str):
-    db_raw = database.RawDB()
     db_proj = database.ProjDB()
 
-    # get weekly deaths
-    df = db_raw.get_estat_annual_death_causes(country_code=country_code)
+    df = eurostat.get_data_df(
+        'hlth_cd_aro',
+        flags=False
+    )
 
-    db_raw.db_close()
+    df = clear_data(df)
+
+    df = df.query(
+        '''
+        geo == "''' + country_code + '''" \
+        & age != 'TOTAL' & age !='Y_LT15' & age != 'Y15-24' & age != 'Y_LT25' & age != 'Y_LT65' \
+        & age != 'Y_GE65' & age != 'Y_GE85' \
+        & sex == 'T' \
+        & resid == 'TOT_IN' \
+        & icd10 != 'A-R_V-Y'
+        '''
+    )
+
+    df = df.melt(
+        id_vars=['age', 'sex', 'unit', 'geo', 'icd10', 'resid'],
+        var_name='year',
+        value_name='deaths'
+    )
 
     # change 5y-agegroup to 10y-agegroup
     df.loc[df['age'].str.contains('Y_LT1'), 'age'] = '0'
@@ -125,18 +153,21 @@ def annual_deaths_causes(insert_into: str, country_code: str):
 
     # remove not needed columns
     del df['sex']
-    del df['geo']
     del df['unit']
 
     df['year'] = df['year'].astype(int)
 
     # merge calendar_yr foreign key
     df = db_proj.merge_fk(df,
-                          table='calendar_yr',
+                          table='_calendar_years',
                           df_fk='year',
                           table_fk='iso_year',
                           drop_columns=['iso_year', 'year']
                           )
+    df.rename(
+        columns={'ID': 'calendar_years_fk'},
+        inplace=True
+    )
 
     # false icd10 categories
     df.loc[df['icd10'].str.contains('K72-K75'), 'icd10'] = 'K71-K77'
@@ -144,26 +175,54 @@ def annual_deaths_causes(insert_into: str, country_code: str):
 
     # merge icd10 foreign key
     df = db_proj.merge_fk(df,
-                          table='icd10_codes',
+                          table='_classifications_icd10',
                           df_fk='icd10',
                           table_fk='icd10',
-                          drop_columns=['icd10', 'description_eng', 'description_ger']
+                          drop_columns=['icd10', 'description_en', 'description_de']
                           )
+
+    df.rename(
+        columns={'ID': 'classifications_icd10_fk'},
+        inplace=True
+    )
+
     # rest unkown
-    df['icd10_codes_id'] = df['icd10_codes_id'].fillna(value=386).astype(int)
+    df['classifications_icd10_fk'] = df['classifications_icd10_fk'].fillna(value=386).astype(int)
 
     # merge agegroup foreign key
     df = db_proj.merge_fk(df,
-                          table='agegroups_10y',
+                          table='_agegroups_10y',
                           df_fk='agegroup_10y',
                           table_fk='agegroup',
                           drop_columns=['age', 'agegroup', 'agegroup_10y']
                           )
+    df.rename(
+        columns={'ID': 'agegrousp_10y_fk'},
+        inplace=True
+    )
 
-    db_proj.insert_and_append(df, insert_into)
+    df['geo'] = df['geo'].str.lower()
 
-    db_raw.db_close()
-    db_proj.db_close()
+    # merge countries foreign key
+    df = db_proj.merge_fk(df,
+                          table='_countries',
+                          df_fk='geo',
+                          table_fk='iso_3166_alpha2'
+                          #drop_columns=['age', 'agegroup', 'agegroup_10y']
+                          )
+    df.rename(
+        columns={'ID': 'countries_fk'},
+        inplace=True
+    )
+
+    # db_proj.insert_and_append(df, insert_into)
+    #
+    # db_proj.db_close()
+
+    print(df.head())
+
+
+annual_deaths_causes('test', 'DE')
 
 
 def annual_population(insert_into: str, country_code: str):
