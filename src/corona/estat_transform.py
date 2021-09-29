@@ -122,7 +122,6 @@ def annual_deaths_causes(insert_into: str, countries: list):
 
     df = df.assign(agegroup_10y=df['age'].map(agegroup_10y_map))
 
-
     # remove not needed columns
     del df['sex']
     del df['unit']
@@ -193,28 +192,18 @@ def annual_deaths_causes(insert_into: str, countries: list):
                           table='_countries',
                           df_fk='geo',
                           table_fk='iso_3166_alpha2',
-                          drop_columns=['geo', 'country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2', 'iso_3166_alpha3', 'iso_3166_numeric']
+                          drop_columns=['geo', 'country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2',
+                                        'iso_3166_alpha3', 'iso_3166_numeric']
                           )
     df.rename(
         columns={'ID': 'countries_fk'},
         inplace=True
     )
 
-    cols = db_proj.get_column_names(insert_into)
-    df = df[cols]
+    db_proj.insert_and_append(df, insert_into)
 
-    fk_cols = [col for col in df if col.endswith('_fk')]
-    df['unique_key'] = df[fk_cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
+    db_proj.db_close()
 
-    df.to_csv("test.csv", index=False, sep=";")
-    # db_proj.insert_and_append(df, insert_into)
-    #
-    # db_proj.db_close()
-
-
-
-
-annual_deaths_causes('death_causes_by_agegroups_annual', ['DE', 'SE'])
 
 
 def annual_population(insert_into: str, country_code: str):

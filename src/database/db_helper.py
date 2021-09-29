@@ -30,13 +30,19 @@ class DB:
         df.to_sql(table, self.connection, if_exists='replace', index=False)
 
     def insert_and_append(self, df: pd.DataFrame, table: str):
-        df['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
+        cols = self.get_column_names(table)
 
         df.columns = [each_col.lower() for each_col in df.columns]
 
+        df = df.reindex(columns=cols)
+
+        df['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
+
+        fk_cols = [col for col in df if col.endswith('_fk')]
+        df['unique_key'] = df[fk_cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1).astype(int)
+
         self.truncate_table(table)
-        cols = self.get_column_names(table)
-        df = df[cols]  # re-order
+
         df.to_sql(table, self.connection, if_exists='append', index=False)
 
     def get_table_names(self):
