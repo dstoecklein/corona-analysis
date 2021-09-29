@@ -216,18 +216,114 @@ class ProjDB(DB):
     def get_table(self, table: str):
         return pd.read_sql("SELECT * FROM " + table, self.connection)
 
-    def merge_fk(self, df: pd.DataFrame, table: str, df_fk: str, table_fk: str, drop_columns: list = None):
-        df_merge = self.get_table(table)
+    def merge_calendar_years_fk(self, df: pd.DataFrame, left_on: str):
 
-        df = df.merge(df_merge,
-                      left_on=df_fk,
-                      right_on=table_fk,
-                      how='left',
-                      )
+        df_calendar_years = self.get_table('_calendar_years')
 
-        if drop_columns:
-            return df.drop(drop_columns, axis=1)
-        return df
+        df[left_on] = df[left_on].astype(int)
+
+        tmp = df.merge(df_calendar_years,
+                       left_on=left_on,
+                       right_on='iso_year',
+                       how='left',
+                       )
+
+        if 'last_update' in tmp.columns:
+            tmp = tmp.drop('last_update', axis=1)
+
+        tmp.rename(
+            columns={'ID': 'calendar_years_fk'},
+            inplace=True
+        )
+
+        return tmp.drop(['iso_year', 'year'], axis=1)
+
+    def merge_agegroups_fk(self, df: pd.DataFrame, left_on: str, interval: str):
+
+        intervals = ['05y', '10y']
+
+        if interval not in intervals:
+            raise ValueError("Invalid agegroup-interval. Expected one of: %s " % intervals)
+
+        df_agegroups = None
+
+        if interval == '05y':
+            df_agegroups = self.get_table('_agegroups_05y')
+        if interval == '10y':
+            df_agegroups = self.get_table('_agegroups_10y')
+
+        tmp = df.merge(df_agegroups,
+                       left_on=left_on,
+                       right_on='agegroup',
+                       how='left',
+                       )
+
+        if 'last_update' in tmp.columns:
+            tmp = tmp.drop('last_update', axis=1)
+
+        tmp.rename(
+            columns={'ID': 'agegroups_10y_fk'},
+            inplace=True
+        )
+
+        return tmp.drop(['agegroup_10y', 'agegroup'], axis=1)
+
+    def merge_classifications_icd10_fk(self, df: pd.DataFrame, left_on: str):
+
+        df_icd10 = self.get_table('_classifications_icd10')
+
+        tmp = df.merge(df_icd10,
+                       left_on=left_on,
+                       right_on='icd10',
+                       how='left',
+                       )
+
+        if 'last_update' in tmp.columns:
+            tmp = tmp.drop('last_update', axis=1)
+
+        tmp.rename(
+            columns={'ID': 'classifications_icd10_fk'},
+            inplace=True
+        )
+
+        return tmp.drop(['icd10', 'description_en', 'description_de'], axis=1)
+
+    def merge_countries_fk(self, df: pd.DataFrame, left_on: str, iso_code: str):
+
+        iso_codes = ['alpha2', 'alpha3', 'numeric']
+
+        if iso_code not in iso_codes:
+            raise ValueError("Invalid agegroup-interval. Expected one of: %s " % iso_codes)
+
+        df_countries = self.get_table('_countries')
+
+        right_on = None
+
+        if iso_code == 'alpha2':
+            right_on = 'iso_3166_alpha2'
+        if iso_code == 'alpha3':
+            right_on = 'iso_3166_alpha3'
+        if iso_code == 'numeric':
+            right_on = 'iso_3166_numeric'
+
+        df[left_on] = df[left_on].str.lower()
+
+        tmp = df.merge(df_countries,
+                       left_on=left_on,
+                       right_on=right_on,
+                       how='left',
+                       )
+
+        if 'last_update' in tmp.columns:
+            tmp = tmp.drop('last_update', axis=1)
+
+        tmp.rename(
+            columns={'ID': 'countries_fk'},
+            inplace=True
+        )
+
+        return tmp.drop(['geo', 'country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2',
+                         'iso_3166_alpha3', 'iso_3166_numeric'], axis=1)
 
     def get_population_germany(self, year: str):
         query = \

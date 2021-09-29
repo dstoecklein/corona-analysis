@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import eurostat
 from src.database import db_helper as database
+from src.corona import estat_helper
 
 
 def weekly_deaths(insert_into: str, country_code: str, iso_year: int):
@@ -72,16 +73,7 @@ def weekly_deaths(insert_into: str, country_code: str, iso_year: int):
     db_proj.db_close()
 
 
-def clear_data(df: pd.DataFrame):
-    for i in df.columns:
-        if i not in ('age', 'sex', 'unit', 'geo\\time', 'icd10', 'resid'):
-            df[i] = df[i].fillna(0)
-            df[i] = df[i].astype(int)
-    df.rename(columns={'geo\\time': 'geo'}, inplace=True)
-    return df
-
-
-def annual_deaths_causes(insert_into: str, countries: list):
+def annual_death_causes(insert_into: str, countries: list):
     db_proj = database.ProjDB()
 
     df = eurostat.get_data_df(
@@ -89,8 +81,10 @@ def annual_deaths_causes(insert_into: str, countries: list):
         flags=False
     )
 
-    df = clear_data(df)
+    # clearing some usual estat stuff
+    df = estat_helper.clear_estat_data(df)
 
+    # filtering only needed data
     df = df.query(
         '''
         geo == @countries \
@@ -102,108 +96,50 @@ def annual_deaths_causes(insert_into: str, countries: list):
         '''
     )
 
+    # melting to years
     df = df.melt(
         id_vars=['age', 'sex', 'unit', 'geo', 'icd10', 'resid'],
         var_name='year',
         value_name='deaths'
     )
 
-    agegroup_10y_map = {
-        'Y_LT1': '00-09', 'Y1-4': '00-09', 'Y5-9': '00-09',
-        'Y10-14': '10-19', 'Y15-19': '10-19',
-        'Y20-24': '20-29', 'Y25-29': '20-29',
-        'Y30-34': '30-39', 'Y35-39': '30-39',
-        'Y40-44': '40-49', 'Y45-49': '40-49',
-        'Y50-54': '50-59', 'Y55-59': '50-59',
-        'Y60-64': '60-69', 'Y65-69': '60-69',
-        'Y70-74': '70-79', 'Y75-79': '70-79',
-        'Y80-84': '80+', 'Y85-89': '80+', 'Y90-94': '80+', 'Y_GE95': '80+'
-    }
-
-    df = df.assign(agegroup_10y=df['age'].map(agegroup_10y_map))
-
-    # remove not needed columns
-    del df['sex']
-    del df['unit']
-
-    df['year'] = df['year'].astype(int)
-
-    # merge calendar_yr foreign key
-    df = db_proj.merge_fk(df,
-                          table='_calendar_years',
-                          df_fk='year',
-                          table_fk='iso_year',
-                          drop_columns=['iso_year', 'year']
-                          )
-    df.rename(
-        columns={'ID': 'calendar_years_fk'},
-        inplace=True
+    # assign 10-year agegroups
+    df = df.assign(
+        agegroup_10y=df['age'].map(
+            estat_helper.AGEGROUP_10Y_MAP
+        )
     )
 
     # false icd10 categories
     df.loc[df['icd10'].str.contains('K72-K75'), 'icd10'] = 'K71-K77'
     df.loc[df['icd10'].str.contains('B180-B182'), 'icd10'] = 'B171-B182'
 
-    # merge icd10 foreign key
-    df = db_proj.merge_fk(df,
-                          table='_classifications_icd10',
-                          df_fk='icd10',
-                          table_fk='icd10',
-                          drop_columns=['icd10', 'description_en', 'description_de']
-                          )
+    # merge foreign keys
+    df = db_proj.merge_calendar_years_fk(df, left_on='year')
+    df = db_proj.merge_classifications_icd10_fk(df, left_on='icd10')
+    df = db_proj.merge_agegroups_fk(df, left_on='agegroup_10y', interval='10y')
+    df = db_proj.merge_countries_fk(df, left_on='geo', iso_code='alpha2')
 
-    df.rename(
-        columns={'ID': 'classifications_icd10_fk'},
-        inplace=True
-    )
-
-    # rest unkown
+    # if icd10 n/a, give them 'unkown' foreign key
     df['classifications_icd10_fk'] = df['classifications_icd10_fk'].fillna(value=386).astype(int)
 
-    del df['last_update']
-    del df['resid']
     del df['age']
+    del df['sex']
+    del df['unit']
+    del df['resid']
 
     df = df.groupby(
         [
             'classifications_icd10_fk',
-            'geo',
-            'agegroup_10y',
+            'agegroups_10y_fk',
+            'countries_fk',
             'calendar_years_fk'
         ], as_index=False
     )['deaths'].sum()
 
-    # merge agegroup foreign key
-    df = db_proj.merge_fk(df,
-                          table='_agegroups_10y',
-                          df_fk='agegroup_10y',
-                          table_fk='agegroup',
-                          drop_columns=['agegroup_10y', 'agegroup']
-                          )
-    df.rename(
-        columns={'ID': 'agegroups_10y_fk'},
-        inplace=True
-    )
-
-    df['geo'] = df['geo'].str.lower()
-
-    # merge countries foreign key
-    df = db_proj.merge_fk(df,
-                          table='_countries',
-                          df_fk='geo',
-                          table_fk='iso_3166_alpha2',
-                          drop_columns=['geo', 'country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2',
-                                        'iso_3166_alpha3', 'iso_3166_numeric']
-                          )
-    df.rename(
-        columns={'ID': 'countries_fk'},
-        inplace=True
-    )
-
     db_proj.insert_and_append(df, insert_into)
 
     db_proj.db_close()
-
 
 
 def annual_population(insert_into: str, country_code: str):
