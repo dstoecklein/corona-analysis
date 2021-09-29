@@ -81,7 +81,7 @@ def clear_data(df: pd.DataFrame):
     return df
 
 
-def annual_deaths_causes(insert_into: str, country_code: str):
+def annual_deaths_causes(insert_into: str, countries: list):
     db_proj = database.ProjDB()
 
     df = eurostat.get_data_df(
@@ -93,7 +93,7 @@ def annual_deaths_causes(insert_into: str, country_code: str):
 
     df = df.query(
         '''
-        geo == "''' + country_code + '''" \
+        geo == @countries \
         & age != 'TOTAL' & age !='Y_LT15' & age != 'Y15-24' & age != 'Y_LT25' & age != 'Y_LT65' \
         & age != 'Y_GE65' & age != 'Y_GE85' \
         & sex == 'T' \
@@ -108,48 +108,20 @@ def annual_deaths_causes(insert_into: str, country_code: str):
         value_name='deaths'
     )
 
-    # change 5y-agegroup to 10y-agegroup
-    df.loc[df['age'].str.contains('Y_LT1'), 'age'] = '0'
-    df.loc[df['age'].str.contains('Y1-4'), 'age'] = '0'
-    df.loc[df['age'].str.contains('Y5-9'), 'age'] = '0'
+    agegroup_10y_map = {
+        'Y_LT1': '00-09', 'Y1-4': '00-09', 'Y5-9': '00-09',
+        'Y10-14': '10-19', 'Y15-19': '10-19',
+        'Y20-24': '20-29', 'Y25-29': '20-29',
+        'Y30-34': '30-39', 'Y35-39': '30-39',
+        'Y40-44': '40-49', 'Y45-49': '40-49',
+        'Y50-54': '50-59', 'Y55-59': '50-59',
+        'Y60-64': '60-69', 'Y65-69': '60-69',
+        'Y70-74': '70-79', 'Y75-79': '70-79',
+        'Y80-84': '80+', 'Y85-89': '80+', 'Y90-94': '80+', 'Y_GE95': '80+'
+    }
 
-    df.loc[df['age'].str.contains('Y10-14'), 'age'] = '10'
-    df.loc[df['age'].str.contains('Y15-19'), 'age'] = '10'
+    df = df.assign(agegroup_10y=df['age'].map(agegroup_10y_map))
 
-    df.loc[df['age'].str.contains('Y20-24'), 'age'] = '20'
-    df.loc[df['age'].str.contains('Y25-29'), 'age'] = '20'
-
-    df.loc[df['age'].str.contains('Y30-34'), 'age'] = '30'
-    df.loc[df['age'].str.contains('Y35-39'), 'age'] = '30'
-
-    df.loc[df['age'].str.contains('Y40-44'), 'age'] = '40'
-    df.loc[df['age'].str.contains('Y45-49'), 'age'] = '40'
-
-    df.loc[df['age'].str.contains('Y50-54'), 'age'] = '50'
-    df.loc[df['age'].str.contains('Y55-59'), 'age'] = '50'
-
-    df.loc[df['age'].str.contains('Y60-64'), 'age'] = '60'
-    df.loc[df['age'].str.contains('Y65-69'), 'age'] = '60'
-
-    df.loc[df['age'].str.contains('Y70-74'), 'age'] = '70'
-    df.loc[df['age'].str.contains('Y75-79'), 'age'] = '70'
-
-    df.loc[df['age'].str.contains('Y80-84'), 'age'] = '80'
-    df.loc[df['age'].str.contains('Y85-89'), 'age'] = '80'
-    df.loc[df['age'].str.contains('Y90-94'), 'age'] = '80'
-    df.loc[df['age'].str.contains('Y_GE95'), 'age'] = '80'
-
-    # create 10-year-agegroups
-    df['age'] = df['age'].astype(int)
-    bins = [0, 10, 20, 30, 40, 50, 60, 70, 80, 999]
-    labels = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80+']
-    df['agegroup_10y'] = pd.cut(
-        df['age'],
-        bins,
-        labels=labels,
-        right=False,
-        include_lowest=True
-    )
 
     # remove not needed columns
     del df['sex']
@@ -189,15 +161,28 @@ def annual_deaths_causes(insert_into: str, country_code: str):
     # rest unkown
     df['classifications_icd10_fk'] = df['classifications_icd10_fk'].fillna(value=386).astype(int)
 
+    del df['last_update']
+    del df['resid']
+    del df['age']
+
+    df = df.groupby(
+        [
+            'classifications_icd10_fk',
+            'geo',
+            'agegroup_10y',
+            'calendar_years_fk'
+        ], as_index=False
+    )['deaths'].sum()
+
     # merge agegroup foreign key
     df = db_proj.merge_fk(df,
                           table='_agegroups_10y',
                           df_fk='agegroup_10y',
                           table_fk='agegroup',
-                          drop_columns=['age', 'agegroup', 'agegroup_10y']
+                          drop_columns=['agegroup_10y', 'agegroup']
                           )
     df.rename(
-        columns={'ID': 'agegrousp_10y_fk'},
+        columns={'ID': 'agegroups_10y_fk'},
         inplace=True
     )
 
@@ -207,22 +192,29 @@ def annual_deaths_causes(insert_into: str, country_code: str):
     df = db_proj.merge_fk(df,
                           table='_countries',
                           df_fk='geo',
-                          table_fk='iso_3166_alpha2'
-                          #drop_columns=['age', 'agegroup', 'agegroup_10y']
+                          table_fk='iso_3166_alpha2',
+                          drop_columns=['geo', 'country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2', 'iso_3166_alpha3', 'iso_3166_numeric']
                           )
     df.rename(
         columns={'ID': 'countries_fk'},
         inplace=True
     )
 
+    cols = db_proj.get_column_names(insert_into)
+    df = df[cols]
+
+    fk_cols = [col for col in df if col.endswith('_fk')]
+    df['unique_key'] = df[fk_cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
+
+    df.to_csv("test.csv", index=False, sep=";")
     # db_proj.insert_and_append(df, insert_into)
     #
     # db_proj.db_close()
 
-    print(df.head())
 
 
-annual_deaths_causes('test', 'DE')
+
+annual_deaths_causes('death_causes_by_agegroups_annual', ['DE', 'SE'])
 
 
 def annual_population(insert_into: str, country_code: str):

@@ -50,6 +50,13 @@ class DB:
         cols = list(result.keys())
         cols = [each_col.lower() for each_col in cols]
         cols.pop(0)
+
+        if 'last_update' in cols:
+            cols.remove('last_update')
+
+        if 'unique_key' in cols:
+            cols.remove('unique_key')
+
         return cols
 
 
