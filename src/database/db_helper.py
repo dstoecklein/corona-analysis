@@ -1,5 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.schema import MetaData
+from sqlalchemy.dialects.mysql import insert
+from sqlalchemy import Table
+from sqlalchemy.sql import text
 from src.database import config
 import pandas as pd
 import time
@@ -25,33 +28,48 @@ class DB:
     def truncate_table(self, table_name: str):
         self.connection.execute("TRUNCATE TABLE " + table_name + ";")
 
-    def insert_and_replace(self, df: pd.DataFrame, table: str):
-        df['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
-        df.to_sql(table, self.connection, if_exists='replace', index=False)
+    def insert_into(self, df: pd.DataFrame, table: str, replace: bool = True):
+        # 1. sort df-columns in correct order
+        # 2. add necessary meta columns (last_update, unique_key)
+        tmp = (df.
+               pipe(self.sort_columns, table).
+               pipe(self.add_meta_columns)
+               )
 
-    def insert_and_append(self, df: pd.DataFrame, table: str):
-        cols = self.get_column_names(table)
+        if replace:
+            tmp.to_sql(table, self.connection, if_exists='replace', index=False)
+        else:
+            self.truncate_table(table)
+            tmp.to_sql(table, self.connection, if_exists='append', index=False)
 
-        df.columns = [each_col.lower() for each_col in df.columns]
+    def insert_or_update(self, df: pd.DataFrame, table: str):
+        # 1. sort df-columns in correct order
+        # 2. add necessary meta columns (last_update, unique_key)
+        tmp = (df.
+               pipe(self.sort_columns, table).
+               pipe(self.add_meta_columns)
+               )
 
-        df = df.reindex(columns=cols)
+        # create table object (sqlalchemy)
+        table_obj = self.get_table_obj(table)
 
-        df['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
+        # insert or update (on duplicate key)
+        for index, row in tmp.iterrows():
+            row_dict = row.to_dict()
+            query = insert(table_obj, bind=self.engine).values(row_dict)
+            update_dict = query.on_duplicate_key_update(row_dict)
+            self.connection.execute(update_dict)
 
-        fk_cols = [col for col in df if col.endswith('_fk')]
-        df['unique_key'] = df[fk_cols].apply(lambda row: ''.join(row.values.astype(str)), axis=1).astype(int)
+    @staticmethod
+    def add_meta_columns(df: pd.DataFrame):
+        tmp = df.copy()
+        tmp['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
+        foreign_keys = [col for col in tmp if col.endswith('_fk')]
+        tmp['unique_key'] = tmp[foreign_keys].apply(lambda row: '-'.join(row.values.astype(str)), axis=1)
+        return tmp
 
-        self.truncate_table(table)
-
-        df.to_sql(table, self.connection, if_exists='append', index=False)
-
-    def get_table_names(self):
-        meta = MetaData()
-        meta.reflect(bind=self.engine)
-
-        return meta.tables.keys()
-
-    def get_column_names(self, table: str):
+    def sort_columns(self, df: pd.DataFrame, table: str):
+        tmp = df.copy()
         result = self.connection.execute('SELECT * FROM ' + table)
         cols = list(result.keys())
         cols = [each_col.lower() for each_col in cols]
@@ -62,6 +80,24 @@ class DB:
 
         if 'unique_key' in cols:
             cols.remove('unique_key')
+
+        tmp.columns = [each_col.lower() for each_col in tmp.columns]
+        return tmp.reindex(columns=cols)
+
+    def get_table_obj(self, table: str):
+        meta = MetaData(bind=self.engine)
+        return Table(table, meta, autoload=True, autoload_with=self.engine)
+
+    def get_table_obj_list(self):
+        meta = MetaData()
+        meta.reflect(bind=self.engine)
+
+        return meta.tables.keys()
+
+    def get_column_names(self, table: str):
+        result = self.connection.execute('SELECT * FROM ' + table)
+        cols = list(result.keys())
+        cols = [each_col.lower() for each_col in cols]
 
         return cols
 
@@ -231,6 +267,8 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
+        tmp['ID'] = tmp['ID'].astype(int)
+
         tmp.rename(
             columns={'ID': 'calendar_years_fk'},
             inplace=True
@@ -238,12 +276,63 @@ class ProjDB(DB):
 
         return tmp.drop(['iso_year', 'year'], axis=1)
 
+    def merge_calendar_weeks_fk(self, df: pd.DataFrame, left_on: str):
+
+        df_calendar_weeks = self.get_table('_calendar_weeks')
+
+        df[left_on] = df[left_on].astype(int)
+
+        tmp = df.merge(df_calendar_weeks,
+                       left_on=left_on,
+                       right_on='iso_key',
+                       how='left',
+                       )
+
+        if 'last_update' in tmp.columns:
+            tmp = tmp.drop('last_update', axis=1)
+
+        tmp['ID'] = tmp['ID'].astype(int)
+
+        tmp.rename(
+            columns={'ID': 'calendar_weeks_fk'},
+            inplace=True
+        )
+
+        return tmp.drop(['years_fk', 'iso_week', 'iso_key'], axis=1)
+
+    def merge_calendar_days_fk(self, df: pd.DataFrame, left_on: str):
+
+        df_calendar_weeks = self.get_table('_calendar_days')
+
+        try:
+            df_calendar_weeks['iso_day'] = pd.to_datetime(df_calendar_weeks['iso_day'], infer_datetime_format=True)
+        except (KeyError, TypeError):
+            print('Error trying to convert Date columns')
+
+        tmp = df.merge(df_calendar_weeks,
+                       left_on=left_on,
+                       right_on='iso_day',
+                       how='left',
+                       )
+
+        if 'last_update' in tmp.columns:
+            tmp = tmp.drop('last_update', axis=1)
+
+        tmp['ID'] = tmp['ID'].astype(int)
+
+        tmp.rename(
+            columns={'ID': 'calendar_days_fk', 'weeks_fk': 'calendar_weeks_fk'},
+            inplace=True
+        )
+
+        return tmp.drop(['iso_day'], axis=1)
+
     def merge_agegroups_fk(self, df: pd.DataFrame, left_on: str, interval: str):
 
         intervals = ['05y', '10y']
 
         if interval not in intervals:
-            raise ValueError("Invalid agegroup-interval. Expected one of: %s " % intervals)
+            raise ValueError("Invalid agegroup-interval. Expected one of: {0} ".format(intervals))
 
         df_agegroups = None
 
@@ -260,6 +349,8 @@ class ProjDB(DB):
 
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
+
+        tmp['ID'] = tmp['ID'].astype(int)
 
         tmp.rename(
             columns={'ID': 'agegroups_10y_fk'},
@@ -281,6 +372,8 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
+        tmp['ID'] = tmp['ID'].fillna(386).astype(int)
+
         tmp.rename(
             columns={'ID': 'classifications_icd10_fk'},
             inplace=True
@@ -293,7 +386,7 @@ class ProjDB(DB):
         iso_codes = ['alpha2', 'alpha3', 'numeric']
 
         if iso_code not in iso_codes:
-            raise ValueError("Invalid agegroup-interval. Expected one of: %s " % iso_codes)
+            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(iso_codes))
 
         df_countries = self.get_table('_countries')
 
@@ -317,40 +410,59 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
+        tmp['ID'] = tmp['ID'].astype(int)
+
         tmp.rename(
             columns={'ID': 'countries_fk'},
             inplace=True
         )
 
-        return tmp.drop(['geo', 'country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2',
+        return tmp.drop(['country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2',
                          'iso_3166_alpha3', 'iso_3166_numeric'], axis=1)
 
-    def get_population_germany(self, year: str):
-        query = \
+    def get_population(self, country: str, iso_code: str, year: str):
+        iso_codes = ['alpha2', 'alpha3', 'numeric']
+        col = ''
+
+        if iso_code not in iso_codes:
+            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(iso_codes))
+
+        df_countries = self.get_table('_countries')
+
+        if iso_code == 'alpha2':
+            col = 'iso_3166_alpha2'
+        if iso_code == 'alpha3':
+            col = 'iso_3166_alpha3'
+        if iso_code == 'numeric':
+            col = 'iso_3166_numeric'
+
+        countries = df_countries[col].tolist()
+
+        if country.lower() not in countries:
+            raise ValueError("Country not found. Expected one of: {0} ".format(countries))
+
+        query = text(
             '''
-            SELECT germany_agegroups_id, SUM(population) AS population
-            FROM germany_agegroups
-            INNER JOIN calendar.years ON germany_agegroups.years_id = years.years_id 
-            WHERE years.iso_year = ''' + year + '''
+            SELECT SUM(population) AS population
+            FROM population_by_agegroups
+            INNER JOIN _countries ON countries_fk = _countries.ID
+            INNER JOIN _calendar_years ON calendar_years_fk = _calendar_years.ID
+            WHERE ''' + col + ''' = :country
+            AND _calendar_years.iso_year = :year
             ;
             '''
-        return int(self.connection.execute(query).fetchone()[1])
+        )
+        result = self.connection.execute(query, country=country, year=year).fetchone()[0]
 
-    def get_population_germany_states(self, year: str):
-        query = \
-            '''
-            SELECT states_id, SUM(population) AS population
-            FROM germany_agegroups_states
-            INNER JOIN calendar.years ON germany_agegroups.years_id = years.years_id 
-            WHERE years.iso_year = ''' + year + '''
-            GROUP BY states_id
-            ;
-            '''
+        return int(result)
 
-        # save states population in dataframe
-        df = pd.read_sql(query, self.connection)
-        df['population'] = df['population'].astype(int)
-        return df
+    def get_population_by_states(self, year: str):
+        query = ''
+        # TODO
+
+    def get_population_by_agegroups(self, year: str):
+        query = ''
+        # TODO
 
     def insert_only_new_rows(self, df: pd.DataFrame, table: str):
         self.insert_and_replace(df, 'tmp')

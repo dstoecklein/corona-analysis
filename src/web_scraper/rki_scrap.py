@@ -1,9 +1,9 @@
-﻿# Author: Daniel Stöcklein
-
-import pandas as pd
+﻿import pandas as pd
 from datetime import datetime
 from src.utils import paths
 from src.web_scraper import web_scrap_helper
+from src.database import config
+from pygenesis.py_genesis_client import PyGenesisClient
 
 # constants
 HEADER = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -17,6 +17,16 @@ URL_TESTS_STATES = 'https://ars.rki.de/Docs/SARS_CoV2/Daten/data_wochenbericht.x
 URL_RVALUE = 'https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Nowcasting_und_-R-Schaetzung/main/Nowcast_R_aktuell.csv'
 
 PATH = paths.get_covid19_ger_path()
+
+
+
+#TODO:
+client = PyGenesisClient(site='DESTATIS', username=config.genesis_username, password=config.genesis_password)
+def genesis():
+    df = client.read('12411-0010')
+    df.to_csv("test.csv", sep=";")
+
+
 
 
 def daily_covid(save_file: bool):

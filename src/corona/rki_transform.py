@@ -1,44 +1,57 @@
-# Author: Daniel Stöcklein
-
 import pandas as pd
 import datetime as dt
 from src.database import db_helper as database
 from src.utils import paths
 from src.web_scraper import rki_scrap
+import os
+import re
 
 PATH = paths.get_covid19_ger_path()
 
 
 def main():
-    date = dt.datetime.now()
-    df = rki_scrap.daily_covid(save_file=True)
+    rki_scrap.daily_covid(save_file=True)
 
-    try:
-        df['Meldedatum'] = pd.to_datetime(df['Meldedatum'], infer_datetime_format=True)
+    for filename in os.listdir(PATH):
 
-        if 'Refdatum' in df.columns:
-            df['Refdatum'] = pd.to_datetime(df['Refdatum'], infer_datetime_format=True)
-    except (KeyError, TypeError):
-        print('Error trying to convert Date columns')
+        if filename.endswith('.csv'):
+            extract = re.search(r'\d{4}-\d{2}-\d{2}', filename)
+            date = dt.datetime.strptime(extract.group(), '%Y-%m-%d')
 
-    # remove whitespaces from header
-    df.columns = df.columns.str.replace(' ', '')
+            try:
+                df = pd.read_csv(PATH + filename, engine='python', sep=',', encoding='utf8')
+            except UnicodeDecodeError:
+                df = pd.read_csv(PATH + filename, engine='python', sep=',', encoding='ISO-8859-1')
 
-    daily_covid_cumulative(df, date, insert_into='rki_daily_covid_ger')
-    #daily_covid_cumulative_agegroups(df, date, insert_into='rki_daily_covid_agegroups_ger')
-    #daily_covid_cumulative_states(df, date, insert_into='rki_daily_covid_states_ger')
-    #weekly_covid(df, df['Meldedatum'], insert_into='rki_weekly_covid_ger')
+            # first convert to date then to datetime, because of different date values in older .csv files
+            try:
+                df['Meldedatum'] = pd.to_datetime(df['Meldedatum'], infer_datetime_format=True).dt.date
+                df['Meldedatum'] = pd.to_datetime(df['Meldedatum'], infer_datetime_format=True)
+
+                if 'Refdatum' in df.columns:
+                    df['Refdatum'] = pd.to_datetime(df['Refdatum'], infer_datetime_format=True).dt.date
+                    df['Refdatum'] = pd.to_datetime(df['Refdatum'], infer_datetime_format=True)
+            except (KeyError, TypeError):
+                print('Error trying to convert Date columns')
+
+            # remove whitespaces from header
+            df.columns = df.columns.str.replace(' ', '')
+
+            covid_daily(df=df, date=date, table='covid_daily')
+            covid_today_weekly(df=df, date=df['Meldedatum'], table='covid_today_weekly')
+            #covid_by_states_states(df, date, insert_into='rki_daily_covid_states_ger')
+            #daily_covid_cumulative_agegroups(df, date, insert_into='rki_daily_covid_agegroups_ger')
 
 
-def daily_covid_cumulative(df: pd.DataFrame, date: dt.datetime, insert_into: str):
+def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
     # create db connection
-    db = database.PopulationDB()
+    db = database.ProjDB()
 
     # get ger population
-    population = db.get_population_germany(year='2020')
+    population = db.get_population(country='DE', iso_code='alpha2', year='2020')
 
     # calculate rki corona numbers
-    tmp = calc_numbers(df, date)
+    tmp = calc_numbers(df=df, date=date)
     tmp = tmp.groupby('reporting_date').sum().reset_index()
 
     # incidence 7 days
@@ -47,61 +60,56 @@ def daily_covid_cumulative(df: pd.DataFrame, date: dt.datetime, insert_into: str
     tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / population) * 100000
     tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / population) * 100000
 
-    # create iso key
-    tmp = create_iso_key(tmp)
-
     # merge calendar_yr foreign key
-    tmp = db.merge_fk(tmp,
-                      table='calendar_cw',
-                      df_fk='iso_key',
-                      table_fk='iso_key',
-                      drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
-                      )
-    df.to_csv("test.csv", index=False)
-    # insert only new rows
-    #db.insert_only_new_rows(tmp, insert_into)
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
 
-    db.db_close()
+    tmp['geo'] = 'DE'
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', iso_code='alpha2')
 
-if __name__ == "__main__":
-    main()
+    #del tmp['reporting_date']
+    #del tmp['IdBundesland']
+    #del tmp['geo']
 
-def daily_covid_cumulative_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str):
-    # create db connection
-    db = database.ProjDB()
-
-    # calculate rki corona numbers
-    tmp = calc_numbers(df, date)
-    tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
-
-    # create iso key
-    tmp = create_iso_key(tmp)
-
-    # merge calendar_yr foreign key
-    tmp = db.merge_fk(tmp,
-                      table='calendar_cw',
-                      df_fk='iso_key',
-                      table_fk='iso_key',
-                      drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
-                      )
-
-    # insert only new rows
-    db.insert_only_new_rows(tmp, insert_into)
+    # insert only new rows, update old
+    db.insert_or_update(df=tmp, table=table)
 
     db.db_close()
 
 
-def daily_covid_cumulative_states(df: pd.DataFrame, date: dt.datetime, insert_into: str):
+def covid_today_weekly(df: pd.DataFrame, date: dt.datetime, table: str):
     # create db connection
     db = database.ProjDB()
 
-    # save states population in dataframe
-    df_states_population = db.get_destatis_annual_population_states('2020')
+    tmp = calc_numbers(df=df, date=date)
+
+    # create iso key
+    tmp = create_iso_key(df=tmp)
+
+    # merge calendar_yr foreign key
+    tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
+
+    tmp = tmp.groupby('calendar_weeks_fk').sum().reset_index()
+
+    tmp['geo'] = 'DE'
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', iso_code='alpha2')
+
+    # insert only new rows, update old
+    db.insert_or_update(df=tmp, table=table)
+
+    db.db_close()
+
+
+def covid_by_states_states(df: pd.DataFrame, date: dt.datetime, table: str):
+    # create db connection
+    db = database.ProjDB()
+
+    # get ger population
+    df_population_by_states = db.get_population_by_states(country='DE', iso_code='alpha2', year='2020')
 
     tmp = calc_numbers(df, date)
 
     # merge states population
-    tmp = tmp.merge(df_states_population,
+    tmp = tmp.merge(df_population_by_states,
                     left_on='IdBundesland',
                     right_on='ger_states_id',
                     how='left',
@@ -128,16 +136,18 @@ def daily_covid_cumulative_states(df: pd.DataFrame, date: dt.datetime, insert_in
                       drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
                       )
 
-    db.insert_only_new_rows(tmp, insert_into)
+    db.insert_or_update(tmp, table)
 
     db.db_close()
 
 
-def weekly_covid(df: pd.DataFrame, date: dt.datetime, insert_into: str):
+def daily_covid_cumulative_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str):
     # create db connection
     db = database.ProjDB()
 
+    # calculate rki corona numbers
     tmp = calc_numbers(df, date)
+    tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
 
     # create iso key
     tmp = create_iso_key(tmp)
@@ -150,10 +160,8 @@ def weekly_covid(df: pd.DataFrame, date: dt.datetime, insert_into: str):
                       drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
                       )
 
-    tmp = tmp.groupby('calendar_cw_id').sum().reset_index()
-
-    # empty table and insert
-    db.insert_and_append(tmp, insert_into)
+    # insert only new rows
+    db.insert_only_new_rows(tmp, insert_into)
 
     db.db_close()
 
@@ -475,3 +483,7 @@ def calc_numbers(df: pd.DataFrame, date: dt.datetime):
 def create_iso_key(df: pd.DataFrame):
     df = df.assign(iso_key=df['reporting_date'].dt.strftime('%G%V').astype(int))
     return df
+
+
+if __name__ == "__main__":
+    main()
