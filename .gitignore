@@ -25,3 +25,4 @@ __pycache__/
 src/database/config.py
 src/database/sql/
 paths.py
+*.pbix

@@ -2,7 +2,6 @@
 from datetime import datetime
 from src.utils import paths
 from src.web_scraper import web_scrap_helper
-from src.database import config
 from pygenesis.py_genesis_client import PyGenesisClient
 
 # constants
@@ -21,10 +20,10 @@ PATH = paths.get_covid19_ger_path()
 
 
 #TODO:
-client = PyGenesisClient(site='DESTATIS', username=config.genesis_username, password=config.genesis_password)
-def genesis():
-    df = client.read('12411-0010')
-    df.to_csv("test.csv", sep=";")
+#client = PyGenesisClient(site='DESTATIS', username=config.genesis_username, password=config.genesis_password)
+#def genesis():
+#    df = client.read('12411-0010')
+#    df.to_csv("test.csv", sep=";")
 
 
 
@@ -37,7 +36,7 @@ def daily_covid(save_file: bool):
     )
 
     if save_file:
-        file_name = datetime.now().strftime('RKI_COVID19_%Y-%m-%d.csv.xz')
+        file_name = datetime.now().strftime('RKI_COVID19_%Y-%m-%d.csv')
 
         df.to_csv(
             PATH +
@@ -95,7 +94,7 @@ def weekly_tests_states(save_file: bool):
         sheet_name='Abb. 3 Bundesland',
     )
 
-    # df = df[df.filter(regex='^(?!Unnamed)').columns]
+    df = df[df.filter(regex='^(?!Unnamed)').columns]
 
     if save_file:
         file_name = datetime.now().strftime('RKI_TESTS_STATES_%Y-%m-%d.csv.xz')
