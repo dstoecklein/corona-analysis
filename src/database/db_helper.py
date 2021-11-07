@@ -381,29 +381,25 @@ class ProjDB(DB):
 
         return tmp.drop(['icd10', 'description_en', 'description_de'], axis=1)
 
-    def merge_countries_fk(self, df: pd.DataFrame, left_on: str, iso_code: str):
+    def merge_countries_fk(self, df: pd.DataFrame, left_on: str, country_code: str):
 
-        iso_codes = ['alpha2', 'alpha3', 'numeric']
+        country_codes = ['iso_3166_alpha2', 'iso_3166_alpha3', 'iso_3166_numeric', 'nuts_code']
 
-        if iso_code not in iso_codes:
-            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(iso_codes))
+        if country_code not in country_codes:
+            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(country_codes))
 
         df_countries = self.get_table('_countries')
 
-        right_on = None
+        df = df.copy()
 
-        if iso_code == 'alpha2':
-            right_on = 'iso_3166_alpha2'
-        if iso_code == 'alpha3':
-            right_on = 'iso_3166_alpha3'
-        if iso_code == 'numeric':
-            right_on = 'iso_3166_numeric'
-
-        df[left_on] = df[left_on].str.lower()
+        if country_code == 'nuts_code':
+            df[left_on] = df[left_on].str.upper()
+        else:
+            df[left_on] = df[left_on].str.lower()
 
         tmp = df.merge(df_countries,
                        left_on=left_on,
-                       right_on=right_on,
+                       right_on=country_code,
                        how='left',
                        )
 
@@ -418,7 +414,7 @@ class ProjDB(DB):
         )
 
         return tmp.drop(['country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2',
-                         'iso_3166_alpha3', 'iso_3166_numeric'], axis=1)
+                         'iso_3166_alpha3', 'iso_3166_numeric', 'nuts_code'], axis=1)
 
     def get_population(self, country: str, iso_code: str, year: str):
         iso_codes = ['alpha2', 'alpha3', 'numeric']
@@ -456,9 +452,41 @@ class ProjDB(DB):
 
         return int(result)
 
-    def get_population_by_states(self, year: str):
-        query = ''
-        # TODO
+    def get_population_by_states(self, country: str, iso_code: str, year: str):
+        iso_codes = ['alpha2', 'alpha3', 'numeric']
+        col = ''
+
+        if iso_code not in iso_codes:
+            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(iso_codes))
+
+        df_countries = self.get_table('_countries')
+
+        if iso_code == 'alpha2':
+            col = 'iso_3166_alpha2'
+        if iso_code == 'alpha3':
+            col = 'iso_3166_alpha3'
+        if iso_code == 'numeric':
+            col = 'iso_3166_numeric'
+
+        countries = df_countries[col].tolist()
+
+        if country.lower() not in countries:
+            raise ValueError("Country not found. Expected one of: {0} ".format(countries))
+
+        query = text(
+            '''
+            SELECT SUM(population) AS population
+            FROM population_by_agegroups
+            INNER JOIN _countries ON countries_fk = _countries.ID
+            INNER JOIN _calendar_years ON calendar_years_fk = _calendar_years.ID
+            WHERE ''' + col + ''' = :country
+            AND _calendar_years.iso_year = :year
+            ;
+            '''
+        )
+        result = self.connection.execute(query, country=country, year=year).fetchone()[0]
+
+        return int(result)
 
     def get_population_by_agegroups(self, year: str):
         query = ''

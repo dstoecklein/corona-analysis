@@ -3,6 +3,26 @@ import eurostat
 from src.database import db_helper as database
 from src.utils import estat_helper
 
+if __name__ == '__main__':
+    db_proj = database.ProjDB()
+
+    df = eurostat.get_data_df(
+        'demo_r_d2jan',
+        flags=False
+    )
+
+    # clearing some usual eurostat stuff
+    df = estat_helper.clear_estat_data(df)
+
+    df = df.query(
+        '''
+        geo == @countries & geo != 'DE_TOT' \
+        & age != 'TOTAL' & age !='Y_GE75' & age != 'Y80-84' & age != 'Y_GE85' \
+        & sex == 'T' 
+        '''
+    )
+
+    df.to_csv("test.csv", sep=";")
 
 def population_by_agegroups(table: str, countries: list, starting_year=2010):
     # Datasource: Eurostat
