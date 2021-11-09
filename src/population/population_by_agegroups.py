@@ -24,7 +24,8 @@ if __name__ == '__main__':
 
     df.to_csv("test.csv", sep=";")
 
-def population_by_agegroups(table: str, countries: list, starting_year=2010):
+
+def population_by_agegroups(table: str, countries: list, starting_year: int = 1990):
     # Datasource: Eurostat
 
     db_proj = database.ProjDB()
@@ -67,7 +68,7 @@ def population_by_agegroups(table: str, countries: list, starting_year=2010):
     # merge foreign keys
     df = db_proj.merge_agegroups_fk(df, left_on='agegroup_10y', interval='10y')
     df = db_proj.merge_calendar_years_fk(df, left_on='year')
-    df = db_proj.merge_countries_fk(df, left_on='geo', iso_code='alpha2')
+    df = db_proj.merge_countries_fk(df, left_on='geo', country_code='iso_3166_1_alpha2')
 
     del df['age']
     del df['geo']

@@ -28,13 +28,17 @@ class DB:
     def truncate_table(self, table_name: str):
         self.connection.execute("TRUNCATE TABLE " + table_name + ";")
 
-    def insert_into(self, df: pd.DataFrame, table: str, replace: bool = True):
-        # 1. sort df-columns in correct order
-        # 2. add necessary meta columns (last_update, unique_key)
-        tmp = (df.
-               pipe(self.sort_columns, table).
-               pipe(self.add_meta_columns)
-               )
+    def insert_into(self, df: pd.DataFrame, table: str, replace: bool, add_meta_columns: bool):
+
+        if add_meta_columns:
+            # 1. sort df-columns in correct order
+            # 2. add necessary meta columns (last_update, unique_key)
+            tmp = (df.
+                   pipe(self.sort_columns, table).
+                   pipe(self.add_meta_columns)
+                   ).copy()
+        else:
+            tmp = df.copy()
 
         if replace:
             tmp.to_sql(table, self.connection, if_exists='replace', index=False)
@@ -48,12 +52,15 @@ class DB:
         tmp = (df.
                pipe(self.sort_columns, table).
                pipe(self.add_meta_columns)
-               )
+               ).copy()
 
         # create table object (sqlalchemy)
         table_obj = self.get_table_obj(table)
 
         # insert or update (on duplicate key)
+        # A candidate row will only be inserted if that row does not match an
+        # existing primary or unique key in the table; otherwise, an UPDATE will be performed.
+        # https://docs.sqlalchemy.org/en/14/dialects/mysql.html
         for index, row in tmp.iterrows():
             row_dict = row.to_dict()
             query = insert(table_obj, bind=self.engine).values(row_dict)
@@ -62,18 +69,22 @@ class DB:
 
     @staticmethod
     def add_meta_columns(df: pd.DataFrame):
+        # Create meta columns
+        # last_update should be in every table
+        # unique_key is a string-concatenation of all foreign-keys
         tmp = df.copy()
         tmp['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
         foreign_keys = [col for col in tmp if col.endswith('_fk')]
         tmp['unique_key'] = tmp[foreign_keys].apply(lambda row: '-'.join(row.values.astype(str)), axis=1)
         return tmp
 
+    # need to sort the columns in order to create correct unique_key
     def sort_columns(self, df: pd.DataFrame, table: str):
         tmp = df.copy()
         result = self.connection.execute('SELECT * FROM ' + table)
         cols = list(result.keys())
-        cols = [each_col.lower() for each_col in cols]
-        cols.pop(0)
+        cols = [each_col.lower() for each_col in cols]  # lower all column names
+        cols.pop(0)  # get rid of ID column
 
         if 'last_update' in cols:
             cols.remove('last_update')
@@ -81,7 +92,7 @@ class DB:
         if 'unique_key' in cols:
             cols.remove('unique_key')
 
-        tmp.columns = [each_col.lower() for each_col in tmp.columns]
+        tmp.columns = [each_col.lower() for each_col in tmp.columns]  # re-ordering
         return tmp.reindex(columns=cols)
 
     def get_table_obj(self, table: str):
@@ -243,7 +254,7 @@ class RawDB(DB):
 
         return pd.read_sql(query, self.connection)
 
-
+#TODO: RENAME
 class ProjDB(DB):
 
     def __init__(self):
@@ -267,10 +278,10 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
-        tmp['ID'] = tmp['ID'].astype(int)
+        tmp['calendar_years_id'] = tmp['calendar_years_id'].astype(int)
 
         tmp.rename(
-            columns={'ID': 'calendar_years_fk'},
+            columns={'calendar_years_id': 'calendar_years_fk'},
             inplace=True
         )
 
@@ -291,10 +302,10 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
-        tmp['ID'] = tmp['ID'].astype(int)
+        tmp['calendar_weeks_id'] = tmp['calendar_weeks_id'].astype(int)
 
         tmp.rename(
-            columns={'ID': 'calendar_weeks_fk'},
+            columns={'calendar_weeks_id': 'calendar_weeks_fk'},
             inplace=True
         )
 
@@ -302,14 +313,14 @@ class ProjDB(DB):
 
     def merge_calendar_days_fk(self, df: pd.DataFrame, left_on: str):
 
-        df_calendar_weeks = self.get_table('_calendar_days')
+        df_calendar_days = self.get_table('_calendar_days')
 
         try:
-            df_calendar_weeks['iso_day'] = pd.to_datetime(df_calendar_weeks['iso_day'], infer_datetime_format=True)
+            df_calendar_days['iso_day'] = pd.to_datetime(df_calendar_days['iso_day'], infer_datetime_format=True)
         except (KeyError, TypeError):
             print('Error trying to convert Date columns')
 
-        tmp = df.merge(df_calendar_weeks,
+        tmp = df.merge(df_calendar_days,
                        left_on=left_on,
                        right_on='iso_day',
                        how='left',
@@ -318,10 +329,10 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
-        tmp['ID'] = tmp['ID'].astype(int)
+        tmp['calendar_days_id'] = tmp['calendar_days_id'].astype(int)
 
         tmp.rename(
-            columns={'ID': 'calendar_days_fk', 'weeks_fk': 'calendar_weeks_fk'},
+            columns={'calendar_days_id': 'calendar_days_fk'},
             inplace=True
         )
 
@@ -338,8 +349,19 @@ class ProjDB(DB):
 
         if interval == '05y':
             df_agegroups = self.get_table('_agegroups_05y')
+            df_agegroups['agegroups_05y_id'] = df_agegroups['agegroups_05y_id'].astype(int)
+            df_agegroups.rename(
+                columns={'agegroups_05y_id': 'agegroups_05y_fk'},
+                inplace=True
+            )
+
         if interval == '10y':
             df_agegroups = self.get_table('_agegroups_10y')
+            df_agegroups['agegroups_10y_id'] = df_agegroups['agegroups_10y_id'].astype(int)
+            df_agegroups.rename(
+                columns={'agegroups_10y_id': 'agegroups_10y_fk'},
+                inplace=True
+            )
 
         tmp = df.merge(df_agegroups,
                        left_on=left_on,
@@ -349,13 +371,6 @@ class ProjDB(DB):
 
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
-
-        tmp['ID'] = tmp['ID'].astype(int)
-
-        tmp.rename(
-            columns={'ID': 'agegroups_10y_fk'},
-            inplace=True
-        )
 
         return tmp.drop(['agegroup_10y', 'agegroup'], axis=1)
 
@@ -372,10 +387,10 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
-        tmp['ID'] = tmp['ID'].fillna(386).astype(int)
+        tmp['classifications_icd10_id'] = tmp['classifications_icd10_id'].fillna(386).astype(int)
 
         tmp.rename(
-            columns={'ID': 'classifications_icd10_fk'},
+            columns={'classifications_icd10_id': 'classifications_icd10_fk'},
             inplace=True
         )
 
@@ -383,7 +398,7 @@ class ProjDB(DB):
 
     def merge_countries_fk(self, df: pd.DataFrame, left_on: str, country_code: str):
 
-        country_codes = ['iso_3166_alpha2', 'iso_3166_alpha3', 'iso_3166_numeric', 'nuts_code']
+        country_codes = ['iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
 
         if country_code not in country_codes:
             raise ValueError("Invalid country code standard. Expected one of: {0} ".format(country_codes))
@@ -392,7 +407,7 @@ class ProjDB(DB):
 
         df = df.copy()
 
-        if country_code == 'nuts_code':
+        if country_code == 'nuts_0':
             df[left_on] = df[left_on].str.upper()
         else:
             df[left_on] = df[left_on].str.lower()
@@ -406,33 +421,26 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
-        tmp['ID'] = tmp['ID'].astype(int)
+        tmp['countries_id'] = tmp['countries_id'].astype(int)
 
         tmp.rename(
-            columns={'ID': 'countries_fk'},
+            columns={'countries_id': 'countries_fk'},
             inplace=True
         )
 
-        return tmp.drop(['country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_alpha2',
-                         'iso_3166_alpha3', 'iso_3166_numeric', 'nuts_code'], axis=1)
+        return tmp.drop(['country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_1_alpha2',
+                         'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0'], axis=1)
 
-    def get_population(self, country: str, iso_code: str, year: str):
-        iso_codes = ['alpha2', 'alpha3', 'numeric']
-        col = ''
+    # TODO: Dont return a sum, but return a dataframe. Create option to select different agegroups. Create query to select multiple countries
+    def get_population(self, country: str, country_code: str, year: str):
+        country_codes = ['iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
 
-        if iso_code not in iso_codes:
-            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(iso_codes))
+        if country_code not in country_codes:
+            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(country_codes))
 
         df_countries = self.get_table('_countries')
 
-        if iso_code == 'alpha2':
-            col = 'iso_3166_alpha2'
-        if iso_code == 'alpha3':
-            col = 'iso_3166_alpha3'
-        if iso_code == 'numeric':
-            col = 'iso_3166_numeric'
-
-        countries = df_countries[col].tolist()
+        countries = df_countries[country_code].tolist()
 
         if country.lower() not in countries:
             raise ValueError("Country not found. Expected one of: {0} ".format(countries))
@@ -440,10 +448,10 @@ class ProjDB(DB):
         query = text(
             '''
             SELECT SUM(population) AS population
-            FROM population_by_agegroups
-            INNER JOIN _countries ON countries_fk = _countries.ID
-            INNER JOIN _calendar_years ON calendar_years_fk = _calendar_years.ID
-            WHERE ''' + col + ''' = :country
+            FROM population_agegroups_10y
+            INNER JOIN _countries ON countries_fk = _countries.countries_id
+            INNER JOIN _calendar_years ON calendar_years_fk = _calendar_years.calendar_years_id
+            WHERE ''' + country_code + ''' = :country
             AND _calendar_years.iso_year = :year
             ;
             '''
@@ -452,38 +460,93 @@ class ProjDB(DB):
 
         return int(result)
 
-    def get_population_by_states(self, country: str, iso_code: str, year: str):
-        iso_codes = ['alpha2', 'alpha3', 'numeric']
-        col = ''
+    # TODO: Dont return a sum, but return a dataframe. Create option to select different levels. Create query to select multiple countries
+    # TODO: constants in separate file (country_codes, levels, etc.)
+    def get_population_by_states(self, country: str, country_code: str, level: int, year: str):
+        country_codes = ['iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
+        levels = [0, 1, 2, 3] #0: staaten, 1:bundesländer, 2:bezirk, 3.kreis
 
-        if iso_code not in iso_codes:
-            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(iso_codes))
+        if country_code not in country_codes:
+            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(country_codes))
+
+        if level not in levels:
+            raise ValueError("Invalid region level. Expected one of: {0} ".format(levels))
 
         df_countries = self.get_table('_countries')
-
-        if iso_code == 'alpha2':
-            col = 'iso_3166_alpha2'
-        if iso_code == 'alpha3':
-            col = 'iso_3166_alpha3'
-        if iso_code == 'numeric':
-            col = 'iso_3166_numeric'
-
-        countries = df_countries[col].tolist()
-
+        countries = df_countries[country_code].tolist()
         if country.lower() not in countries:
             raise ValueError("Country not found. Expected one of: {0} ".format(countries))
 
-        query = text(
-            '''
-            SELECT SUM(population) AS population
-            FROM population_by_agegroups
-            INNER JOIN _countries ON countries_fk = _countries.ID
-            INNER JOIN _calendar_years ON calendar_years_fk = _calendar_years.ID
-            WHERE ''' + col + ''' = :country
-            AND _calendar_years.iso_year = :year
-            ;
-            '''
-        )
+        select = 'population, iso_year, subdivision_3, nuts_3, country_en'
+
+        if level == 3:
+            query = text(
+                '''
+                SELECT ''' + select + '''
+                FROM population_subdivs_3
+                INNER JOIN _country_subdivs_3
+                ON population_subdivs_3.country_subdivs_3_fk = _country_subdivs_3.country_subdivs_3_id
+                INNER JOIN _country_subdivs_2
+                ON _country_subdivs_3.country_subdivs_2_fk = _country_subdivs_2.country_subdivs_2_id
+                INNER JOIN _country_subdivs_1
+                ON _country_subdivs_2.country_subdivs_1_fk = _country_subdivs_1.country_subdivs_1_id
+                INNER JOIN _countries
+                ON _country_subdivs_1.countries_fk = _countries.countries_id
+                INNER JOIN _calendar_years
+                ON population_subdivs_3.calendar_years_fk = _calendar_years.calendar_years_id
+                WHERE ''' + country_code + ''' = :country 
+                AND _calendar_years.iso_year = :year
+                ;
+                '''
+            )
+        elif level == 2:
+            query = text(
+                '''
+                SELECT ''' + select + '''
+                FROM population_subdivs_2
+                INNER JOIN _country_subdivs_2
+                ON population_subdivs_2.country_subdivs_2_fk = _country_subdivs_2.country_subdivs_2_id
+                INNER JOIN _country_subdivs_1
+                ON _country_subdivs_2.country_subdivs_1_fk = _country_subdivs_1.country_subdivs_1_id
+                INNER JOIN _countries
+                ON _country_subdivs_1.countries_fk = _countries.countries_id
+                INNER JOIN _calendar_years
+                ON population_subdivs_2.calendar_years_fk = _calendar_years.calendar_years_id
+                WHERE ''' + country_code + ''' = :country 
+                AND _calendar_years.iso_year = :year
+                ;
+                '''
+            )
+        elif level == 1:
+            query = text(
+                '''
+                SELECT ''' + select + '''
+                FROM population_subdivs_1
+                INNER JOIN _country_subdivs_1
+                ON population_subdivs_1.country_subdivs_1_fk = _country_subdivs_1.country_subdivs_1_id
+                INNER JOIN _countries
+                ON _country_subdivs_1.countries_fk = _countries.countries_id
+                INNER JOIN _calendar_years
+                ON population_subdivs_1.calendar_years_fk = _calendar_years.calendar_years_id
+                WHERE ''' + country_code + ''' = :country 
+                AND _calendar_years.iso_year = :year
+                ;
+                '''
+            )
+        else:
+            select = 'population, iso_year, country_en, iso_3166_1_alpha2'
+            query = text(
+                '''
+                SELECT ''' + select + '''
+                FROM population_countries
+                INNER JOIN _countries
+                ON population_countries.countries_fk = _countries.countries_id
+                INNER JOIN _calendar_years
+                ON population_countries.calendar_years_fk = _calendar_years.calendar_years_id
+                AND _calendar_years.iso_year = :year
+                ;
+                '''
+            )
         result = self.connection.execute(query, country=country, year=year).fetchone()[0]
 
         return int(result)

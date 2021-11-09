@@ -1,3 +1,5 @@
+import datetime
+
 import pandas as pd
 import datetime as dt
 from src.database import db_helper as database
@@ -8,7 +10,7 @@ def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
     # get ger population
-    population = db.get_population(country='DE', iso_code='alpha2', year='2020')
+    population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', year='2020')
 
     # calculate rki corona numbers
     tmp = calc_numbers(df=df, date=date)
@@ -193,7 +195,6 @@ def daily_rvalue(df: pd.DataFrame, insert_into: str):
 
 
 def weekly_tests(df: pd.DataFrame, table: str):
-
     # create dbf connection
     db = database.ProjDB()
 
@@ -201,7 +202,7 @@ def weekly_tests(df: pd.DataFrame, table: str):
 
     # rename columns
     tmp.columns = ['calendar_week', 'amount', 'positive', 'positive_percentage',
-                  'amount_transferring_laboratories']
+                   'amount_transferring_laboratories']
 
     # delete first & last row
     tmp = tmp[1:]

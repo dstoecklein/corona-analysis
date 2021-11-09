@@ -26,3 +26,5 @@ src/database/config.py
 src/database/sql/
 paths.py
 *.pbix
+src/population/nuts0.csv
+src/population/test.csv

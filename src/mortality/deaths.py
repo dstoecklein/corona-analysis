@@ -4,10 +4,10 @@ from src.database import db_helper as database
 from src.utils import estat_helper
 
 
-def weekly_deaths(insert_into: str, countries: list, starting_year=2010):
+def weekly_deaths(insert_into: str, countries: list, starting_year: int = 1990):
     # Datasource: Eurostat
 
-    db_proj = database.ProjDB()
+    db = database.ProjDB()
 
     df = eurostat.get_data_df(
         'demo_r_mwk_10',
@@ -56,9 +56,9 @@ def weekly_deaths(insert_into: str, countries: list, starting_year=2010):
     ).fillna('UNK')
 
     # merge foreign keys
-    df = db_proj.merge_agegroups_fk(df, left_on='agegroup_10y', interval='10y')
-    df = db_proj.merge_calendar_weeks_fk(df, left_on='iso_key')
-    df = db_proj.merge_countries_fk(df, left_on='geo', iso_code='alpha2')
+    df = db.merge_agegroups_fk(df, left_on='agegroup_10y', interval='10y')
+    df = db.merge_calendar_weeks_fk(df, left_on='iso_key')
+    df = db.merge_countries_fk(df, left_on='geo', country_code='iso_3166_alpha2')
 
     # remove not needed columns
     del df['age']
@@ -69,6 +69,6 @@ def weekly_deaths(insert_into: str, countries: list, starting_year=2010):
     del df['iso_year']
     del df['iso_cw']
 
-    db_proj.insert_or_update(df, insert_into)
+    db.insert_or_update(df, insert_into)
 
-    db_proj.db_close()
+    db.db_close()
