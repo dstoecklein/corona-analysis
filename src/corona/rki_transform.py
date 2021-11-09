@@ -26,7 +26,7 @@ def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
 
     tmp['geo'] = 'DE'
-    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_alpha2')
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
 
     # insert only new rows, update old
     db.insert_or_update(df=tmp, table=table)
@@ -49,7 +49,7 @@ def covid_today_weekly(df: pd.DataFrame, date: dt.datetime, table: str):
     tmp = tmp.groupby('calendar_weeks_fk').sum().reset_index()
 
     tmp['geo'] = 'DE'
-    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_alpha2')
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
 
     # insert only new rows, update old
     db.insert_or_update(df=tmp, table=table)
@@ -62,7 +62,7 @@ def covid_by_states_states(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
     # get ger population
-    df_population_by_states = db.get_population_by_states(country='DE', iso_code='alpha2', year='2020')
+    df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020')
 
     tmp = calc_numbers(df, date)
 
@@ -223,7 +223,7 @@ def weekly_tests(df: pd.DataFrame, table: str):
     tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
 
     tmp['geo'] = 'DE'  # just add an extra column to make merge happen
-    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_alpha2')
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
 
     # insert only new rows, update old
     db.insert_or_update(df=tmp, table=table)
