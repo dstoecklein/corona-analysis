@@ -50,7 +50,7 @@ def annual_death_causes(table: str, countries: list):
     df = db_proj.merge_calendar_years_fk(df, left_on='year')
     df = db_proj.merge_classifications_icd10_fk(df, left_on='icd10')
     df = db_proj.merge_agegroups_fk(df, left_on='agegroup_10y', interval='10y')
-    df = db_proj.merge_countries_fk(df, left_on='geo', iso_code='alpha2')
+    df = db_proj.merge_countries_fk(df, left_on='geo', country_code='iso_3166_1_alpha2')
 
     del df['age']
     del df['geo']

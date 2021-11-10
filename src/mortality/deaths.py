@@ -58,7 +58,7 @@ def weekly_deaths(insert_into: str, countries: list, starting_year: int = 1990):
     # merge foreign keys
     df = db.merge_agegroups_fk(df, left_on='agegroup_10y', interval='10y')
     df = db.merge_calendar_weeks_fk(df, left_on='iso_key')
-    df = db.merge_countries_fk(df, left_on='geo', country_code='iso_3166_alpha2')
+    df = db.merge_countries_fk(df, left_on='geo', country_code='iso_3166_1_alpha2')
 
     # remove not needed columns
     del df['age']
