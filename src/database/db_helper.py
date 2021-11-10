@@ -74,7 +74,12 @@ class DB:
         # unique_key is a string-concatenation of all foreign-keys
         tmp = df.copy()
         tmp['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
+
         foreign_keys = [col for col in tmp if col.endswith('_fk')]
+        # avoid decimals
+        for fk in foreign_keys:
+            tmp[fk] = tmp[fk].astype(int)
+
         tmp['unique_key'] = tmp[foreign_keys].apply(lambda row: '-'.join(row.values.astype(str)), axis=1)
         return tmp
 
@@ -254,7 +259,8 @@ class RawDB(DB):
 
         return pd.read_sql(query, self.connection)
 
-#TODO: RENAME
+
+# TODO: RENAME
 class ProjDB(DB):
 
     def __init__(self):
@@ -416,7 +422,8 @@ class ProjDB(DB):
                        left_on=left_on,
                        right_on=country_code,
                        how='left',
-                       )
+                       ).drop(['country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_1_alpha2',
+                               'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0'], axis=1)
 
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
@@ -428,8 +435,65 @@ class ProjDB(DB):
             inplace=True
         )
 
-        return tmp.drop(['country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_1_alpha2',
-                         'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0'], axis=1)
+        return tmp
+
+    def merge_subdivisions_fk(self, df: pd.DataFrame, left_on: str, level: int, subdiv_code: str):
+        # TODO: Create map for levels: codes. So method only need 1 parameter
+        levels = [1, 2]
+        subdiv_codes = ['nuts_1', 'nuts_2', 'nuts_3']
+
+        if level not in levels:
+            raise ValueError("Invalid region level. Expected one of: {0} ".format(levels))
+
+        if subdiv_code not in subdiv_codes:
+            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(subdiv_codes))
+
+        if level == 1:
+            df_subdivisions = self.get_table('_country_subdivs_1')
+            df_subdivisions['country_subdivs_1_id'] = df_subdivisions['country_subdivs_1_id'].astype(int)
+            df_subdivisions.rename(
+                columns={'country_subdivs_1_id': 'country_subdivs_1_fk'},
+                inplace=True
+            )
+        elif level == 2:
+            df_subdivisions = self.get_table('_country_subdivs_2')
+            df_subdivisions['country_subdivs_2_id'] = df_subdivisions['country_subdivs_2_id'].astype(int)
+            df_subdivisions.rename(
+                columns={'country_subdivs_2_id': 'country_subdivs_2_fk'},
+                inplace=True
+            )
+        else:
+            df_subdivisions = self.get_table('_country_subdivs_3')
+            df_subdivisions['country_subdivs_3_id'] = df_subdivisions['country_subdivs_3_id'].astype(int)
+            df_subdivisions.rename(
+                columns={'country_subdivs_3_id': 'country_subdivs_3_fk'},
+                inplace=True
+            )
+
+        df = df.copy()
+
+        if subdiv_code == 'nuts_1' or subdiv_code == 'nuts_2' or subdiv_code == 'nuts_3':
+            df[left_on] = df[left_on].str.upper()
+        else:
+            df[left_on] = df[left_on].str.lower()
+
+        tmp = df.merge(df_subdivisions,
+                       left_on=left_on,
+                       right_on=subdiv_code,
+                       how='left',
+                       ).drop(['latitude', 'longitude', subdiv_code], axis=1)
+
+        if 'last_update' in tmp.columns:
+            tmp = tmp.drop('last_update', axis=1)
+
+        # tmp['countries_id'] = tmp['countries_id'].astype(int)
+
+        # tmp.rename(
+        #    columns={'countries_id': 'countries_fk'},
+        #    inplace=True
+        # )
+
+        return tmp
 
     # TODO: Dont return a sum, but return a dataframe. Create option to select different agegroups. Create query to select multiple countries
     def get_population(self, country: str, country_code: str, year: str):
@@ -464,7 +528,7 @@ class ProjDB(DB):
     # TODO: constants in separate file (country_codes, levels, etc.)
     def get_population_by_states(self, country: str, country_code: str, level: int, year: str):
         country_codes = ['iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
-        levels = [0, 1, 2, 3] #0: staaten, 1:bundesländer, 2:bezirk, 3.kreis
+        levels = [0, 1, 2]  # 0: staaten, 1:bundesländer, 2:bezirk, 3.kreis
 
         if country_code not in country_codes:
             raise ValueError("Invalid country code standard. Expected one of: {0} ".format(country_codes))
@@ -479,27 +543,7 @@ class ProjDB(DB):
 
         select = 'population, iso_year, subdivision_3, nuts_3, country_en'
 
-        if level == 3:
-            query = text(
-                '''
-                SELECT ''' + select + '''
-                FROM population_subdivs_3
-                INNER JOIN _country_subdivs_3
-                ON population_subdivs_3.country_subdivs_3_fk = _country_subdivs_3.country_subdivs_3_id
-                INNER JOIN _country_subdivs_2
-                ON _country_subdivs_3.country_subdivs_2_fk = _country_subdivs_2.country_subdivs_2_id
-                INNER JOIN _country_subdivs_1
-                ON _country_subdivs_2.country_subdivs_1_fk = _country_subdivs_1.country_subdivs_1_id
-                INNER JOIN _countries
-                ON _country_subdivs_1.countries_fk = _countries.countries_id
-                INNER JOIN _calendar_years
-                ON population_subdivs_3.calendar_years_fk = _calendar_years.calendar_years_id
-                WHERE ''' + country_code + ''' = :country 
-                AND _calendar_years.iso_year = :year
-                ;
-                '''
-            )
-        elif level == 2:
+        if level == 2:
             query = text(
                 '''
                 SELECT ''' + select + '''
