@@ -22,7 +22,7 @@ def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
     tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / population) * 100000
     tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / population) * 100000
 
-    # merge calendar_yr foreign key
+    # merge foreign key
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
 
     tmp['geo'] = 'DE'
@@ -58,20 +58,41 @@ def covid_today_weekly(df: pd.DataFrame, date: dt.datetime, table: str):
 
 
 def covid_by_states_states(df: pd.DataFrame, date: dt.datetime, table: str):
-    # create db connection
     db = database.ProjDB()
 
-    # get ger population
-    df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020')
+    df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020', level=1)
 
     tmp = calc_numbers(df, date)
+
+    dct_states = {'Baden-Württemberg': 8,
+                  'Bayern': 9,
+                  'Berlin': 11,
+                  'Brandenburg': 12,
+                  'Bremen': 4,
+                  'Hamburg': 2,
+                  'Hessen': 6,
+                  'Mecklenburg-Vorpommern': 13,
+                  'Niedersachsen': 3,
+                  'Nordrhein-Westfalen': 5,
+                  'Rheinland-Pfalz': 7,
+                  'Saarland': 10,
+                  'Sachsen': 14,
+                  'Sachsen-Anhalt': 15,
+                  'Schleswig-Holstein': 1,
+                  'Thüringen': 16,
+                  'unbekannt': 18
+                  }
+
+    df_population_by_states = df_population_by_states.assign(id_dct_states=df_population_by_states['subdivision_1'].map(dct_states))
+
+    df_subdivision_ids = df_population_by_states[['country_subdivs_1_id', 'id_dct_states']].copy()
 
     # merge states population
     tmp = tmp.merge(df_population_by_states,
                     left_on='IdBundesland',
-                    right_on='ger_states_id',
+                    right_on='id_dct_states',
                     how='left',
-                    )
+                    ).drop(['country_subdivs_1_id', 'iso_year', 'subdivision_1', 'iso_3166_2', 'id_dct_states'], axis=1)
 
     # incidence 7 days
     tmp['incidence_7d'] = (tmp['cases_7d'] / tmp['population']) * 100000
@@ -79,20 +100,28 @@ def covid_by_states_states(df: pd.DataFrame, date: dt.datetime, table: str):
     tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / tmp['population']) * 100000
     tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / tmp['population']) * 100000
 
-    tmp = tmp.groupby(['ger_states_id', 'reporting_date']) \
+    tmp = tmp.groupby(['IdBundesland', 'reporting_date']) \
         .sum() \
         .reset_index()
 
     # create iso key
     tmp = create_iso_key(tmp)
 
-    # merge calendar_yr foreign key
-    tmp = db.merge_fk(tmp,
-                      table='calendar_cw',
-                      df_fk='iso_key',
-                      table_fk='iso_key',
-                      drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
-                      )
+    # merge foreign key
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
+
+    # merge subdivision 1 id
+    tmp = tmp.merge(df_subdivision_ids,
+                    left_on='IdBundesland',
+                    right_on='id_dct_states',
+                    how='left',
+                    ).drop(['id_dct_states'], axis=1)
+
+    tmp.rename(
+        columns={'country_subdivs_1_id': 'country_subdivs_1_fk'},
+        inplace=True
+    )
+    tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
 
     db.insert_or_update(tmp, table)
 
@@ -289,134 +318,136 @@ def weekly_tests_states(df: pd.DataFrame, insert_into: str):
 
 
 def calc_numbers(df: pd.DataFrame, date: dt.datetime):
-    if 'NeuerFall' in df.columns:
-        df['cases'] = df[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(df['NeuerFall'] >= 0, 0)
+    tmp = df.copy()
 
-        df['cases_delta'] = df[['AnzahlFall']] \
+    if 'NeuerFall' in tmp.columns:
+        tmp['cases'] = tmp[['AnzahlFall']] \
+            .sum(axis=1) \
+            .where(tmp['NeuerFall'] >= 0, 0)
+
+        tmp['cases_delta'] = tmp[['AnzahlFall']] \
             .sum(axis=1) \
             .where(
-            (df['NeuerFall'] == 1) | (df['NeuerFall'] == -1),
+            (tmp['NeuerFall'] == 1) | (tmp['NeuerFall'] == -1),
             0
         )
 
-        df['cases_7d'] = df[['AnzahlFall']] \
+        tmp['cases_7d'] = tmp[['AnzahlFall']] \
             .sum(axis=1) \
             .where(
-            (df['NeuerFall'] >= 0) & (df['Meldedatum'] > date - dt.timedelta(days=8)),
-            0
-        )
-    else:
-        df['cases'] = df['AnzahlFall']
-        df['cases_delta'] = 0
-
-        df['cases_7d'] = df[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(df['Meldedatum'] > date - dt.timedelta(days=8), 0)
-
-    if 'IstErkrankungsbeginn' in df.columns:
-        df['cases_7d_sympt'] = df[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            (df['NeuerFall'] >= 0) &
-            (df['Meldedatum'] > date - dt.timedelta(days=8)) &
-            (df['IstErkrankungsbeginn'] == 1),
+            (tmp['NeuerFall'] >= 0) & (tmp['Meldedatum'] > date - dt.timedelta(days=8)),
             0
         )
     else:
-        df['cases_7d_sympt'] = df[['cases_7d']]
+        tmp['cases'] = tmp['AnzahlFall']
+        tmp['cases_delta'] = 0
 
-    if 'Refdatum' in df.columns:
-        df['cases_delta_ref'] = df[['AnzahlFall']] \
+        tmp['cases_7d'] = tmp[['AnzahlFall']] \
+            .sum(axis=1) \
+            .where(tmp['Meldedatum'] > date - dt.timedelta(days=8), 0)
+
+    if 'IstErkrankungsbeginn' in tmp.columns:
+        tmp['cases_7d_sympt'] = tmp[['AnzahlFall']] \
             .sum(axis=1) \
             .where(
-            ((df['NeuerFall'] == 1) | (df['NeuerFall'] == -1)) &
-            (df['Refdatum'] > date - dt.timedelta(days=2)),
-            0
-        )
-
-        df['cases_7d_ref'] = df[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            (df['NeuerFall'] >= 0) &
-            (df['Meldedatum'] > date - dt.timedelta(days=8)) &
-            (df['Refdatum'] > date - dt.timedelta(days=8)),
+            (tmp['NeuerFall'] >= 0) &
+            (tmp['Meldedatum'] > date - dt.timedelta(days=8)) &
+            (tmp['IstErkrankungsbeginn'] == 1),
             0
         )
     else:
-        df['cases_delta_ref'] = df[['cases_delta']]
-        df['cases_7d_ref'] = df[['cases_7d']]
+        tmp['cases_7d_sympt'] = tmp[['cases_7d']]
 
-    if 'Refdatum' in df.columns and 'IstErkrankungsbeginn' in df.columns:
-        df['cases_delta_ref_sympt'] = df[['AnzahlFall']] \
+    if 'Refdatum' in tmp.columns:
+        tmp['cases_delta_ref'] = tmp[['AnzahlFall']] \
             .sum(axis=1) \
             .where(
-            ((df['NeuerFall'] == 1) | (df['NeuerFall'] == -1)) &
-            (df['Refdatum'] > date - dt.timedelta(days=2)) &
-            (df['IstErkrankungsbeginn'] == 1),
+            ((tmp['NeuerFall'] == 1) | (tmp['NeuerFall'] == -1)) &
+            (tmp['Refdatum'] > date - dt.timedelta(days=2)),
             0
         )
 
-        df['cases_7d_ref_sympt'] = df[['AnzahlFall']] \
+        tmp['cases_7d_ref'] = tmp[['AnzahlFall']] \
             .sum(axis=1) \
             .where(
-            (df['NeuerFall'] >= 0) &
-            (df['Meldedatum'] > date - dt.timedelta(days=8)) &
-            (df['Refdatum'] > date - dt.timedelta(days=8)) &
-            (df['IstErkrankungsbeginn'] == 1),
+            (tmp['NeuerFall'] >= 0) &
+            (tmp['Meldedatum'] > date - dt.timedelta(days=8)) &
+            (tmp['Refdatum'] > date - dt.timedelta(days=8)),
             0
         )
     else:
-        df['cases_delta_ref_sympt'] = df[['cases_delta']]
-        df['cases_7d_ref_sympt'] = df[['cases_7d']]
+        tmp['cases_delta_ref'] = tmp[['cases_delta']]
+        tmp['cases_7d_ref'] = tmp[['cases_7d']]
 
-    if 'NeuerTodesfall' in df.columns:
-        df['deaths'] = df[['AnzahlTodesfall']] \
-            .sum(axis=1) \
-            .where(df['NeuerTodesfall'] >= 0, 0)
-
-        df['deaths_delta'] = df[['AnzahlTodesfall']] \
+    if 'Refdatum' in tmp.columns and 'IstErkrankungsbeginn' in tmp.columns:
+        tmp['cases_delta_ref_sympt'] = tmp[['AnzahlFall']] \
             .sum(axis=1) \
             .where(
-            (df['NeuerTodesfall'] == 1) | (df['NeuerTodesfall'] == -1),
+            ((tmp['NeuerFall'] == 1) | (tmp['NeuerFall'] == -1)) &
+            (tmp['Refdatum'] > date - dt.timedelta(days=2)) &
+            (tmp['IstErkrankungsbeginn'] == 1),
+            0
+        )
+
+        tmp['cases_7d_ref_sympt'] = tmp[['AnzahlFall']] \
+            .sum(axis=1) \
+            .where(
+            (tmp['NeuerFall'] >= 0) &
+            (tmp['Meldedatum'] > date - dt.timedelta(days=8)) &
+            (tmp['Refdatum'] > date - dt.timedelta(days=8)) &
+            (tmp['IstErkrankungsbeginn'] == 1),
             0
         )
     else:
-        df['deaths'] = df['AnzahlTodesfall']
-        df['deaths_delta'] = 0
+        tmp['cases_delta_ref_sympt'] = tmp[['cases_delta']]
+        tmp['cases_7d_ref_sympt'] = tmp[['cases_7d']]
 
-    if 'NeuGenesen' in df.columns:
-        df['recovered'] = df[['AnzahlGenesen']] \
+    if 'NeuerTodesfall' in tmp.columns:
+        tmp['deaths'] = tmp[['AnzahlTodesfall']] \
             .sum(axis=1) \
-            .where(df['NeuGenesen'] >= 0, 0)
+            .where(tmp['NeuerTodesfall'] >= 0, 0)
 
-        df['recovered_delta'] = df[['AnzahlGenesen']] \
+        tmp['deaths_delta'] = tmp[['AnzahlTodesfall']] \
             .sum(axis=1) \
             .where(
-            (df['NeuGenesen'] == 1) | (df['NeuGenesen'] == -1),
+            (tmp['NeuerTodesfall'] == 1) | (tmp['NeuerTodesfall'] == -1),
             0
         )
     else:
-        if 'AnzahlGenesen' in df.columns:
-            df['recovered'] = df['AnzahlGenesen']
-            df['recovered_delta'] = 0
+        tmp['deaths'] = tmp['AnzahlTodesfall']
+        tmp['deaths_delta'] = 0
+
+    if 'NeuGenesen' in tmp.columns:
+        tmp['recovered'] = tmp[['AnzahlGenesen']] \
+            .sum(axis=1) \
+            .where(tmp['NeuGenesen'] >= 0, 0)
+
+        tmp['recovered_delta'] = tmp[['AnzahlGenesen']] \
+            .sum(axis=1) \
+            .where(
+            (tmp['NeuGenesen'] == 1) | (tmp['NeuGenesen'] == -1),
+            0
+        )
+    else:
+        if 'AnzahlGenesen' in tmp.columns:
+            tmp['recovered'] = tmp['AnzahlGenesen']
+            tmp['recovered_delta'] = 0
         else:
-            df['recovered'] = 0
-            df['recovered_delta'] = 0
+            tmp['recovered'] = 0
+            tmp['recovered_delta'] = 0
 
     # corona active cases
-    df['active_cases'] = df['cases'] - (df['deaths'] + df['recovered'])
-    df['active_cases_delta'] = df['cases_delta'] - (df['deaths_delta'] + df['recovered_delta'])
+    tmp['active_cases'] = tmp['cases'] - (tmp['deaths'] + tmp['recovered'])
+    tmp['active_cases_delta'] = tmp['cases_delta'] - (tmp['deaths_delta'] + tmp['recovered_delta'])
 
-    df['reporting_date'] = date
+    tmp['reporting_date'] = date
 
-    df.rename(
+    tmp.rename(
         columns={'Altersgruppe': 'rki_agegroups'},
         inplace=True
     )
 
-    df = df[
+    tmp = tmp[
         ['IdBundesland',
          'rki_agegroups',
          'reporting_date',
@@ -437,9 +468,10 @@ def calc_numbers(df: pd.DataFrame, date: dt.datetime):
          ]
     ]
 
-    return df
+    return tmp
 
 
 def create_iso_key(df: pd.DataFrame):
-    df = df.assign(iso_key=df['reporting_date'].dt.strftime('%G%V').astype(int))
-    return df
+    tmp = df.copy()
+    tmp = tmp.assign(iso_key=tmp['reporting_date'].dt.strftime('%G%V').astype(int))
+    return tmp

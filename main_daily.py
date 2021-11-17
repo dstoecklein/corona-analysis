@@ -42,13 +42,10 @@ def main():
             # remove whitespaces from header
             df.columns = df.columns.str.replace(' ', '')
 
-            rki_transform.covid_daily(df=df, date=date, table='covid_daily')
-            rki_transform.covid_today_weekly(df=df, date=df['Meldedatum'], table='covid_today_weekly')
-            #covid_by_states_states(df, date, insert_into='rki_daily_covid_states_ger')
+            #rki_transform.covid_daily(df=df, date=date, table='covid_daily')
+            #rki_transform.covid_today_weekly(df=df, date=df['Meldedatum'], table='covid_today_weekly')
+            rki_transform.covid_by_states_states(df=df, date=date, table='covid_daily_by_states')
             #daily_covid_cumulative_agegroups(df, date, insert_into='rki_daily_covid_agegroups_ger')
-
-    df = rki_scrap.weekly_tests(save_file=False)
-    rki_transform.weekly_tests(df=df, table='tests_weekly')
 
 
 if __name__ == '__main__':

@@ -489,7 +489,7 @@ class ProjDB(DB):
         # tmp['countries_id'] = tmp['countries_id'].astype(int)
 
         # tmp.rename(
-        #    columns={'countries_id': 'countries_fk'},
+        #    columns={'country_subdivs_1_id': 'country_subdivs_1_fk'},
         #    inplace=True
         # )
 
@@ -541,12 +541,12 @@ class ProjDB(DB):
         if country.lower() not in countries:
             raise ValueError("Country not found. Expected one of: {0} ".format(countries))
 
-        select = 'population, iso_year, subdivision_3, nuts_3, country_en'
-
         if level == 2:
+            cols = ['country_subdivs_2_id', 'population', 'subdivision_2', 'iso_year']
+            cols_str = ', '.join(cols)
             query = text(
                 '''
-                SELECT ''' + select + '''
+                SELECT ''' + cols_str + '''
                 FROM population_subdivs_2
                 INNER JOIN _country_subdivs_2
                 ON population_subdivs_2.country_subdivs_2_fk = _country_subdivs_2.country_subdivs_2_id
@@ -562,9 +562,11 @@ class ProjDB(DB):
                 '''
             )
         elif level == 1:
+            cols = ['country_subdivs_1_id', 'population', 'subdivision_1', 'iso_3166_2', 'iso_year']
+            cols_str = ', '.join(cols)
             query = text(
                 '''
-                SELECT ''' + select + '''
+                SELECT ''' + cols_str + '''
                 FROM population_subdivs_1
                 INNER JOIN _country_subdivs_1
                 ON population_subdivs_1.country_subdivs_1_fk = _country_subdivs_1.country_subdivs_1_id
@@ -578,10 +580,11 @@ class ProjDB(DB):
                 '''
             )
         else:
-            select = 'population, iso_year, country_en, iso_3166_1_alpha2'
+            cols = ['countries_id', 'population', 'country_en', 'iso_3166_1_alpha2', 'iso_year']
+            cols_str = ', '.join(cols)
             query = text(
                 '''
-                SELECT ''' + select + '''
+                SELECT ''' + cols_str + '''
                 FROM population_countries
                 INNER JOIN _countries
                 ON population_countries.countries_fk = _countries.countries_id
@@ -591,9 +594,12 @@ class ProjDB(DB):
                 ;
                 '''
             )
-        result = self.connection.execute(query, country=country, year=year).fetchone()[0]
 
-        return int(result)
+        result = self.connection.execute(query, country=country, year=year).fetchall()
+        df_result = pd.DataFrame(result)
+        df_result.columns = cols
+
+        return df_result
 
     def get_population_by_agegroups(self, year: str):
         query = ''
