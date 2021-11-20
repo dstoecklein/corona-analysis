@@ -542,11 +542,9 @@ class ProjDB(DB):
             raise ValueError("Country not found. Expected one of: {0} ".format(countries))
 
         if level == 2:
-            cols = ['country_subdivs_2_id', 'population', 'subdivision_2', 'iso_year']
-            cols_str = ', '.join(cols)
             query = text(
                 '''
-                SELECT ''' + cols_str + '''
+                SELECT * 
                 FROM population_subdivs_2
                 INNER JOIN _country_subdivs_2
                 ON population_subdivs_2.country_subdivs_2_fk = _country_subdivs_2.country_subdivs_2_id
@@ -556,17 +554,15 @@ class ProjDB(DB):
                 ON _country_subdivs_1.countries_fk = _countries.countries_id
                 INNER JOIN _calendar_years
                 ON population_subdivs_2.calendar_years_fk = _calendar_years.calendar_years_id
-                WHERE ''' + country_code + ''' = :country 
-                AND _calendar_years.iso_year = :year
+                WHERE ''' + country_code + ''' = {0} 
+                AND _calendar_years.iso_year = {1}
                 ;
-                '''
+                '''.format(country, year)
             )
         elif level == 1:
-            cols = ['country_subdivs_1_id', 'population', 'subdivision_1', 'iso_3166_2', 'iso_year']
-            cols_str = ', '.join(cols)
             query = text(
                 '''
-                SELECT ''' + cols_str + '''
+                SELECT *
                 FROM population_subdivs_1
                 INNER JOIN _country_subdivs_1
                 ON population_subdivs_1.country_subdivs_1_fk = _country_subdivs_1.country_subdivs_1_id
@@ -574,32 +570,25 @@ class ProjDB(DB):
                 ON _country_subdivs_1.countries_fk = _countries.countries_id
                 INNER JOIN _calendar_years
                 ON population_subdivs_1.calendar_years_fk = _calendar_years.calendar_years_id
-                WHERE ''' + country_code + ''' = :country 
-                AND _calendar_years.iso_year = :year
+                WHERE ''' + country_code + ''' = '{0}'
+                AND _calendar_years.iso_year = {1}
                 ;
-                '''
+                '''.format(country, year)
             )
         else:
-            cols = ['countries_id', 'population', 'country_en', 'iso_3166_1_alpha2', 'iso_year']
-            cols_str = ', '.join(cols)
             query = text(
                 '''
-                SELECT ''' + cols_str + '''
+                SELECT *
                 FROM population_countries
                 INNER JOIN _countries
                 ON population_countries.countries_fk = _countries.countries_id
                 INNER JOIN _calendar_years
                 ON population_countries.calendar_years_fk = _calendar_years.calendar_years_id
-                AND _calendar_years.iso_year = :year
+                AND _calendar_years.iso_year = {0}
                 ;
-                '''
+                '''.format(year)
             )
-
-        result = self.connection.execute(query, country=country, year=year).fetchall()
-        df_result = pd.DataFrame(result)
-        df_result.columns = cols
-
-        return df_result
+        return pd.read_sql(query, self.connection)
 
     def get_population_by_agegroups(self, year: str):
         query = ''

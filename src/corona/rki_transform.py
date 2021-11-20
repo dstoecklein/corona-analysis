@@ -1,8 +1,11 @@
+import datetime
+
 import pandas as pd
 import datetime as dt
 from src.database import db_helper as database
 
-#TODO:
+
+# TODO:
 # MAKE TRANSFORMS RETURN DF AND PIPE DB INSERT ETC.
 # MAKE FUNCTION FOR INCIDENCE CALC
 
@@ -61,39 +64,18 @@ def weekly_covid_cummulative(df: pd.DataFrame, date: dt.datetime, table: str):
 def daily_covid_by_states(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
-    df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020', level=1)
-
     tmp = calc_numbers(df, date)
 
-    dct_states = {'Baden-Württemberg': 8,
-                  'Bayern': 9,
-                  'Berlin': 11,
-                  'Brandenburg': 12,
-                  'Bremen': 4,
-                  'Hamburg': 2,
-                  'Hessen': 6,
-                  'Mecklenburg-Vorpommern': 13,
-                  'Niedersachsen': 3,
-                  'Nordrhein-Westfalen': 5,
-                  'Rheinland-Pfalz': 7,
-                  'Saarland': 10,
-                  'Sachsen': 14,
-                  'Sachsen-Anhalt': 15,
-                  'Schleswig-Holstein': 1,
-                  'Thüringen': 16,
-                  'unbekannt': 18
-                  }
-
-    df_population_by_states = df_population_by_states.assign(id_dct_states=df_population_by_states['subdivision_1'].map(dct_states))
-
-    df_subdivision_ids = df_population_by_states[['country_subdivs_1_id', 'id_dct_states']].copy()
+    df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020',
+                                                          level=1)
+    df_subdivision_ids = df_population_by_states[['country_subdivs_1_id', 'bundesland_id', 'population']].copy()
 
     # merge states population
-    tmp = tmp.merge(df_population_by_states,
+    tmp = tmp.merge(df_subdivision_ids,
                     left_on='IdBundesland',
-                    right_on='id_dct_states',
+                    right_on='bundesland_id',
                     how='left',
-                    ).drop(['country_subdivs_1_id', 'iso_year', 'subdivision_1', 'iso_3166_2', 'id_dct_states'], axis=1)
+                    ).drop(['country_subdivs_1_id'], axis=1)
 
     # incidence 7 days
     tmp['incidence_7d'] = (tmp['cases_7d'] / tmp['population']) * 100000
@@ -114,15 +96,47 @@ def daily_covid_by_states(df: pd.DataFrame, date: dt.datetime, table: str):
     # merge subdivision 1 id
     tmp = tmp.merge(df_subdivision_ids,
                     left_on='IdBundesland',
-                    right_on='id_dct_states',
+                    right_on='bundesland_id',
                     how='left',
-                    ).drop(['id_dct_states'], axis=1)
+                    )
 
     tmp.rename(
         columns={'country_subdivs_1_id': 'country_subdivs_1_fk'},
         inplace=True
     )
     tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
+
+    db.insert_or_update(tmp, table)
+
+    db.db_close()
+
+
+def daily_covid_by_counties(df: pd.DataFrame, date: dt.datetime, table: str):
+    db = database.ProjDB()
+
+    tmp = calc_numbers(df, date)
+
+    tmp = tmp.groupby(['county', 'reporting_date']) \
+        .sum() \
+        .reset_index()
+
+    # create iso key
+    tmp = create_iso_key(tmp)
+
+    # merge foreign key
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
+
+    df_subdiv_3 = db.get_table(table="_country_subdivs_3")
+
+    tmp = tmp.merge(df_subdiv_3, left_on='county', right_on='subdivision_3', how='left')
+
+    tmp.rename(
+        columns={'country_subdivs_3_id': 'country_subdivs_3_fk'},
+        inplace=True
+    )
+
+    tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
+    tmp = tmp[tmp['country_subdivs_3_fk'].notna()]  # old csv's had different countie descriptions, so just ignore them
 
     db.insert_or_update(tmp, table)
 
@@ -153,6 +167,7 @@ def daily_covid_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str)
     db.insert_only_new_rows(tmp, insert_into)
 
     db.db_close()
+
 
 # TODO:
 def annual_covid(insert_into: str):
@@ -197,6 +212,7 @@ def annual_covid(insert_into: str):
     db.insert_and_append(df, insert_into)
 
     db.db_close()
+
 
 # TODO:
 def daily_rvalue(df: pd.DataFrame, insert_into: str):
@@ -260,6 +276,7 @@ def weekly_tests(df: pd.DataFrame, table: str):
     db.insert_or_update(df=tmp, table=table)
 
     db.db_close()
+
 
 # TODO:
 def weekly_tests_states(df: pd.DataFrame, insert_into: str):
@@ -445,12 +462,16 @@ def calc_numbers(df: pd.DataFrame, date: dt.datetime):
     tmp['reporting_date'] = date
 
     tmp.rename(
-        columns={'Altersgruppe': 'rki_agegroups'},
+        columns={
+            'Altersgruppe': 'rki_agegroups',
+            'Landkreis': 'county'
+        },
         inplace=True
     )
 
     tmp = tmp[
         ['IdBundesland',
+         'county',
          'rki_agegroups',
          'reporting_date',
          'cases',
