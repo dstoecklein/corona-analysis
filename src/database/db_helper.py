@@ -439,8 +439,8 @@ class ProjDB(DB):
 
     def merge_subdivisions_fk(self, df: pd.DataFrame, left_on: str, level: int, subdiv_code: str):
         # TODO: Create map for levels: codes. So method only need 1 parameter
-        levels = [1, 2]
-        subdiv_codes = ['nuts_1', 'nuts_2', 'nuts_3']
+        levels = [1, 2, 3]
+        subdiv_codes = ['nuts_1', 'nuts_2', 'nuts_3', 'ags']
 
         if level not in levels:
             raise ValueError("Invalid region level. Expected one of: {0} ".format(levels))
@@ -472,9 +472,9 @@ class ProjDB(DB):
 
         df = df.copy()
 
-        if subdiv_code == 'nuts_1' or subdiv_code == 'nuts_2' or subdiv_code == 'nuts_3':
+        if (subdiv_code == 'nuts_1' or subdiv_code == 'nuts_2' or subdiv_code == 'nuts_3') and df[left_on].dtype == str:
             df[left_on] = df[left_on].str.upper()
-        else:
+        elif df[left_on].dtype == str:
             df[left_on] = df[left_on].str.lower()
 
         tmp = df.merge(df_subdivisions,

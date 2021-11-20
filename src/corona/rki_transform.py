@@ -1,11 +1,12 @@
-import datetime
-
 import pandas as pd
 import datetime as dt
 from src.database import db_helper as database
 
+#TODO:
+# MAKE TRANSFORMS RETURN DF AND PIPE DB INSERT ETC.
+# MAKE FUNCTION FOR INCIDENCE CALC
 
-def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
+def daily_covid(df: pd.DataFrame, date: dt.datetime, table: str):
     # create db connection
     db = database.ProjDB()
 
@@ -34,7 +35,7 @@ def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
     db.db_close()
 
 
-def covid_today_weekly(df: pd.DataFrame, date: dt.datetime, table: str):
+def weekly_covid_cummulative(df: pd.DataFrame, date: dt.datetime, table: str):
     # create db connection
     db = database.ProjDB()
 
@@ -57,7 +58,7 @@ def covid_today_weekly(df: pd.DataFrame, date: dt.datetime, table: str):
     db.db_close()
 
 
-def covid_by_states_states(df: pd.DataFrame, date: dt.datetime, table: str):
+def daily_covid_by_states(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
     df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020', level=1)
@@ -128,7 +129,8 @@ def covid_by_states_states(df: pd.DataFrame, date: dt.datetime, table: str):
     db.db_close()
 
 
-def daily_covid_cumulative_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str):
+# TODO:
+def daily_covid_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str):
     # create db connection
     db = database.ProjDB()
 
@@ -152,7 +154,7 @@ def daily_covid_cumulative_agegroups(df: pd.DataFrame, date: dt.datetime, insert
 
     db.db_close()
 
-
+# TODO:
 def annual_covid(insert_into: str):
     # create db connection
     db = database.ProjDB()
@@ -196,7 +198,7 @@ def annual_covid(insert_into: str):
 
     db.db_close()
 
-
+# TODO:
 def daily_rvalue(df: pd.DataFrame, insert_into: str):
     # create db connection
     db = database.ProjDB()
@@ -259,7 +261,7 @@ def weekly_tests(df: pd.DataFrame, table: str):
 
     db.db_close()
 
-
+# TODO:
 def weekly_tests_states(df: pd.DataFrame, insert_into: str):
     # create dbf connection
     db = database.ProjDB()
