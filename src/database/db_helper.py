@@ -512,7 +512,7 @@ class ProjDB(DB):
         query = text(
             '''
             SELECT SUM(population) AS population
-            FROM population_agegroups_10y
+            FROM population_countries_agegroups_10y
             INNER JOIN _countries ON countries_fk = _countries.countries_id
             INNER JOIN _calendar_years ON calendar_years_fk = _calendar_years.calendar_years_id
             WHERE ''' + country_code + ''' = :country
@@ -524,11 +524,10 @@ class ProjDB(DB):
 
         return int(result)
 
-    # TODO: Dont return a sum, but return a dataframe. Create option to select different levels. Create query to select multiple countries
     # TODO: constants in separate file (country_codes, levels, etc.)
     def get_population_by_states(self, country: str, country_code: str, level: int, year: str):
         country_codes = ['iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
-        levels = [0, 1, 2]  # 0: staaten, 1:bundesländer, 2:bezirk, 3.kreis
+        levels = [0, 1, 2, 3]  # 0: staaten, 1:bundesländer, 2:bezirk, 3.kreis
 
         if country_code not in country_codes:
             raise ValueError("Invalid country code standard. Expected one of: {0} ".format(country_codes))
@@ -541,7 +540,27 @@ class ProjDB(DB):
         if country.lower() not in countries:
             raise ValueError("Country not found. Expected one of: {0} ".format(countries))
 
-        if level == 2:
+        if level == 3:
+            query = text(
+                '''
+                SELECT * 
+                FROM population_subdivs_3
+                INNER JOIN _country_subdivs_3
+                ON population_subdivs_3.country_subdivs_3_fk = _country_subdivs_3.country_subdivs_3_id
+				INNER JOIN _country_subdivs_2
+                ON _country_subdivs_3.country_subdivs_2_fk = _country_subdivs_2.country_subdivs_2_id
+                INNER JOIN _country_subdivs_1
+                ON _country_subdivs_2.country_subdivs_1_fk = _country_subdivs_1.country_subdivs_1_id
+                INNER JOIN _countries
+                ON _country_subdivs_1.countries_fk = _countries.countries_id
+                INNER JOIN _calendar_years
+                ON population_subdivs_3.calendar_years_fk = _calendar_years.calendar_years_id
+                WHERE ''' + country_code + ''' = '{0}' 
+                AND _calendar_years.iso_year = {1}
+                ;
+                '''.format(country, year)
+            )
+        elif level == 2:
             query = text(
                 '''
                 SELECT * 
@@ -554,7 +573,7 @@ class ProjDB(DB):
                 ON _country_subdivs_1.countries_fk = _countries.countries_id
                 INNER JOIN _calendar_years
                 ON population_subdivs_2.calendar_years_fk = _calendar_years.calendar_years_id
-                WHERE ''' + country_code + ''' = {0} 
+                WHERE ''' + country_code + ''' = '{0}'
                 AND _calendar_years.iso_year = {1}
                 ;
                 '''.format(country, year)

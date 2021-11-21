@@ -49,7 +49,7 @@ def main():
             rki_transform.daily_covid(df=df, date=date, table='covid_daily')
             rki_transform.weekly_covid_cummulative(df=df, date=df['Meldedatum'], table='covid_weekly_cumulative')
             rki_transform.daily_covid_by_states(df=df, date=date, table='covid_daily_by_states')
-            # rki_transform.daily_covid_by_counties(df=df, date=date, table='covid_daily_by_counties')
+            rki_transform.daily_covid_by_counties(df=df, date=date, table='covid_daily_by_counties')
             # rki_transform.covid_daily_by_agegroups(df=df, date=date, table='rki_daily_covid_agegroups_ger')
 
     # DIVI procedure

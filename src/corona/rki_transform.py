@@ -115,28 +115,61 @@ def daily_covid_by_counties(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
     tmp = calc_numbers(df, date)
+    tmp = tmp[tmp['IdBundesland'] > 0]  # ignore -nicht erhoben-
 
-    tmp = tmp.groupby(['county', 'reporting_date']) \
+    # combine berlin districts
+    tmp['IdLandkreis'] = tmp['IdLandkreis'].astype(int).replace({
+        11001: 11000,
+        11002: 11000,
+        11003: 11000,
+        11004: 11000,
+        11005: 11000,
+        11006: 11000,
+        11007: 11000,
+        11008: 11000,
+        11009: 11000,
+        11010: 11000,
+        11011: 11000,
+        11012: 11000
+    })
+
+    tmp = tmp.groupby(['IdLandkreis', 'reporting_date']) \
         .sum() \
         .reset_index()
 
     # create iso key
     tmp = create_iso_key(tmp)
 
-    # merge foreign key
+    # merge foreign keys
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
+    tmp = tmp.drop(['iso_key', 'calendar_weeks_fk'], axis=1)
 
-    df_subdiv_3 = db.get_table(table="_country_subdivs_3")
+    tmp = db.merge_subdivisions_fk(df=tmp, left_on='IdLandkreis', level=3, subdiv_code='ags')
+    tmp = tmp.drop(['country_subdivs_2_fk', 'subdivision_3', 'nuts_3'], axis=1)
 
-    tmp = tmp.merge(df_subdiv_3, left_on='county', right_on='subdivision_3', how='left')
+    tmp = tmp[tmp['country_subdivs_3_fk'].notna()]  # old csv's had different countie descriptions, so just ignore them
+
+    df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020',
+                                                          level=3)
+
+    # merge states population
+    tmp = tmp.merge(df_population_by_states,
+                    left_on='country_subdivs_3_fk',
+                    right_on='country_subdivs_3_fk',
+                    how='left',
+                    ).drop(['population_subdivs_3_id', 'calendar_years_fk', 'last_update', 'unique_key'], axis=1)
+    tmp = tmp.drop(['country_subdivs_3_id', 'country_subdivs_2_fk', 'subdivision_3', 'latitude', 'longitude', 'nuts_3', 'ags', 'country_subdivs_2_id', 'country_subdivs_1_fk'], axis=1)
+
+    # incidence 7 days
+    tmp['incidence_7d'] = (tmp['cases_7d'] / tmp['population']) * 100000
+    tmp['incidence_7d_sympt'] = (tmp['cases_7d_sympt'] / tmp['population']) * 100000
+    tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / tmp['population']) * 100000
+    tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / tmp['population']) * 100000
 
     tmp.rename(
         columns={'country_subdivs_3_id': 'country_subdivs_3_fk'},
         inplace=True
     )
-
-    tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
-    tmp = tmp[tmp['country_subdivs_3_fk'].notna()]  # old csv's had different countie descriptions, so just ignore them
 
     db.insert_or_update(tmp, table)
 
@@ -463,15 +496,14 @@ def calc_numbers(df: pd.DataFrame, date: dt.datetime):
 
     tmp.rename(
         columns={
-            'Altersgruppe': 'rki_agegroups',
-            'Landkreis': 'county'
+            'Altersgruppe': 'rki_agegroups'
         },
         inplace=True
     )
 
     tmp = tmp[
         ['IdBundesland',
-         'county',
+         'IdLandkreis',
          'rki_agegroups',
          'reporting_date',
          'cases',
