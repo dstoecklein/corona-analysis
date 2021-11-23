@@ -291,7 +291,7 @@ class ProjDB(DB):
             inplace=True
         )
 
-        return tmp.drop(['iso_year', 'year'], axis=1)
+        return tmp.drop(['iso_year'], axis=1)
 
     def merge_calendar_weeks_fk(self, df: pd.DataFrame, left_on: str):
 

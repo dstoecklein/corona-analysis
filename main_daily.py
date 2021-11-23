@@ -2,8 +2,8 @@ import pandas as pd
 import datetime as dt
 from src.utils import paths
 from src.corona import rki_transform
-from src.hospitals import divi_transform
-from src.web_scraper import rki_scrap, divi_scrap
+from src.hospitals import divi_transform, genesis_transform
+from src.web_scraper import rki_scrap, divi_scrap, genesis_scrap
 import os
 import re
 
@@ -14,7 +14,8 @@ Runs daily via batch
 COVID_PATH = paths.get_covid19_ger_path()
 HOSP_PATH = paths.get_hospitals_ger_path()
 
-#TODO: Different procedures, maybe without reading the csv
+
+# TODO: Different procedures, maybe without reading the csv
 
 def main():
     rki_scrap.daily_covid(save_file=True)

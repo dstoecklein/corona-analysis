@@ -1,5 +1,3 @@
-import datetime
-
 import pandas as pd
 import datetime as dt
 from src.database import db_helper as database

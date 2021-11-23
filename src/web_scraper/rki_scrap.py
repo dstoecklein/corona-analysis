@@ -2,8 +2,6 @@
 from datetime import datetime
 from src.utils import paths
 from src.web_scraper import web_scrap_helper
-from pygenesis.py_genesis_client import PyGenesisClient
-from src.database import config
 
 # constants
 HEADER = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -18,17 +16,6 @@ URL_RVALUE = 'https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-
 
 PATH = paths.get_covid19_ger_path()
 
-
-
-#TODO:
-#client = PyGenesisClient(site='DESTATIS', username=config.genesis_username, password=config.genesis_password)
-#def genesis():
-#    df = client.read('12411-0005')
-#    df.to_csv("test.csv", sep=";")
-
-
-#if __name__ == "__main__":
-#    genesis()
 
 def daily_covid(save_file: bool):
     df = pd.read_csv(
