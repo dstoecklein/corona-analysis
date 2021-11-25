@@ -18,8 +18,8 @@ HOSP_PATH = paths.get_hospitals_ger_path()
 # TODO: Different procedures, maybe without reading the csv
 
 def main():
-    rki_scrap.daily_covid(save_file=True)
-    divi_scrap.daily_itcu(save_file=True)
+    rki_scrap.covid_daily(save_file=True)
+    divi_scrap.itcu_daily_counties(save_file=True)
 
     # RKI procedure
     for filename in os.listdir(COVID_PATH):
@@ -47,10 +47,10 @@ def main():
             # remove whitespaces from header
             df.columns = df.columns.str.replace(' ', '')
 
-            rki_transform.daily_covid(df=df, date=date, table='covid_daily')
-            rki_transform.weekly_covid_cummulative(df=df, date=df['Meldedatum'], table='covid_weekly_cumulative')
-            rki_transform.daily_covid_by_states(df=df, date=date, table='covid_daily_by_states')
-            rki_transform.daily_covid_by_counties(df=df, date=date, table='covid_daily_by_counties')
+            rki_transform.covid_daily(df=df, date=date, table='covid_daily')
+            rki_transform.covid_weekly_cummulative(df=df, date=df['Meldedatum'], table='covid_weekly_cumulative')
+            rki_transform.covid_daily_states(df=df, date=date, table='covid_daily_states')
+            rki_transform.covid_daily_counties(df=df, date=date, table='covid_daily_counties')
             # rki_transform.covid_daily_by_agegroups(df=df, date=date, table='rki_daily_covid_agegroups_ger')
 
     # DIVI procedure
@@ -74,8 +74,8 @@ def main():
             # remove whitespaces from header
             df.columns = df.columns.str.replace(' ', '')
 
-            divi_transform.daily_itcu_cumulative(df=df, table='itcu_daily_cumulative')
+            divi_transform.itcu_daily_counties(df=df, table='itcu_daily_counties')
 
-
+#divi_transform.daily_itcu_states(df=df, table='itcu_daily_states')
 if __name__ == '__main__':
     main()

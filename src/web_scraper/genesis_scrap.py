@@ -7,11 +7,27 @@ client = PyGenesisClient(site='DESTATIS', username=config.genesis_username, pass
 PATH = paths.get_hospitals_ger_path()
 
 
-def annual_hospitals(save_file: bool):
+def hospital_annual(save_file: bool):
     df = client.read('23111-0001')
 
     if save_file:
         file_name = datetime.now().strftime('DESTATIS_HOSP_%Y-%m-%d.csv')
+
+        df.to_csv(
+            PATH +
+            file_name,
+            sep=",",
+            encoding='utf8',
+            index=False
+        )
+    return df
+
+
+def hospital_staff_annual(save_file: bool):
+    df = client.read('23111-0002')
+
+    if save_file:
+        file_name = datetime.now().strftime('DESTATIS_HOSP_STAFF_%Y-%m-%d.csv')
 
         df.to_csv(
             PATH +

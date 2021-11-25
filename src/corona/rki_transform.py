@@ -7,7 +7,7 @@ from src.database import db_helper as database
 # MAKE TRANSFORMS RETURN DF AND PIPE DB INSERT ETC.
 # MAKE FUNCTION FOR INCIDENCE CALC
 
-def daily_covid(df: pd.DataFrame, date: dt.datetime, table: str):
+def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
     # create db connection
     db = database.ProjDB()
 
@@ -36,7 +36,7 @@ def daily_covid(df: pd.DataFrame, date: dt.datetime, table: str):
     db.db_close()
 
 
-def weekly_covid_cummulative(df: pd.DataFrame, date: dt.datetime, table: str):
+def covid_weekly_cummulative(df: pd.DataFrame, date: dt.datetime, table: str):
     # create db connection
     db = database.ProjDB()
 
@@ -59,7 +59,7 @@ def weekly_covid_cummulative(df: pd.DataFrame, date: dt.datetime, table: str):
     db.db_close()
 
 
-def daily_covid_by_states(df: pd.DataFrame, date: dt.datetime, table: str):
+def covid_daily_states(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
     tmp = calc_numbers(df, date)
@@ -109,7 +109,7 @@ def daily_covid_by_states(df: pd.DataFrame, date: dt.datetime, table: str):
     db.db_close()
 
 
-def daily_covid_by_counties(df: pd.DataFrame, date: dt.datetime, table: str):
+def covid_daily_counties(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
     tmp = calc_numbers(df, date)
@@ -175,7 +175,7 @@ def daily_covid_by_counties(df: pd.DataFrame, date: dt.datetime, table: str):
 
 
 # TODO:
-def daily_covid_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str):
+def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str):
     # create db connection
     db = database.ProjDB()
 
@@ -201,7 +201,7 @@ def daily_covid_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str)
 
 
 # TODO:
-def annual_covid(insert_into: str):
+def covid_annual(insert_into: str):
     # create db connection
     db = database.ProjDB()
 
@@ -246,7 +246,7 @@ def annual_covid(insert_into: str):
 
 
 # TODO:
-def daily_rvalue(df: pd.DataFrame, insert_into: str):
+def rvalue_daily(df: pd.DataFrame, insert_into: str):
     # create db connection
     db = database.ProjDB()
 
@@ -272,7 +272,7 @@ def daily_rvalue(df: pd.DataFrame, insert_into: str):
     db.db_close()
 
 
-def weekly_tests(df: pd.DataFrame, table: str):
+def tests_weekly(df: pd.DataFrame, table: str):
     # create dbf connection
     db = database.ProjDB()
 
@@ -310,7 +310,7 @@ def weekly_tests(df: pd.DataFrame, table: str):
 
 
 # TODO:
-def weekly_tests_states(df: pd.DataFrame, insert_into: str):
+def tests_weekly_states(df: pd.DataFrame, insert_into: str):
     # create dbf connection
     db = database.ProjDB()
 

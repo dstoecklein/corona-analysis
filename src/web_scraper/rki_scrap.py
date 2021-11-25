@@ -17,7 +17,7 @@ URL_RVALUE = 'https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-
 PATH = paths.get_covid19_ger_path()
 
 
-def daily_covid(save_file: bool):
+def covid_daily(save_file: bool):
     df = pd.read_csv(
         web_scrap_helper.http_request(URL_COVID),
         engine='python',
@@ -37,7 +37,7 @@ def daily_covid(save_file: bool):
     return df
 
 
-def daily_rvalue(save_file: bool):
+def rvalue_daily(save_file: bool):
     df = pd.read_csv(
         web_scrap_helper.http_request(URL_RVALUE),
         engine='python',
@@ -57,7 +57,7 @@ def daily_rvalue(save_file: bool):
     return df
 
 
-def weekly_tests(save_file: bool):
+def tests_weekly(save_file: bool):
     df = pd.read_excel(
         web_scrap_helper.http_request(URL_TESTS, decode=False),
         sheet_name='1_Testzahlerfassung'
@@ -77,7 +77,7 @@ def weekly_tests(save_file: bool):
     return df
 
 
-def weekly_tests_states(save_file: bool):
+def tests_weekly_states(save_file: bool):
     df = pd.read_excel(
         web_scrap_helper.http_request(URL_TESTS_STATES, decode=False),
         sheet_name='Abb. 3 Bundesland',

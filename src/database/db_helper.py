@@ -440,7 +440,7 @@ class ProjDB(DB):
     def merge_subdivisions_fk(self, df: pd.DataFrame, left_on: str, level: int, subdiv_code: str):
         # TODO: Create map for levels: codes. So method only need 1 parameter
         levels = [1, 2, 3]
-        subdiv_codes = ['nuts_1', 'nuts_2', 'nuts_3', 'ags']
+        subdiv_codes = ['subdivision_1', 'nuts_1', 'nuts_2', 'nuts_3', 'ags']
 
         if level not in levels:
             raise ValueError("Invalid region level. Expected one of: {0} ".format(levels))
@@ -474,6 +474,9 @@ class ProjDB(DB):
 
         if (subdiv_code == 'nuts_1' or subdiv_code == 'nuts_2' or subdiv_code == 'nuts_3') and df[left_on].dtype == str:
             df[left_on] = df[left_on].str.upper()
+        elif subdiv_code == 'subdivision_1':
+            df[left_on] = df[left_on].str.lower()
+            df_subdivisions['subdivision_1'] = df_subdivisions['subdivision_1'].str.lower()
         elif df[left_on].dtype == str:
             df[left_on] = df[left_on].str.lower()
 
@@ -485,13 +488,6 @@ class ProjDB(DB):
 
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
-
-        # tmp['countries_id'] = tmp['countries_id'].astype(int)
-
-        # tmp.rename(
-        #    columns={'country_subdivs_1_id': 'country_subdivs_1_fk'},
-        #    inplace=True
-        # )
 
         return tmp
 
