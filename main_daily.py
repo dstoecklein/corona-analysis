@@ -51,7 +51,7 @@ def main():
             rki_transform.covid_weekly_cummulative(df=df, date=df['Meldedatum'], table='covid_weekly_cumulative')
             rki_transform.covid_daily_states(df=df, date=date, table='covid_daily_states')
             rki_transform.covid_daily_counties(df=df, date=date, table='covid_daily_counties')
-            # rki_transform.covid_daily_by_agegroups(df=df, date=date, table='rki_daily_covid_agegroups_ger')
+            rki_transform.covid_daily_agegroups(df=df, date=date, table='covid_daily_agegroups')
 
     # DIVI procedure
     for filename in os.listdir(HOSP_PATH):

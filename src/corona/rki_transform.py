@@ -174,28 +174,34 @@ def covid_daily_counties(df: pd.DataFrame, date: dt.datetime, table: str):
     db.db_close()
 
 
-# TODO:
-def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime, insert_into: str):
+def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime, table: str):
     # create db connection
     db = database.ProjDB()
+
+    # get ger population
+    population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', year='2020')
+
+    df = df[df['Geschlecht'] != 'unbekannt']
 
     # calculate rki corona numbers
     tmp = calc_numbers(df, date)
     tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
 
-    # create iso key
-    tmp = create_iso_key(tmp)
+    # incidence 7 days
+    tmp['incidence_7d'] = (tmp['cases_7d'] / population) * 100000
+    tmp['incidence_7d_sympt'] = (tmp['cases_7d_sympt'] / population) * 100000
+    tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / population) * 100000
+    tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / population) * 100000
 
-    # merge calendar_yr foreign key
-    tmp = db.merge_fk(tmp,
-                      table='calendar_cw',
-                      df_fk='iso_key',
-                      table_fk='iso_key',
-                      drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
-                      )
+    # merge foreign key
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
 
+    tmp['geo'] = 'DE'
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
+
+    tmp.to_csv("tmp.csv", sep=";", index=False)
     # insert only new rows
-    db.insert_only_new_rows(tmp, insert_into)
+    #db.insert_or_update(df=tmp, table=insert_into)
 
     db.db_close()
 
