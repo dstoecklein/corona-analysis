@@ -15,7 +15,7 @@ def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
     population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', year='2020')
 
     # calculate rki corona numbers
-    tmp = calc_numbers(df=df, date=date)
+    tmp = calc_numbers(df=df, date=date).copy()
     tmp = tmp.groupby('reporting_date').sum().reset_index()
 
     # incidence 7 days
@@ -40,7 +40,7 @@ def covid_weekly_cummulative(df: pd.DataFrame, date: dt.datetime, table: str):
     # create db connection
     db = database.ProjDB()
 
-    tmp = calc_numbers(df=df, date=date)
+    tmp = calc_numbers(df=df, date=date).copy()
 
     # create iso key
     tmp = create_iso_key(df=tmp)
@@ -62,7 +62,7 @@ def covid_weekly_cummulative(df: pd.DataFrame, date: dt.datetime, table: str):
 def covid_daily_states(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
-    tmp = calc_numbers(df, date)
+    tmp = calc_numbers(df, date).copy()
 
     df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020',
                                                           level=1)
@@ -112,7 +112,7 @@ def covid_daily_states(df: pd.DataFrame, date: dt.datetime, table: str):
 def covid_daily_counties(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
-    tmp = calc_numbers(df, date)
+    tmp = calc_numbers(df, date).copy()
     tmp = tmp[tmp['IdBundesland'] > 0]  # ignore -nicht erhoben-
 
     # combine berlin districts
@@ -184,7 +184,7 @@ def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime, table: str):
     df = df[df['Geschlecht'] != 'unbekannt']
 
     # calculate rki corona numbers
-    tmp = calc_numbers(df, date)
+    tmp = calc_numbers(df, date).copy()
     tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
 
     # incidence 7 days
@@ -199,9 +199,8 @@ def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime, table: str):
     tmp['geo'] = 'DE'
     tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
 
-    tmp.to_csv("tmp.csv", sep=";", index=False)
     # insert only new rows
-    #db.insert_or_update(df=tmp, table=insert_into)
+    db.insert_or_update(df=tmp, table=table)
 
     db.db_close()
 
