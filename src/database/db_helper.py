@@ -346,7 +346,7 @@ class ProjDB(DB):
 
     def merge_agegroups_fk(self, df: pd.DataFrame, left_on: str, interval: str):
 
-        intervals = ['05y', '10y']
+        intervals = ['05y', '10y', 'rki']
 
         if interval not in intervals:
             raise ValueError("Invalid agegroup-interval. Expected one of: {0} ".format(intervals))
@@ -369,6 +369,14 @@ class ProjDB(DB):
                 inplace=True
             )
 
+        if interval == 'rki':
+            df_agegroups = self.get_table('_agegroups_rki')
+            df_agegroups['agegroups_rki_id'] = df_agegroups['agegroups_rki_id'].astype(int)
+            df_agegroups.rename(
+                columns={'agegroups_rki_id': 'agegroups_rki_fk'},
+                inplace=True
+            )
+
         tmp = df.merge(df_agegroups,
                        left_on=left_on,
                        right_on='agegroup',
@@ -378,7 +386,7 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
-        return tmp.drop(['agegroup_10y', 'agegroup'], axis=1)
+        return tmp.drop(['agegroup'], axis=1)
 
     def merge_classifications_icd10_fk(self, df: pd.DataFrame, left_on: str):
 

@@ -11,17 +11,20 @@ def itcu_daily_counties(df: pd.DataFrame, table: str):
 
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='date')
 
-    cols = [
-        'amount_hospital_locations',
-        'amount_reporting_areas',
-        'cases_covid',
-        'cases_covid_invasive_ventilated',
-        'itcu_free',
-        'itcu_free_adults',
-        'itcu_occupied',
-        'itcu_occupied_adults'
-    ]
-    tmp.columns = cols
+    tmp.rename(
+        columns={
+            'anzahl_standorte': 'amount_hospital_locations',
+            'anzahl_meldebereiche': 'amount_reporting_areas',
+            'faelle_covid_aktuell': 'cases_covid',
+            'faelle_covid_aktuell_invasiv_beatmet': 'cases_covid_invasive_ventilated',
+            'betten_frei': 'itcu_free',
+            'betten_frei_nur_erwachsen': 'itcu_free_adults',
+            'betten_belegt': 'itcu_occupied',
+            'betten_belegt_nur_erwachsen': 'itcu_occupied_adults',
+
+        },
+        inplace=True
+    )
 
     db.insert_or_update(df=tmp, table=table)
 
@@ -41,9 +44,6 @@ def itcu_daily_states(df: pd.DataFrame, table: str):
     tmp['Bundesland'] = tmp['Bundesland'].astype(str)
 
     tmp = db.merge_subdivisions_fk(df=tmp, left_on='Bundesland', level=1, subdiv_code='subdivision_1')
-
-    tmp['Datum'] = pd.to_datetime(tmp['Datum'], infer_datetime_format=True, utc=True).dt.date
-    tmp['Datum'] = pd.to_datetime(tmp['Datum'], infer_datetime_format=True)
 
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='Datum')
 

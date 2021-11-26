@@ -49,8 +49,9 @@ def itcu_daily_states(save_file: bool):
             PATH +
             file_name,
             sep=",",
-            parse_dates=['Datum'],
             encoding='utf-8-sig',
             index=False
         )
     return df
+
+itcu_daily_states(save_file=True)

@@ -179,13 +179,28 @@ def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime, table: str):
     db = database.ProjDB()
 
     # get ger population
-    population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', year='2020')
+    population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', year='2019')
 
     df = df[df['Geschlecht'] != 'unbekannt']
 
     # calculate rki corona numbers
     tmp = calc_numbers(df, date).copy()
+
     tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
+
+    tmp.replace(
+        {'rki_agegroups':
+             {
+                 'A00-A04': '00-04',
+                 'A05-A14': '05-14',
+                 'A15-A34': '15-34',
+                 'A35-A59': '35-59',
+                 'A60-A79': '60-79',
+                 'A80+': '80+',
+                 'unbekannt': 'UNK'
+             }
+         }, inplace=True
+    )
 
     # incidence 7 days
     tmp['incidence_7d'] = (tmp['cases_7d'] / population) * 100000
@@ -193,9 +208,13 @@ def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime, table: str):
     tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / population) * 100000
     tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / population) * 100000
 
-    # merge foreign key
+    # merge agegroups
+    tmp = db.merge_agegroups_fk(df=tmp, left_on='rki_agegroups', interval='rki')
+
+    # merge days
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
 
+    # merge country
     tmp['geo'] = 'DE'
     tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
 
