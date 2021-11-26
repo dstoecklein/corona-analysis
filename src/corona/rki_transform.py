@@ -1,119 +1,34 @@
 import pandas as pd
-import datetime as dt
 from src.database import db_helper as database
+from src.utils import date_helper, rki_helper
 
 
-# TODO:
-# MAKE TRANSFORMS RETURN DF AND PIPE DB INSERT ETC.
-# MAKE FUNCTION FOR INCIDENCE CALC
-
-def covid_daily(df: pd.DataFrame, date: dt.datetime, table: str):
-    # create db connection
+def covid_daily(df: pd.DataFrame):
     db = database.ProjDB()
-
-    # get ger population
-    population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', year='2020')
-
-    # calculate rki corona numbers
-    tmp = calc_numbers(df=df, date=date).copy()
+    tmp = df.copy()
     tmp = tmp.groupby('reporting_date').sum().reset_index()
-
-    # incidence 7 days
-    tmp['incidence_7d'] = (tmp['cases_7d'] / population) * 100000
-    tmp['incidence_7d_sympt'] = (tmp['cases_7d_sympt'] / population) * 100000
-    tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / population) * 100000
-    tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / population) * 100000
-
-    # merge foreign key
-    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
-
     tmp['geo'] = 'DE'
-    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
-
-    # insert only new rows, update old
-    db.insert_or_update(df=tmp, table=table)
-
-    db.db_close()
-
-
-def covid_weekly_cummulative(df: pd.DataFrame, date: dt.datetime, table: str):
-    # create db connection
-    db = database.ProjDB()
-
-    tmp = calc_numbers(df=df, date=date).copy()
-
-    # create iso key
-    tmp = create_iso_key(df=tmp)
-
-    # merge calendar_yr foreign key
-    tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
-
-    tmp = tmp.groupby('calendar_weeks_fk').sum().reset_index()
-
-    tmp['geo'] = 'DE'
-    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
-
-    # insert only new rows, update old
-    db.insert_or_update(df=tmp, table=table)
-
-    db.db_close()
-
-
-def covid_daily_states(df: pd.DataFrame, date: dt.datetime, table: str):
-    db = database.ProjDB()
-
-    tmp = calc_numbers(df, date).copy()
-
-    df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020',
-                                                          level=1)
-    df_subdivision_ids = df_population_by_states[['country_subdivs_1_id', 'bundesland_id', 'population']].copy()
-
-    # merge states population
-    tmp = tmp.merge(df_subdivision_ids,
-                    left_on='IdBundesland',
-                    right_on='bundesland_id',
-                    how='left',
-                    ).drop(['country_subdivs_1_id'], axis=1)
-
-    # incidence 7 days
-    tmp['incidence_7d'] = (tmp['cases_7d'] / tmp['population']) * 100000
-    tmp['incidence_7d_sympt'] = (tmp['cases_7d_sympt'] / tmp['population']) * 100000
-    tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / tmp['population']) * 100000
-    tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / tmp['population']) * 100000
-
-    tmp = tmp.groupby(['IdBundesland', 'reporting_date']) \
-        .sum() \
-        .reset_index()
-
-    # create iso key
-    tmp = create_iso_key(tmp)
-
-    # merge foreign key
+    tmp = rki_helper.calc_7d_incidence(df=tmp, level=0, reference_year='2020')
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
+    db.db_close()
+    return tmp
 
-    # merge subdivision 1 id
-    tmp = tmp.merge(df_subdivision_ids,
-                    left_on='IdBundesland',
-                    right_on='bundesland_id',
-                    how='left',
-                    )
 
-    tmp.rename(
-        columns={'country_subdivs_1_id': 'country_subdivs_1_fk'},
-        inplace=True
-    )
+def covid_daily_states(df: pd.DataFrame):
+    db = database.ProjDB()
+    tmp = df.copy()
     tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
-
-    db.insert_or_update(tmp, table)
-
+    tmp = tmp.groupby(['IdBundesland', 'reporting_date']).sum().reset_index()
+    tmp = rki_helper.calc_7d_incidence(df=tmp, level=1, reference_year='2020')
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
     db.db_close()
+    return tmp
 
 
-def covid_daily_counties(df: pd.DataFrame, date: dt.datetime, table: str):
+def covid_daily_counties(df: pd.DataFrame):
     db = database.ProjDB()
-
-    tmp = calc_numbers(df, date).copy()
-    tmp = tmp[tmp['IdBundesland'] > 0]  # ignore -nicht erhoben-
+    tmp = df.copy()
+    tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
 
     # combine berlin districts
     tmp['IdLandkreis'] = tmp['IdLandkreis'].astype(int).replace({
@@ -131,97 +46,51 @@ def covid_daily_counties(df: pd.DataFrame, date: dt.datetime, table: str):
         11012: 11000
     })
 
-    tmp = tmp.groupby(['IdLandkreis', 'reporting_date']) \
-        .sum() \
-        .reset_index()
-
-    # create iso key
-    tmp = create_iso_key(tmp)
-
-    # merge foreign keys
+    tmp = tmp.groupby(['IdLandkreis', 'reporting_date']).sum().reset_index()
+    tmp = rki_helper.calc_7d_incidence(df=tmp, level=3, reference_year='2021')
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
-    tmp = tmp.drop(['iso_key', 'calendar_weeks_fk'], axis=1)
-
-    tmp = db.merge_subdivisions_fk(df=tmp, left_on='IdLandkreis', level=3, subdiv_code='ags')
-    tmp = tmp.drop(['country_subdivs_2_fk', 'subdivision_3', 'nuts_3'], axis=1)
-
-    tmp = tmp[tmp['country_subdivs_3_fk'].notna()]  # old csv's had different countie descriptions, so just ignore them
-
-    df_population_by_states = db.get_population_by_states(country='DE', country_code='iso_3166_1_alpha2', year='2020',
-                                                          level=3)
-
-    # merge states population
-    tmp = tmp.merge(df_population_by_states,
-                    left_on='country_subdivs_3_fk',
-                    right_on='country_subdivs_3_fk',
-                    how='left',
-                    ).drop(['population_subdivs_3_id', 'calendar_years_fk', 'last_update', 'unique_key'], axis=1)
-    tmp = tmp.drop(['country_subdivs_3_id', 'country_subdivs_2_fk', 'subdivision_3', 'latitude', 'longitude', 'nuts_3', 'ags', 'country_subdivs_2_id', 'country_subdivs_1_fk'], axis=1)
-
-    # incidence 7 days
-    tmp['incidence_7d'] = (tmp['cases_7d'] / tmp['population']) * 100000
-    tmp['incidence_7d_sympt'] = (tmp['cases_7d_sympt'] / tmp['population']) * 100000
-    tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / tmp['population']) * 100000
-    tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / tmp['population']) * 100000
-
-    tmp.rename(
-        columns={'country_subdivs_3_id': 'country_subdivs_3_fk'},
-        inplace=True
-    )
-
-    db.insert_or_update(tmp, table)
-
     db.db_close()
+    return tmp
 
 
-def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime, table: str):
-    # create db connection
+def covid_daily_agegroups(df: pd.DataFrame):
     db = database.ProjDB()
-
-    # get ger population
-    population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', year='2019')
-
-    df = df[df['Geschlecht'] != 'unbekannt']
-
-    # calculate rki corona numbers
-    tmp = calc_numbers(df, date).copy()
-
+    tmp = df.copy()
     tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
 
     tmp.replace(
-        {'rki_agegroups':
-             {
-                 'A00-A04': '00-04',
-                 'A05-A14': '05-14',
-                 'A15-A34': '15-34',
-                 'A35-A59': '35-59',
-                 'A60-A79': '60-79',
-                 'A80+': '80+',
-                 'unbekannt': 'UNK'
-             }
-         }, inplace=True
+        {
+            'rki_agegroups':
+                {
+                    'A00-A04': '00-04',
+                    'A05-A14': '05-14',
+                    'A15-A34': '15-34',
+                    'A35-A59': '35-59',
+                    'A60-A79': '60-79',
+                    'A80+': '80+',
+                    'unbekannt': 'UNK'
+                }
+        }, inplace=True
     )
 
-    # incidence 7 days
-    tmp['incidence_7d'] = (tmp['cases_7d'] / population) * 100000
-    tmp['incidence_7d_sympt'] = (tmp['cases_7d_sympt'] / population) * 100000
-    tmp['incidence_7d_ref'] = (tmp['cases_7d_ref'] / population) * 100000
-    tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / population) * 100000
-
-    # merge agegroups
-    tmp = db.merge_agegroups_fk(df=tmp, left_on='rki_agegroups', interval='rki')
-
-    # merge days
-    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
-
-    # merge country
     tmp['geo'] = 'DE'
-    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
-
-    # insert only new rows
-    db.insert_or_update(df=tmp, table=table)
-
+    tmp = rki_helper.calc_7d_incidence(df=tmp, level=0, reference_year='2020')
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
+    tmp = db.merge_agegroups_fk(df=tmp, left_on='rki_agegroups', interval='rki')
     db.db_close()
+    return tmp
+
+
+def covid_weekly_cummulative(df: pd.DataFrame):
+    db = database.ProjDB()
+    tmp = df.copy()
+    tmp = date_helper.create_iso_key(df=tmp, column_name='reporting_date')
+    tmp = tmp.groupby('iso_key').sum().reset_index()
+    tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
+    tmp['geo'] = 'DE'
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='nuts_0')
+    db.db_close()
+    return tmp
 
 
 # TODO:
@@ -389,166 +258,3 @@ def tests_weekly_states(df: pd.DataFrame, insert_into: str):
     db.insert_and_append(tmp, insert_into)
 
     db.db_close()
-
-
-def calc_numbers(df: pd.DataFrame, date: dt.datetime):
-    tmp = df.copy()
-
-    if 'NeuerFall' in tmp.columns:
-        tmp['cases'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(tmp['NeuerFall'] >= 0, 0)
-
-        tmp['cases_delta'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            (tmp['NeuerFall'] == 1) | (tmp['NeuerFall'] == -1),
-            0
-        )
-
-        tmp['cases_7d'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            (tmp['NeuerFall'] >= 0) & (tmp['Meldedatum'] > date - dt.timedelta(days=8)),
-            0
-        )
-    else:
-        tmp['cases'] = tmp['AnzahlFall']
-        tmp['cases_delta'] = 0
-
-        tmp['cases_7d'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(tmp['Meldedatum'] > date - dt.timedelta(days=8), 0)
-
-    if 'IstErkrankungsbeginn' in tmp.columns:
-        tmp['cases_7d_sympt'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            (tmp['NeuerFall'] >= 0) &
-            (tmp['Meldedatum'] > date - dt.timedelta(days=8)) &
-            (tmp['IstErkrankungsbeginn'] == 1),
-            0
-        )
-    else:
-        tmp['cases_7d_sympt'] = tmp[['cases_7d']]
-
-    if 'Refdatum' in tmp.columns:
-        tmp['cases_delta_ref'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            ((tmp['NeuerFall'] == 1) | (tmp['NeuerFall'] == -1)) &
-            (tmp['Refdatum'] > date - dt.timedelta(days=2)),
-            0
-        )
-
-        tmp['cases_7d_ref'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            (tmp['NeuerFall'] >= 0) &
-            (tmp['Meldedatum'] > date - dt.timedelta(days=8)) &
-            (tmp['Refdatum'] > date - dt.timedelta(days=8)),
-            0
-        )
-    else:
-        tmp['cases_delta_ref'] = tmp[['cases_delta']]
-        tmp['cases_7d_ref'] = tmp[['cases_7d']]
-
-    if 'Refdatum' in tmp.columns and 'IstErkrankungsbeginn' in tmp.columns:
-        tmp['cases_delta_ref_sympt'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            ((tmp['NeuerFall'] == 1) | (tmp['NeuerFall'] == -1)) &
-            (tmp['Refdatum'] > date - dt.timedelta(days=2)) &
-            (tmp['IstErkrankungsbeginn'] == 1),
-            0
-        )
-
-        tmp['cases_7d_ref_sympt'] = tmp[['AnzahlFall']] \
-            .sum(axis=1) \
-            .where(
-            (tmp['NeuerFall'] >= 0) &
-            (tmp['Meldedatum'] > date - dt.timedelta(days=8)) &
-            (tmp['Refdatum'] > date - dt.timedelta(days=8)) &
-            (tmp['IstErkrankungsbeginn'] == 1),
-            0
-        )
-    else:
-        tmp['cases_delta_ref_sympt'] = tmp[['cases_delta']]
-        tmp['cases_7d_ref_sympt'] = tmp[['cases_7d']]
-
-    if 'NeuerTodesfall' in tmp.columns:
-        tmp['deaths'] = tmp[['AnzahlTodesfall']] \
-            .sum(axis=1) \
-            .where(tmp['NeuerTodesfall'] >= 0, 0)
-
-        tmp['deaths_delta'] = tmp[['AnzahlTodesfall']] \
-            .sum(axis=1) \
-            .where(
-            (tmp['NeuerTodesfall'] == 1) | (tmp['NeuerTodesfall'] == -1),
-            0
-        )
-    else:
-        tmp['deaths'] = tmp['AnzahlTodesfall']
-        tmp['deaths_delta'] = 0
-
-    if 'NeuGenesen' in tmp.columns:
-        tmp['recovered'] = tmp[['AnzahlGenesen']] \
-            .sum(axis=1) \
-            .where(tmp['NeuGenesen'] >= 0, 0)
-
-        tmp['recovered_delta'] = tmp[['AnzahlGenesen']] \
-            .sum(axis=1) \
-            .where(
-            (tmp['NeuGenesen'] == 1) | (tmp['NeuGenesen'] == -1),
-            0
-        )
-    else:
-        if 'AnzahlGenesen' in tmp.columns:
-            tmp['recovered'] = tmp['AnzahlGenesen']
-            tmp['recovered_delta'] = 0
-        else:
-            tmp['recovered'] = 0
-            tmp['recovered_delta'] = 0
-
-    # corona active cases
-    tmp['active_cases'] = tmp['cases'] - (tmp['deaths'] + tmp['recovered'])
-    tmp['active_cases_delta'] = tmp['cases_delta'] - (tmp['deaths_delta'] + tmp['recovered_delta'])
-
-    tmp['reporting_date'] = date
-
-    tmp.rename(
-        columns={
-            'Altersgruppe': 'rki_agegroups'
-        },
-        inplace=True
-    )
-
-    tmp = tmp[
-        ['IdBundesland',
-         'IdLandkreis',
-         'rki_agegroups',
-         'reporting_date',
-         'cases',
-         'cases_delta',
-         'cases_delta_ref',
-         'cases_delta_ref_sympt',
-         'cases_7d',
-         'cases_7d_sympt',
-         'cases_7d_ref',
-         'cases_7d_ref_sympt',
-         'deaths',
-         'deaths_delta',
-         'recovered',
-         'recovered_delta',
-         'active_cases',
-         'active_cases_delta'
-         ]
-    ]
-
-    return tmp
-
-
-def create_iso_key(df: pd.DataFrame):
-    tmp = df.copy()
-    tmp = tmp.assign(iso_key=tmp['reporting_date'].dt.strftime('%G%V').astype(int))
-    return tmp

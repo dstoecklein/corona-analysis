@@ -430,8 +430,7 @@ class ProjDB(DB):
                        left_on=left_on,
                        right_on=country_code,
                        how='left',
-                       ).drop(['country_en', 'country_de', 'latitude', 'longitude', 'iso_3166_1_alpha2',
-                               'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0'], axis=1)
+                       )
 
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
@@ -499,37 +498,8 @@ class ProjDB(DB):
 
         return tmp
 
-    # TODO: Dont return a sum, but return a dataframe. Create option to select different agegroups. Create query to select multiple countries
-    def get_population(self, country: str, country_code: str, year: str):
-        country_codes = ['iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
-
-        if country_code not in country_codes:
-            raise ValueError("Invalid country code standard. Expected one of: {0} ".format(country_codes))
-
-        df_countries = self.get_table('_countries')
-
-        countries = df_countries[country_code].tolist()
-
-        if country.lower() not in countries:
-            raise ValueError("Country not found. Expected one of: {0} ".format(countries))
-
-        query = text(
-            '''
-            SELECT SUM(population) AS population
-            FROM population_countries_agegroups_10y
-            INNER JOIN _countries ON countries_fk = _countries.countries_id
-            INNER JOIN _calendar_years ON calendar_years_fk = _calendar_years.calendar_years_id
-            WHERE ''' + country_code + ''' = :country
-            AND _calendar_years.iso_year = :year
-            ;
-            '''
-        )
-        result = self.connection.execute(query, country=country, year=year).fetchone()[0]
-
-        return int(result)
-
     # TODO: constants in separate file (country_codes, levels, etc.)
-    def get_population_by_states(self, country: str, country_code: str, level: int, year: str):
+    def get_population(self, country: str, country_code: str, level: int, year: str):
         country_codes = ['iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
         levels = [0, 1, 2, 3]  # 0: staaten, 1:bundesländer, 2:bezirk, 3.kreis
 
@@ -564,6 +534,18 @@ class ProjDB(DB):
                 ;
                 '''.format(country, year)
             )
+
+            df = pd.read_sql(query, self.connection) \
+                [
+                    [
+                        'population_subdivs_3_id',
+                        'country_subdivs_3_fk',
+                        'population',
+                        'nuts_3',
+                        'ags'
+                    ]
+                ]
+
         elif level == 2:
             query = text(
                 '''
@@ -582,6 +564,16 @@ class ProjDB(DB):
                 ;
                 '''.format(country, year)
             )
+
+            df = pd.read_sql(query, self.connection) \
+                [
+                    [
+                        'population_subdivs_2_id',
+                        'country_subdivs_2_fk',
+                        'population',
+                        'nuts_2'
+                    ]
+                ]
         elif level == 1:
             query = text(
                 '''
@@ -598,6 +590,17 @@ class ProjDB(DB):
                 ;
                 '''.format(country, year)
             )
+
+            df = pd.read_sql(query, self.connection) \
+                [
+                    [
+                        'population_subdivs_1_id',
+                        'country_subdivs_1_fk',
+                        'population',
+                        'nuts_1',
+                        'bundesland_id'
+                    ]
+                ]
         else:
             query = text(
                 '''
@@ -607,11 +610,24 @@ class ProjDB(DB):
                 ON population_countries.countries_fk = _countries.countries_id
                 INNER JOIN _calendar_years
                 ON population_countries.calendar_years_fk = _calendar_years.calendar_years_id
-                AND _calendar_years.iso_year = {0}
+                WHERE ''' + country_code + ''' = '{0}'
+                AND _calendar_years.iso_year = {1}
                 ;
-                '''.format(year)
+                '''.format(country, year)
             )
-        return pd.read_sql(query, self.connection)
+
+            df = pd.read_sql(query, self.connection) \
+                [
+                    [
+                        'population_countries_id',
+                        'countries_fk',
+                        'population',
+                        'iso_3166_1_alpha2',
+                        'iso_3166_1_alpha3',
+                        'nuts_0'
+                    ]
+                ]
+        return df
 
     def get_population_by_agegroups(self, year: str):
         query = ''
