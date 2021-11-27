@@ -13,8 +13,8 @@ URL_TESTS = 'https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/
 URL_TESTS_STATES = 'https://ars.rki.de/Docs/SARS_CoV2/Daten/data_wochenbericht.xlsx'
 URL_RVALUE = 'https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Nowcasting_und_-R-Schaetzung/main/Nowcast_R_aktuell.csv'
 
-PATH = paths.get_covid19_ger_path()
-
+PATH_COVID = paths.get_covid_path()
+PATH_TESTS = paths.get_tests_path()
 
 def covid_daily(save_file: bool):
     df = pd.read_csv(
@@ -27,7 +27,7 @@ def covid_daily(save_file: bool):
         file_name = datetime.now().strftime('RKI_COVID19_%Y-%m-%d.csv')
 
         df.to_csv(
-            PATH +
+            PATH_COVID +
             file_name,
             sep=",",
             encoding='utf8',
@@ -47,7 +47,7 @@ def rvalue_daily(save_file: bool):
         file_name = datetime.now().strftime('RKI_RVALUE_%Y-%m-%d.csv.xz')
 
         df.to_csv(
-            PATH +
+            PATH_COVID +
             file_name,
             sep=",",
             encoding='utf8',
@@ -67,7 +67,7 @@ def tests_weekly(save_file: bool):
         file_name = datetime.now().strftime('RKI_TESTS_%Y-%m-%d.csv')
 
         df.to_csv(
-            PATH +
+            PATH_TESTS +
             file_name,
             sep=",",
             encoding='utf8',
@@ -88,7 +88,7 @@ def tests_weekly_states(save_file: bool):
         file_name = datetime.now().strftime('RKI_TESTS_STATES_%Y-%m-%d.csv')
 
         df.to_csv(
-            PATH +
+            PATH_COVID +
             file_name,
             sep=",",
             encoding='utf8',

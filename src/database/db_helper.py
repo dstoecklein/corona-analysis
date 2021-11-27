@@ -435,6 +435,7 @@ class ProjDB(DB):
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
 
+        tmp = tmp[tmp['countries_id'].notna()]  # if no foreign key merged, then region is probably not available
         tmp['countries_id'] = tmp['countries_id'].astype(int)
 
         tmp.rename(

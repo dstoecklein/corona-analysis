@@ -7,8 +7,8 @@ python ..\main_daily.py
 ECHO ============================
 ECHO Moving files to archive...
 ECHO ============================
-move ..\files\covid19\GER\*.csv ..\files\covid19\GER\Archive
-move ..\files\hospitals\GER\*.csv ..\files\hospitals\GER\Archive
+move ..\files\covid\*.csv ..\files\covid\Archive
+move ..\files\hospitals\*.csv ..\files\hospitals\Archive
 ECHO ============================
 ECHO End
 ECHO ============================

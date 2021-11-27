@@ -3,7 +3,7 @@ import datetime as dt
 from src.database import db_helper as database
 
 
-def calc_numbers(df: pd.DataFrame, date: dt.datetime):
+def covid_calc_numbers(df: pd.DataFrame, date: dt.datetime):
     tmp = df.copy()
 
     if 'NeuerFall' in tmp.columns:
@@ -200,7 +200,7 @@ def calc_7d_incidence(df: pd.DataFrame, level: int, reference_year: str):
     return tmp
 
 
-def pre_process(df: pd.DataFrame):
+def covid_pre_process(df: pd.DataFrame):
     tmp = df.copy()
 
     if 'Meldedatum' in tmp.columns:
@@ -219,5 +219,22 @@ def pre_process(df: pd.DataFrame):
 
     # remove whitespaces from header
     tmp.columns = tmp.columns.str.replace(' ', '')
+
+    return tmp
+
+
+def tests_pre_process(df: pd.DataFrame):
+    tmp = df.copy()
+    tmp.columns = ['calendar_week', 'amount', 'positive', 'positive_percentage',
+                   'amount_transferring_laboratories']
+    # delete first & last row
+    tmp = tmp[1:]
+    tmp = tmp[:-1]
+
+    # create ISO dates
+    tmp[['iso_cw', 'iso_year']] = tmp['calendar_week'].str.split('/', expand=True)
+    tmp['iso_cw'] = tmp['iso_cw'].str.zfill(2)
+    tmp['iso_key'] = tmp['iso_year'] + tmp['iso_cw']
+    tmp['iso_key'] = pd.to_numeric(tmp['iso_key'], errors='coerce')
 
     return tmp

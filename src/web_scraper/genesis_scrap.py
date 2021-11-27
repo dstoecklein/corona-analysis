@@ -4,7 +4,7 @@ from src.utils import paths
 from datetime import datetime
 
 client = PyGenesisClient(site='DESTATIS', username=config.genesis_username, password=config.genesis_password)
-PATH = paths.get_hospitals_ger_path()
+PATH = paths.get_hospitals_path()
 
 
 def hospital_annual(save_file: bool):

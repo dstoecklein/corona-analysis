@@ -1,5 +1,3 @@
-# Author: Daniel Stöcklein
-
 import pandas as pd
 from src.database import db_helper as database
 

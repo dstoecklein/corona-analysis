@@ -52,7 +52,7 @@ def pre_process(df: pd.DataFrame):
     return tmp
 
 
-def pre_process_population(df: pd.DataFrame):
+def pre_process_population_states(df: pd.DataFrame):
     tmp = df.copy()
     tmp = pre_process(tmp)
 
@@ -78,5 +78,46 @@ def pre_process_population(df: pd.DataFrame):
         var_name='year',
         value_name='population'
     )
+
+    return tmp
+
+
+def pre_process_population_agegroups(df: pd.DataFrame):
+    tmp = df.copy()
+    tmp = pre_process(tmp)
+
+    tmp = tmp.query(
+        '''
+        geo.str.len() == 2 \
+        & age != 'TOTAL' & age !='Y_GE75' & age != 'Y80-84' & age != 'Y_GE85' \
+        & sex == 'T' 
+        '''
+    )
+
+    # melting to years
+    tmp = tmp.melt(
+        id_vars=['age', 'sex', 'unit', 'geo'],
+        var_name='year',
+        value_name='population'
+    )
+
+    # assign 10-year agegroups
+    tmp = tmp.assign(
+        agegroup_10y=tmp['age'].map(
+            ANNUAL_POPULATION_AGEGROUP_10Y_MAP
+        )
+    ).fillna('UNK')
+
+    tmp['year'] = pd.to_numeric(tmp['year'], errors='coerce')
+    # selection from year
+    tmp = tmp[tmp['year'] >= 1990]
+
+    tmp = tmp.groupby(
+        [
+            'geo',
+            'year',
+            'agegroup_10y'
+        ], as_index=False
+    )['population'].sum()
 
     return tmp

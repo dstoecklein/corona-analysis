@@ -11,7 +11,7 @@ HEADER = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q
 URL_COUNTIES = 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-tagesdaten.csv'
 URL_STATES = 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-bundeslaender.csv'
 
-PATH = paths.get_hospitals_ger_path()
+PATH = paths.get_hospitals_path()
 
 
 def itcu_daily_counties(save_file: bool):

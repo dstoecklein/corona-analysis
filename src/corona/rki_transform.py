@@ -1,11 +1,14 @@
+import datetime as dt
 import pandas as pd
 from src.database import db_helper as database
 from src.utils import date_helper, rki_helper
 
 
-def covid_daily(df: pd.DataFrame):
+def covid_daily(df: pd.DataFrame, date: dt.datetime):
     db = database.ProjDB()
     tmp = df.copy()
+    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
     tmp = tmp.groupby('reporting_date').sum().reset_index()
     tmp['geo'] = 'DE'
     tmp = rki_helper.calc_7d_incidence(df=tmp, level=0, reference_year='2020')
@@ -14,9 +17,11 @@ def covid_daily(df: pd.DataFrame):
     return tmp
 
 
-def covid_daily_states(df: pd.DataFrame):
+def covid_daily_states(df: pd.DataFrame, date: dt.datetime):
     db = database.ProjDB()
     tmp = df.copy()
+    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
     tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
     tmp = tmp.groupby(['IdBundesland', 'reporting_date']).sum().reset_index()
     tmp = rki_helper.calc_7d_incidence(df=tmp, level=1, reference_year='2020')
@@ -25,9 +30,11 @@ def covid_daily_states(df: pd.DataFrame):
     return tmp
 
 
-def covid_daily_counties(df: pd.DataFrame):
+def covid_daily_counties(df: pd.DataFrame, date: dt.datetime):
     db = database.ProjDB()
     tmp = df.copy()
+    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
     tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
 
     # combine berlin districts
@@ -53,9 +60,12 @@ def covid_daily_counties(df: pd.DataFrame):
     return tmp
 
 
-def covid_daily_agegroups(df: pd.DataFrame):
+def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime):
     db = database.ProjDB()
     tmp = df.copy()
+    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = tmp[tmp['Geschlecht'] != 'unbekannt']
+    tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
     tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
 
     tmp.replace(
@@ -84,6 +94,8 @@ def covid_daily_agegroups(df: pd.DataFrame):
 def covid_weekly_cummulative(df: pd.DataFrame):
     db = database.ProjDB()
     tmp = df.copy()
+    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.covid_calc_numbers(df=tmp, date=tmp['Meldedatum'])
     tmp = date_helper.create_iso_key(df=tmp, column_name='reporting_date')
     tmp = tmp.groupby('iso_key').sum().reset_index()
     tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
@@ -93,87 +105,15 @@ def covid_weekly_cummulative(df: pd.DataFrame):
     return tmp
 
 
-# TODO:
-def covid_annual(insert_into: str):
-    # create db connection
+def tests_weekly(df: pd.DataFrame):
     db = database.ProjDB()
-
-    query = \
-        '''
-        SELECT * FROM rki_daily_covid_ger 
-        INNER JOIN calendar_cw ON rki_daily_covid_ger.calendar_cw_id = calendar_cw.calendar_cw_id
-        INNER JOIN calendar_yr ON calendar_yr.calendar_yr_id = calendar_cw.calendar_yr_id;
-        '''
-
-    # create dataframe
-    df = pd.read_sql(query, db.connection)
-
-    # get max for each year
-    df = df.groupby(['iso_year'], sort=False).agg(
-        {'cases': 'max',
-         'deaths': 'max',
-         'recovered': 'max'
-         }).reset_index()
-
-    # convert to int
-    df = df.astype(int)
-
-    # overwrite value with actual deaths in 2021
-    df.loc[df['iso_year'] == 2021, 'cases'] = df.loc[1]['cases'] - df.loc[0]['cases']
-    df.loc[df['iso_year'] == 2021, 'deaths'] = df.loc[1]['deaths'] - df.loc[0]['deaths']
-    df.loc[df['iso_year'] == 2021, 'recovered'] = df.loc[1]['recovered'] - df.loc[0]['recovered']
-
-    df['active_cases'] = df['cases'] - (df['deaths'] + df['recovered'])
-
-    # merge calendar_yr foreign key
-    df = db.merge_fk(df,
-                     table='calendar_yr',
-                     df_fk='iso_year',
-                     table_fk='iso_year',
-                     drop_columns=['iso_year']
-                     )
-
-    db.insert_and_append(df, insert_into)
-
-    db.db_close()
-
-
-#TODO: wie oben anpassen
-def tests_weekly(df: pd.DataFrame, table: str):
-    # create dbf connection
-    db = database.ProjDB()
-
     tmp = df.copy()
-
-    # rename columns
-    tmp.columns = ['calendar_week', 'amount', 'positive', 'positive_percentage',
-                   'amount_transferring_laboratories']
-
-    # delete first & last row
-    tmp = tmp[1:]
-    tmp = tmp[:-1]
-
-    # create ISO dates
-    tmp[['iso_cw', 'iso_year']] = tmp['calendar_week'].str.split('/', expand=True)
-    tmp['iso_cw'] = tmp['iso_cw'].str.zfill(2)
-    tmp['iso_key'] = tmp['iso_year'] + tmp['iso_cw']
-    tmp['iso_key'] = pd.to_numeric(tmp['iso_key'], errors='coerce')
-
-    tmp = tmp \
-        .drop('iso_year', axis=1) \
-        .drop('iso_cw', axis=1) \
-        .drop('calendar_week', axis=1)
-
-    # merge calendar_yr foreign key
+    tmp = rki_helper.tests_pre_process(tmp)
     tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
-
-    tmp['geo'] = 'DE'  # just add an extra column to make merge happen
+    tmp['geo'] = 'DE'
     tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
-
-    # insert only new rows, update old
-    db.insert_or_update(df=tmp, table=table)
-
     db.db_close()
+    return tmp
 
 
 # TODO:

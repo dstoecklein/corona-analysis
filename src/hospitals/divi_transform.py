@@ -5,6 +5,7 @@ from src.database import db_helper as database
 def itcu_daily_counties(df: pd.DataFrame):
     db = database.ProjDB()
     tmp = df.copy()
+    tmp = tmp.pre_process(tmp)
     tmp = db.merge_subdivisions_fk(df=tmp, left_on='gemeindeschluessel', level=3, subdiv_code='ags')
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='date')
     tmp.rename(
@@ -28,6 +29,7 @@ def itcu_daily_counties(df: pd.DataFrame):
 def itcu_daily_states(df: pd.DataFrame):
     db = database.ProjDB()
     tmp = df.copy()
+    tmp = tmp.pre_process(tmp)
     tmp['Bundesland'] = tmp['Bundesland'].str.lower()
     tmp['Bundesland'] = tmp['Bundesland'].str.replace('ae', 'ä')
     tmp['Bundesland'] = tmp['Bundesland'].str.replace('ue', 'ü')
