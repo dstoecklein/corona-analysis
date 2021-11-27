@@ -1,7 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from src.utils import paths
-from src.web_scraper import web_scrap_helper
+from src.utils import paths, web_scrap_helper
 
 # constants
 HEADER = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',

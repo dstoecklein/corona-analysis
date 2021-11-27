@@ -138,33 +138,7 @@ def covid_annual(insert_into: str):
     db.db_close()
 
 
-# TODO:
-def rvalue_daily(df: pd.DataFrame, insert_into: str):
-    # create db connection
-    db = database.ProjDB()
-
-    # fill NaN with 0
-    df = df.fillna(0)
-
-    # convert to datetime type
-    df['Datum'] = pd.to_datetime(df['Datum'])
-
-    # create ISO dates
-    df = df.assign(iso_key=df['Datum'].dt.strftime('%G%V').astype(int))
-
-    # merge calendar_yr foreign key
-    df = db.merge_fk(df,
-                     table='calendar_cw',
-                     df_fk='iso_key',
-                     table_fk='iso_key',
-                     drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
-                     )
-
-    db.insert_and_append(df, insert_into)
-
-    db.db_close()
-
-
+#TODO: wie oben anpassen
 def tests_weekly(df: pd.DataFrame, table: str):
     # create dbf connection
     db = database.ProjDB()
@@ -256,5 +230,32 @@ def tests_weekly_states(df: pd.DataFrame, insert_into: str):
     del tmp['state']
 
     db.insert_and_append(tmp, insert_into)
+
+    db.db_close()
+
+
+# TODO:
+def rvalue_daily(df: pd.DataFrame, insert_into: str):
+    # create db connection
+    db = database.ProjDB()
+
+    # fill NaN with 0
+    df = df.fillna(0)
+
+    # convert to datetime type
+    df['Datum'] = pd.to_datetime(df['Datum'])
+
+    # create ISO dates
+    df = df.assign(iso_key=df['Datum'].dt.strftime('%G%V').astype(int))
+
+    # merge calendar_yr foreign key
+    df = db.merge_fk(df,
+                     table='calendar_cw',
+                     df_fk='iso_key',
+                     table_fk='iso_key',
+                     drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
+                     )
+
+    db.insert_and_append(df, insert_into)
 
     db.db_close()

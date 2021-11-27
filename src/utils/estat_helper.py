@@ -41,11 +41,42 @@ ANNUAL_POPULATION_AGEGROUP_10Y_MAP = {
 }
 
 
-def clear_estat_data(df: pd.DataFrame):
-    for i in df.columns:
+def pre_process(df: pd.DataFrame):
+    tmp = df.copy()
+    for i in tmp.columns:
         if i not in ('age', 'sex', 'unit', 'geo\\time', 'icd10', 'resid'):
-            df[i] = df[i].fillna(0)
-            df[i] = df[i].astype(int)
-    df.rename(columns={'geo\\time': 'geo'}, inplace=True)
+            tmp[i] = tmp[i].fillna(0)
+            tmp[i] = tmp[i].astype(int)
+    tmp.rename(columns={'geo\\time': 'geo'}, inplace=True)
 
-    return df
+    return tmp
+
+
+def pre_process_population(df: pd.DataFrame):
+    tmp = df.copy()
+    tmp = pre_process(tmp)
+
+    # only need totals
+    tmp.query(
+        '''
+        age == 'TOTAL' \
+        & sex == 'T' 
+        ''',
+        inplace=True
+    )
+
+    # new column 'level' to indicate NUTS-level
+    tmp = tmp.assign(level=tmp['geo'].str.len() - 2)
+
+    # filter to NUTS-3
+    tmp = tmp[tmp['level'].astype(int) <= 3]
+
+    tmp.drop(['unit', 'sex', 'age'], axis=1, inplace=True)
+
+    tmp = tmp.melt(
+        id_vars=['geo', 'level'],
+        var_name='year',
+        value_name='population'
+    )
+
+    return tmp

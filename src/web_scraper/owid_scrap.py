@@ -2,8 +2,7 @@
 
 import pandas as pd
 from src.database import db_helper
-from src.utils import paths
-from src.web_scraper import web_scrap_helper
+from src.utils import paths, web_scrap_helper
 
 # constants
 URL_COVID = 'https://covid.ourworldindata.org/data/owid-covid-data.csv'

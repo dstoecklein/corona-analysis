@@ -1,5 +1,3 @@
-# Author: Daniel Stöcklein
-
 import io
 import requests
 

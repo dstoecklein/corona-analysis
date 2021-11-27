@@ -38,7 +38,7 @@ class DB:
                    pipe(self.add_meta_columns)
                    ).copy()
         else:
-            tmp = df.copy()
+            tmp = self.sort_columns(df, table).copy()
 
         if replace:
             tmp.to_sql(table, self.connection, if_exists='replace', index=False)

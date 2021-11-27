@@ -198,3 +198,26 @@ def calc_7d_incidence(df: pd.DataFrame, level: int, reference_year: str):
     db.db_close()
 
     return tmp
+
+
+def pre_process(df: pd.DataFrame):
+    tmp = df.copy()
+
+    if 'Meldedatum' in tmp.columns:
+        try:
+            tmp['Meldedatum'] = pd.to_datetime(tmp['Meldedatum'], infer_datetime_format=True).dt.date
+            tmp['Meldedatum'] = pd.to_datetime(tmp['Meldedatum'], infer_datetime_format=True)
+        except (KeyError, TypeError):
+            print('Error trying to convert Date columns')
+
+    if 'Refdatum' in tmp.columns:
+        try:
+            tmp['Refdatum'] = pd.to_datetime(tmp['Refdatum'], infer_datetime_format=True).dt.date
+            tmp['Refdatum'] = pd.to_datetime(tmp['Refdatum'], infer_datetime_format=True)
+        except (KeyError, TypeError):
+            print('Error trying to convert Date columns')
+
+    # remove whitespaces from header
+    tmp.columns = tmp.columns.str.replace(' ', '')
+
+    return tmp
