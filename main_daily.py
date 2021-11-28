@@ -17,10 +17,10 @@ HOSP_PATH = paths.get_hospitals_path()
 
 
 def main():
-    rki_procedure()
-    divi_procedure()
-    # rki_bulk_procedure()
-    # divi_bulk_procedure()
+    #rki_procedure()
+    #divi_procedure()
+    rki_bulk_procedure()
+    #divi_bulk_procedure()
 
 
 def divi_procedure():
@@ -94,7 +94,7 @@ def rki_bulk_procedure():
             db.insert_or_update(df=df_rki_daily_agegroups, table='covid_daily_agegroups')
             db.insert_or_update(df=df_rki_weekly_cumulative, table='covid_weekly_cumulative')
 
-            db.db_close()
+    db.db_close()
 
 
 def divi_bulk_procedure():
@@ -117,7 +117,7 @@ def divi_bulk_procedure():
             else:
                 return
 
-            db.db_close()
+    db.db_close()
 
 
 if __name__ == '__main__':

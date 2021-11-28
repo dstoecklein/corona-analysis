@@ -74,24 +74,3 @@ def tests_weekly(save_file: bool):
             index=False
         )
     return df
-
-
-def tests_weekly_states(save_file: bool):
-    df = pd.read_excel(
-        web_scrap_helper.http_request(URL_TESTS_STATES, decode=False),
-        sheet_name='Abb. 3 Bundesland',
-    )
-
-    df = df[df.filter(regex='^(?!Unnamed)').columns]
-
-    if save_file:
-        file_name = datetime.now().strftime('RKI_TESTS_STATES_%Y-%m-%d.csv')
-
-        df.to_csv(
-            PATH_COVID +
-            file_name,
-            sep=",",
-            encoding='utf8',
-            index=False
-        )
-    return df

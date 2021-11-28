@@ -7,7 +7,7 @@ client = PyGenesisClient(site='DESTATIS', username=config.genesis_username, pass
 PATH = paths.get_hospitals_path()
 
 
-def hospital_annual(save_file: bool):
+def hospitals_annual(save_file: bool):
     df = client.read('23111-0001')
 
     if save_file:

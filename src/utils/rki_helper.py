@@ -225,12 +225,9 @@ def covid_pre_process(df: pd.DataFrame):
 
 def tests_pre_process(df: pd.DataFrame):
     tmp = df.copy()
-    tmp.columns = ['calendar_week', 'amount', 'positive', 'positive_percentage',
-                   'amount_transferring_laboratories']
-    # delete first & last row
-    tmp = tmp[1:]
-    tmp = tmp[:-1]
-
+    tmp.columns = ['calendar_week', 'amount', 'positive', 'positive_percentage', 'amount_transferring_laboratories']
+    tmp = tmp[1:]  # delete first row
+    tmp = tmp[:-1]  # delete last row
     # create ISO dates
     tmp[['iso_cw', 'iso_year']] = tmp['calendar_week'].str.split('/', expand=True)
     tmp['iso_cw'] = tmp['iso_cw'].str.zfill(2)

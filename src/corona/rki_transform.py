@@ -117,64 +117,6 @@ def tests_weekly(df: pd.DataFrame):
 
 
 # TODO:
-def tests_weekly_states(df: pd.DataFrame, insert_into: str):
-    # create dbf connection
-    db = database.ProjDB()
-
-    # delete first & last row
-    tmp = df.iloc[4:, :].copy()
-
-    # rename columns
-    tmp.columns = ['state', 'iso_year', 'iso_cw', 'amount_tests', 'positiv_percentage']
-
-    # create ISO dates
-    tmp['iso_cw'] = tmp['iso_cw'].astype(str)
-    tmp['iso_year'] = tmp['iso_year'].astype(str)
-
-    tmp['iso_cw'] = tmp['iso_cw'].str.zfill(2)
-    tmp['iso_key'] = tmp['iso_year'] + tmp['iso_cw']
-    tmp['iso_key'] = pd.to_numeric(tmp['iso_key'], errors='coerce')
-
-    tmp = tmp \
-        .drop('iso_year', axis=1) \
-        .drop('iso_cw', axis=1)
-
-    # merge calendar_yr foreign key
-    tmp = db.merge_fk(tmp,
-                      table='calendar_cw',
-                      df_fk='iso_key',
-                      table_fk='iso_key',
-                      drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
-                      )
-
-    dct = {'Baden-Württemberg': 8,
-           'Bayern': 9,
-           'Berlin': 11,
-           'Brandenburg': 12,
-           'Bremen': 4,
-           'Hamburg': 2,
-           'Hessen': 6,
-           'Mecklenburg-Vorpommern': 13,
-           'Niedersachsen': 3,
-           'Nordrhein-Westfalen': 5,
-           'Rheinland-Pfalz': 7,
-           'Saarland': 10,
-           'Sachsen': 14,
-           'Sachsen-Anhalt': 15,
-           'Schleswig-Holstein': 1,
-           'Thüringen': 16,
-           'unbekannt': 18
-           }
-
-    tmp = tmp.assign(ger_states_id=tmp['state'].map(dct))
-    del tmp['state']
-
-    db.insert_and_append(tmp, insert_into)
-
-    db.db_close()
-
-
-# TODO:
 def rvalue_daily(df: pd.DataFrame, insert_into: str):
     # create db connection
     db = database.ProjDB()

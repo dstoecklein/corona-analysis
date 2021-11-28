@@ -72,6 +72,7 @@ class DB:
         # Create meta columns
         # last_update should be in every table
         # unique_key is a string-concatenation of all foreign-keys
+
         tmp = df.copy()
         tmp['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
 
@@ -81,6 +82,7 @@ class DB:
             tmp[fk] = tmp[fk].astype(int)
 
         tmp['unique_key'] = tmp[foreign_keys].apply(lambda row: '-'.join(row.values.astype(str)), axis=1)
+
         return tmp
 
     # need to sort the columns in order to create correct unique_key
@@ -97,7 +99,13 @@ class DB:
         if 'unique_key' in cols:
             cols.remove('unique_key')
 
-        tmp.columns = [each_col.lower() for each_col in tmp.columns]  # re-ordering
+        tmp.columns = [each_col.lower() for each_col in tmp.columns]  # lower column names
+
+        # alternative to reindex, since it converts to nan for unknown columns
+        # tmp.drop(columns=[col for col in tmp if col not in cols], inplace=True)
+        # tmp = tmp[cols]
+        # return tmp
+
         return tmp.reindex(columns=cols)
 
     def get_table_obj(self, table: str):
@@ -538,14 +546,14 @@ class ProjDB(DB):
 
             df = pd.read_sql(query, self.connection) \
                 [
-                    [
-                        'population_subdivs_3_id',
-                        'country_subdivs_3_fk',
-                        'population',
-                        'nuts_3',
-                        'ags'
-                    ]
+                [
+                    'population_subdivs_3_id',
+                    'country_subdivs_3_fk',
+                    'population',
+                    'nuts_3',
+                    'ags'
                 ]
+            ]
 
         elif level == 2:
             query = text(
@@ -568,13 +576,13 @@ class ProjDB(DB):
 
             df = pd.read_sql(query, self.connection) \
                 [
-                    [
-                        'population_subdivs_2_id',
-                        'country_subdivs_2_fk',
-                        'population',
-                        'nuts_2'
-                    ]
+                [
+                    'population_subdivs_2_id',
+                    'country_subdivs_2_fk',
+                    'population',
+                    'nuts_2'
                 ]
+            ]
         elif level == 1:
             query = text(
                 '''
@@ -594,14 +602,14 @@ class ProjDB(DB):
 
             df = pd.read_sql(query, self.connection) \
                 [
-                    [
-                        'population_subdivs_1_id',
-                        'country_subdivs_1_fk',
-                        'population',
-                        'nuts_1',
-                        'bundesland_id'
-                    ]
+                [
+                    'population_subdivs_1_id',
+                    'country_subdivs_1_fk',
+                    'population',
+                    'nuts_1',
+                    'bundesland_id'
                 ]
+            ]
         else:
             query = text(
                 '''
@@ -619,15 +627,15 @@ class ProjDB(DB):
 
             df = pd.read_sql(query, self.connection) \
                 [
-                    [
-                        'population_countries_id',
-                        'countries_fk',
-                        'population',
-                        'iso_3166_1_alpha2',
-                        'iso_3166_1_alpha3',
-                        'nuts_0'
-                    ]
+                [
+                    'population_countries_id',
+                    'countries_fk',
+                    'population',
+                    'iso_3166_1_alpha2',
+                    'iso_3166_1_alpha3',
+                    'nuts_0'
                 ]
+            ]
         return df
 
     def get_population_by_agegroups(self, year: str):
