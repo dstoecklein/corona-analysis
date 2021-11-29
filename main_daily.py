@@ -17,10 +17,10 @@ HOSP_PATH = paths.get_hospitals_path()
 
 
 def main():
-    #rki_procedure()
+    rki_procedure()
     #divi_procedure()
-    rki_bulk_procedure()
-    #divi_bulk_procedure()
+    # rki_bulk_procedure()
+    # divi_bulk_procedure()
 
 
 def divi_procedure():
@@ -46,6 +46,7 @@ def rki_procedure():
 
     # --Scraping Data--
     df = rki_scrap.covid_daily(save_file=True)
+    df_rvalue = rki_scrap.rvalue_daily(save_file=False)
 
     today = dt.date.today()
     today = dt.datetime(today.year, today.month, today.day)
@@ -56,6 +57,7 @@ def rki_procedure():
     df_rki_daily_counties = rki_transform.covid_daily_counties(df=df, date=today)
     df_rki_daily_agegroups = rki_transform.covid_daily_agegroups(df=df, date=today)
     df_rki_weekly_cumulative = rki_transform.covid_weekly_cummulative(df=df)
+    df_rvalue = rki_transform.rvalue_daily(df=df_rvalue)
 
     # --DB insert--
     db.insert_or_update(df=df_rki_daily, table='covid_daily')
@@ -63,6 +65,7 @@ def rki_procedure():
     db.insert_or_update(df=df_rki_daily_counties, table='covid_daily_counties')
     db.insert_or_update(df=df_rki_daily_agegroups, table='covid_daily_agegroups')
     db.insert_or_update(df=df_rki_weekly_cumulative, table='covid_weekly_cumulative')
+    db.insert_or_update(df_rvalue, table='rvalue_daily')
 
     db.db_close()
 

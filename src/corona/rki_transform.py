@@ -7,7 +7,7 @@ from src.utils import date_helper, rki_helper
 def covid_daily(df: pd.DataFrame, date: dt.datetime):
     db = database.ProjDB()
     tmp = df.copy()
-    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.pre_process_covid(df=tmp)
     tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
     tmp = tmp.groupby('reporting_date').sum().reset_index()
     tmp['geo'] = 'DE'
@@ -20,7 +20,7 @@ def covid_daily(df: pd.DataFrame, date: dt.datetime):
 def covid_daily_states(df: pd.DataFrame, date: dt.datetime):
     db = database.ProjDB()
     tmp = df.copy()
-    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.pre_process_covid(tmp)
     tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
     tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
     tmp = tmp.groupby(['IdBundesland', 'reporting_date']).sum().reset_index()
@@ -33,7 +33,7 @@ def covid_daily_states(df: pd.DataFrame, date: dt.datetime):
 def covid_daily_counties(df: pd.DataFrame, date: dt.datetime):
     db = database.ProjDB()
     tmp = df.copy()
-    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.pre_process_covid(tmp)
     tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
     tmp = tmp[tmp['IdBundesland'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
 
@@ -63,7 +63,7 @@ def covid_daily_counties(df: pd.DataFrame, date: dt.datetime):
 def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime):
     db = database.ProjDB()
     tmp = df.copy()
-    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.pre_process_covid(tmp)
     tmp = tmp[tmp['Geschlecht'] != 'unbekannt']
     tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
     tmp = tmp.groupby(['rki_agegroups', 'reporting_date']).sum().reset_index()
@@ -94,7 +94,7 @@ def covid_daily_agegroups(df: pd.DataFrame, date: dt.datetime):
 def covid_weekly_cummulative(df: pd.DataFrame):
     db = database.ProjDB()
     tmp = df.copy()
-    tmp = rki_helper.covid_pre_process(tmp)
+    tmp = rki_helper.pre_process_covid(df=tmp)
     tmp = rki_helper.covid_calc_numbers(df=tmp, date=tmp['Meldedatum'])
     tmp = date_helper.create_iso_key(df=tmp, column_name='reporting_date')
     tmp = tmp.groupby('iso_key').sum().reset_index()
@@ -108,7 +108,7 @@ def covid_weekly_cummulative(df: pd.DataFrame):
 def tests_weekly(df: pd.DataFrame):
     db = database.ProjDB()
     tmp = df.copy()
-    tmp = rki_helper.tests_pre_process(tmp)
+    tmp = rki_helper.pre_process_tests(df=tmp)
     tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
     tmp['geo'] = 'DE'
     tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
@@ -116,28 +116,12 @@ def tests_weekly(df: pd.DataFrame):
     return tmp
 
 
-# TODO:
-def rvalue_daily(df: pd.DataFrame, insert_into: str):
-    # create db connection
+def rvalue_daily(df: pd.DataFrame):
     db = database.ProjDB()
-
-    # fill NaN with 0
-    df = df.fillna(0)
-
-    # convert to datetime type
-    df['Datum'] = pd.to_datetime(df['Datum'])
-
-    # create ISO dates
-    df = df.assign(iso_key=df['Datum'].dt.strftime('%G%V').astype(int))
-
-    # merge calendar_yr foreign key
-    df = db.merge_fk(df,
-                     table='calendar_cw',
-                     df_fk='iso_key',
-                     table_fk='iso_key',
-                     drop_columns=['iso_key', 'calendar_yr_id', 'iso_cw']
-                     )
-
-    db.insert_and_append(df, insert_into)
-
+    tmp = df.copy()
+    tmp = rki_helper.pre_process_rvalue(df=tmp)
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='date')
+    tmp['geo'] = 'DE'
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
     db.db_close()
+    return tmp
