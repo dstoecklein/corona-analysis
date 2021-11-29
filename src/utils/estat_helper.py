@@ -40,7 +40,7 @@ ANNUAL_POPULATION_AGEGROUP_10Y_MAP = {
 def pre_process(df: pd.DataFrame):
     tmp = df.copy()
     for i in tmp.columns:
-        if i not in ('age', 'sex', 'unit', 'geo', 'geo\\time', 'icd10', 'resid'):
+        if i not in ('age', 'sex', 'unit', 'geo', 'geo\\time', 'icd10', 'resid', 'indic_de'):
             tmp[i] = tmp[i].fillna(0)
             tmp[i] = tmp[i].astype(int)
     tmp.rename(columns={'geo\\time': 'geo'}, inplace=True)
@@ -51,7 +51,7 @@ def pre_process(df: pd.DataFrame):
 def pre_process_float(df: pd.DataFrame):
     tmp = df.copy()
     for i in tmp.columns:
-        if i not in ('age', 'sex', 'unit', 'geo', 'geo\\time', 'icd10', 'resid'):
+        if i not in ('age', 'sex', 'unit', 'geo', 'geo\\time', 'icd10', 'resid', 'indic_de'):
             tmp[i] = tmp[i].fillna(0)
             tmp[i] = tmp[i].astype(float)
     tmp.rename(columns={'geo\\time': 'geo'}, inplace=True)
@@ -225,6 +225,30 @@ def pre_process_life_exp_at_birth(df: pd.DataFrame):
         id_vars=['age', 'sex', 'unit', 'geo'],
         var_name='year',
         value_name='life_expectancy'
+    )
+
+    tmp = tmp[tmp['year'] >= 1990]
+
+    return tmp
+
+
+def pre_process_median_age(df: pd.DataFrame):
+    tmp = df.copy()
+
+    tmp = pre_process_float(tmp)
+
+    tmp.query(
+        '''
+        indic_de == 'MEDAGEPOP' \
+        & geo.str.len() == 2
+        ''',
+        inplace=True
+    )
+
+    tmp = tmp.melt(
+        id_vars=['indic_de', 'geo'],
+        var_name='year',
+        value_name='median_age'
     )
 
     tmp = tmp[tmp['year'] >= 1990]

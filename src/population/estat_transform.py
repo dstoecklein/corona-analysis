@@ -49,10 +49,20 @@ def population_agegroups(df: pd.DataFrame):
     return tmp
 
 
-def pre_process_life_exp_at_birth(df: pd.DataFrame):
+def life_exp_at_birth(df: pd.DataFrame):
     db = database.ProjDB()
     tmp = df.copy()
     tmp = estat_helper.pre_process_life_exp_at_birth(tmp)
+    tmp = db.merge_calendar_years_fk(tmp, left_on='year')
+    tmp = db.merge_countries_fk(tmp, left_on='geo', country_code='iso_3166_1_alpha2')
+    db.db_close()
+    return tmp
+
+
+def median_age(df: pd.DataFrame):
+    db = database.ProjDB()
+    tmp = df.copy()
+    tmp = estat_helper.pre_process_median_age(tmp)
     tmp = db.merge_calendar_years_fk(tmp, left_on='year')
     tmp = db.merge_countries_fk(tmp, left_on='geo', country_code='iso_3166_1_alpha2')
     db.db_close()

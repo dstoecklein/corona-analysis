@@ -42,13 +42,15 @@ def population():
     df_population_nuts_2 = estat_scrap.population_nuts_2(save_file=False)
     df_population_agegroups = estat_scrap.population_agegroups(save_file=False)
     df_life_expectancy = estat_scrap.life_expectancy(save_file=False)
+    df_median_age = estat_scrap.population_structure_indicators(save_file=False)
 
     # --Transformation--
     df_population_countries = estat_transform.population_countries(df_population_nuts_2)
     df_population_subdivision_1 = estat_transform.population_subdivision_1(df_population_nuts_2)
     df_population_subdivision_2 = estat_transform.population_subdivision_2(df_population_nuts_2)
     df_population_countries_agegroups_10y = estat_transform.population_agegroups(df_population_agegroups)
-    df_life_expectancy = estat_transform.pre_process_life_exp_at_birth(df_life_expectancy)
+    df_life_expectancy = estat_transform.life_exp_at_birth(df_life_expectancy)
+    df_median_age = estat_transform.median_age(df_median_age)
 
     # --DB insert--
     db.insert_or_update(df=df_population_countries, table='population_countries')
@@ -57,6 +59,7 @@ def population():
     db.insert_or_update(df=df_population_countries_agegroups_10y, table='population_countries_agegroups')
     df_life_expectancy.to_csv("df_life_expectancy.csv", index=False, sep=";")
     db.insert_or_update(df=df_life_expectancy, table='life_expectancy')
+    db.insert_or_update(df=df_median_age, table='median_age')
 
     db.db_close()
 
