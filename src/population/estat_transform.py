@@ -39,12 +39,21 @@ def population_subdivision_2(df: pd.DataFrame):
 
 
 def population_agegroups(df: pd.DataFrame):
-    db_proj = database.ProjDB()
+    db = database.ProjDB()
     tmp = df.copy()
     tmp = estat_helper.pre_process_population_agegroups(tmp)
-    tmp = db_proj.merge_agegroups_fk(tmp, left_on='agegroup_10y', interval='10y')
-    tmp = db_proj.merge_calendar_years_fk(tmp, left_on='year')
-    tmp = db_proj.merge_countries_fk(tmp, left_on='geo', country_code='iso_3166_1_alpha2')
-    db_proj.db_close()
+    tmp = db.merge_agegroups_fk(tmp, left_on='agegroup_10y', interval='10y')
+    tmp = db.merge_calendar_years_fk(tmp, left_on='year')
+    tmp = db.merge_countries_fk(tmp, left_on='geo', country_code='iso_3166_1_alpha2')
+    db.db_close()
     return tmp
 
+
+def pre_process_life_exp_at_birth(df: pd.DataFrame):
+    db = database.ProjDB()
+    tmp = df.copy()
+    tmp = estat_helper.pre_process_life_exp_at_birth(tmp)
+    tmp = db.merge_calendar_years_fk(tmp, left_on='year')
+    tmp = db.merge_countries_fk(tmp, left_on='geo', country_code='iso_3166_1_alpha2')
+    db.db_close()
+    return tmp

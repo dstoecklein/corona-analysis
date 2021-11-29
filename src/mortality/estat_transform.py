@@ -1,4 +1,3 @@
-import eurostat
 import pandas as pd
 from src.database import db_helper as database
 from src.utils import estat_helper

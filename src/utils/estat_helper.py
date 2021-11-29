@@ -48,6 +48,17 @@ def pre_process(df: pd.DataFrame):
     return tmp
 
 
+def pre_process_float(df: pd.DataFrame):
+    tmp = df.copy()
+    for i in tmp.columns:
+        if i not in ('age', 'sex', 'unit', 'geo', 'geo\\time', 'icd10', 'resid'):
+            tmp[i] = tmp[i].fillna(0)
+            tmp[i] = tmp[i].astype(float)
+    tmp.rename(columns={'geo\\time': 'geo'}, inplace=True)
+
+    return tmp
+
+
 def pre_process_population_states(df: pd.DataFrame):
     tmp = df.copy()
     tmp = pre_process(tmp)
@@ -192,5 +203,30 @@ def pre_process_death_causes_annual(df: pd.DataFrame):
     # false icd10 categories
     tmp.loc[tmp['icd10'].str.contains('K72-K75'), 'icd10'] = 'K71-K77'
     tmp.loc[tmp['icd10'].str.contains('B180-B182'), 'icd10'] = 'B171-B182'
+
+    return tmp
+
+
+def pre_process_life_exp_at_birth(df: pd.DataFrame):
+    tmp = df.copy()
+
+    tmp = pre_process_float(tmp)
+
+    tmp.query(
+        '''
+        geo.str.len() == 2 \
+        & age =='Y_LT1' \
+        & sex == 'T'
+        ''',
+        inplace=True
+    )
+
+    tmp = tmp.melt(
+        id_vars=['age', 'sex', 'unit', 'geo'],
+        var_name='year',
+        value_name='life_expectancy'
+    )
+
+    tmp = tmp[tmp['year'] >= 1990]
 
     return tmp
