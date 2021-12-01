@@ -1,6 +1,5 @@
 import pandas as pd
-from src.database import db_helper as database
-from src.utils import estat_helper
+from src.utils import estat_helper, db_helper as database
 
 
 def deaths_weekly_agegroups(df: pd.DataFrame):

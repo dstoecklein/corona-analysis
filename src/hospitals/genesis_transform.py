@@ -1,6 +1,5 @@
 import pandas as pd
-from src.database import db_helper as database
-from src.utils import genesis_helper
+from src.utils import genesis_helper, db_helper as database
 
 
 def hospitals_annual(df: pd.DataFrame):

@@ -456,7 +456,7 @@ class ProjDB(DB):
     def merge_subdivisions_fk(self, df: pd.DataFrame, left_on: str, level: int, subdiv_code: str):
         # TODO: Create map for levels: codes. So method only need 1 parameter
         levels = [1, 2, 3]
-        subdiv_codes = ['subdivision_1', 'nuts_1', 'nuts_2', 'nuts_3', 'ags']
+        subdiv_codes = ['subdivision_1', 'nuts_1', 'nuts_2', 'nuts_3', 'ags', 'bundesland_id']
 
         if level not in levels:
             raise ValueError("Invalid region level. Expected one of: {0} ".format(levels))
@@ -504,6 +504,64 @@ class ProjDB(DB):
 
         if 'last_update' in tmp.columns:
             tmp = tmp.drop('last_update', axis=1)
+
+        return tmp
+
+    def merge_vaccines_fk(self, df: pd.DataFrame, left_on: str):
+
+        tmp = df.copy()
+        df_vaccines = self.get_table('_vaccines')
+        df_vaccines['brand_name_1'] = df_vaccines['brand_name_1'].str.lower()
+
+        tmp[left_on] = tmp[left_on].str.lower()
+
+        tmp[left_on].replace(
+            ['pfizer', 'biontech', 'pfizer-biontech', 'pfizer/biontech'], 'Comirnaty',
+            inplace=True
+        )
+        tmp[left_on].replace(
+            'moderna', 'Spikevax',
+            inplace=True
+        )
+        tmp[left_on].replace(
+            ['johnson', 'johnson & johnson', 'johnson&johnson'], 'Janssen',
+            inplace=True
+        )
+        tmp[left_on].replace(
+            ['astrazeneca', 'astra', 'oxford/astrazeneca'], 'Vaxzevria',
+            inplace=True
+        )
+
+        tmp[left_on] = tmp[left_on].str.lower()
+
+        tmp = tmp.merge(df_vaccines,
+                        left_on=left_on,
+                        right_on='brand_name_1',
+                        how='left',
+                        )
+
+        tmp.rename(
+            columns={'vaccines_id': 'vaccines_fk'},
+            inplace=True
+        )
+
+        return tmp
+
+    def merge_vaccine_series_fk(self, df: pd.DataFrame, left_on: str):
+
+        tmp = df.copy()
+        df_vaccine_series = self.get_table('_vaccine_series')
+
+        tmp = tmp.merge(df_vaccine_series,
+                        left_on=left_on,
+                        right_on='series',
+                        how='left',
+                        )
+
+        tmp.rename(
+            columns={'vaccine_series_id': 'vaccine_series_fk'},
+            inplace=True
+        )
 
         return tmp
 

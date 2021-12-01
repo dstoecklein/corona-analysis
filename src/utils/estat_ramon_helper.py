@@ -3,7 +3,7 @@
 # Todo: Make this less messy, define methods etc...
 
 import pandas as pd
-from src.database import db_helper as database
+from src.utils import db_helper as database
 
 # create db connection
 db = database.ProjDB()

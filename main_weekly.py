@@ -1,7 +1,7 @@
 from src.corona import rki_transform
 from src.mortality import estat_transform
 from src.web_scraper import rki_scrap, estat_scrap
-from src.database import db_helper as database
+from src.utils import db_helper as database
 
 """
 Runs weekly via batch

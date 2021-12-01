@@ -1,8 +1,7 @@
 # Author: Daniel Stöcklein
 
 import pandas as pd
-from src.database import db_helper
-from src.utils import paths, web_scrap_helper
+from src.utils import paths, web_scrap_helper, db_helper
 
 # constants
 URL_COVID = 'https://covid.ourworldindata.org/data/owid-covid-data.csv'

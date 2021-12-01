@@ -1,7 +1,7 @@
 import pandas as pd
 import datetime as dt
-from src.database import db_helper as database
-from src.utils import date_helper
+from src.utils import db_helper as database
+
 
 def covid_calc_numbers(df: pd.DataFrame, date: dt.datetime):
     tmp = df.copy()
@@ -256,6 +256,25 @@ def pre_process_rvalue(df: pd.DataFrame):
             'UG_PI_7_Tage_R_Wert': 'll_prediction_interval_7_day_rvalue',
             'OG_PI_7_Tage_R_Wert': 'ul_prediction_interval_7_day_rvalue'
 
+        },
+        inplace=True
+    )
+
+    return tmp
+
+
+def pre_process_vaccination_states(df: pd.DataFrame):
+    tmp = df.copy()
+    if 'Impfdatum' in tmp.columns:
+        try:
+            tmp['Impfdatum'] = pd.to_datetime(tmp['Impfdatum'], infer_datetime_format=True).dt.date
+            tmp['Impfdatum'] = pd.to_datetime(tmp['Impfdatum'], infer_datetime_format=True)
+        except (KeyError, TypeError):
+            print('Error trying to convert Date columns')
+
+    tmp.rename(
+        columns={
+            'Anzahl': 'amount'
         },
         inplace=True
     )

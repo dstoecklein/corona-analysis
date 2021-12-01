@@ -1,6 +1,5 @@
 import pandas as pd
-from src.database import db_helper as database
-from src.utils import divi_helper
+from src.utils import divi_helper, db_helper as database
 
 
 def itcu_daily_counties(df: pd.DataFrame):

@@ -1,7 +1,6 @@
 import datetime as dt
 import pandas as pd
-from src.database import db_helper as database
-from src.utils import date_helper, rki_helper
+from src.utils import date_helper, rki_helper, db_helper as database
 
 
 def covid_daily(df: pd.DataFrame, date: dt.datetime):
@@ -123,5 +122,17 @@ def rvalue_daily(df: pd.DataFrame):
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='date')
     tmp['geo'] = 'DE'
     tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='iso_3166_1_alpha2')
+    db.db_close()
+    return tmp
+
+
+def vaccinations_daily_states(df: pd.DataFrame):
+    db = database.ProjDB()
+    tmp = df.copy()
+    tmp = rki_helper.pre_process_vaccination_states(df=tmp)
+    tmp = db.merge_vaccines_fk(df=tmp, left_on='Impfstoff')
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='Impfdatum')
+    tmp = db.merge_subdivisions_fk(df=tmp, left_on='BundeslandId_Impfort', level=1, subdiv_code='bundesland_id')
+    tmp = db.merge_vaccine_series_fk(df=tmp, left_on='Impfserie')
     db.db_close()
     return tmp

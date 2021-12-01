@@ -1,5 +1,4 @@
-from src.database import db_helper as database
-from src.utils import paths
+from src.utils import paths, db_helper as database
 from src.web_scraper import estat_scrap, genesis_scrap
 from src.population import estat_transform
 from src.hospitals import genesis_transform
