@@ -3,6 +3,7 @@
 ECHO ============================
 ECHO Receiving daily data...
 ECHO ============================
+CALL conda activate corona_analysis
 python ..\main_daily.py
 ECHO ============================
 ECHO Moving files to archive...
@@ -12,5 +13,5 @@ move ..\files\hospitals\*.csv ..\files\hospitals\Archive
 ECHO ============================
 ECHO End
 ECHO ============================
-
+CALL conda deactivate
 PAUSE

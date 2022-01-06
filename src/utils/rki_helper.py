@@ -265,6 +265,7 @@ def pre_process_rvalue(df: pd.DataFrame):
 
 def pre_process_vaccination_states(df: pd.DataFrame):
     tmp = df.copy()
+    tmp = tmp[tmp['Impfstoff'].notna()]
     if 'Impfdatum' in tmp.columns:
         try:
             tmp['Impfdatum'] = pd.to_datetime(tmp['Impfdatum'], infer_datetime_format=True).dt.date

@@ -4,6 +4,7 @@ ECHO Please Wait...
 ECHO ============================
 ECHO Receiving weekly data...
 ECHO ============================
+CALL conda activate corona_analysis
 python ..\main_weekly.py
 ECHO ============================
 ECHO Moving files to archive...
@@ -12,5 +13,5 @@ move ..\files\tests\*.csv ..\files\tests\Archive
 move ..\files\mortality\*.csv ..\files\mortality\Archive
 ECHO End
 ECHO ============================
-
+CALL conda deactivate
 PAUSE
