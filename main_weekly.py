@@ -9,7 +9,7 @@ Runs weekly via batch
 
 
 def main():
-    tests()
+    #tests()
     mortality()
 
 

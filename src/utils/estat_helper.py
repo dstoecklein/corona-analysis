@@ -157,6 +157,7 @@ def pre_process_deaths_weekly(df: pd.DataFrame):
     tmp['iso_key'] = pd.to_numeric(tmp['iso_key'], errors='coerce')
 
     # remove week 99 rows
+    tmp['iso_cw'] = tmp['iso_cw'].astype(int)
     tmp = tmp[tmp['iso_cw'] != 99]
 
     tmp = tmp[tmp['iso_year'] >= 1990]
