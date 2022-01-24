@@ -1,4 +1,6 @@
-﻿import pandas as pd
+﻿import argparse
+
+import pandas as pd
 from datetime import datetime
 from src.utils import paths, web_scrap_helper
 
