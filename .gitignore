@@ -23,6 +23,7 @@ __pycache__/
 
 # db stuff
 src/database/config.py
+config_db.yaml
 src/database/sql/
 paths.py
 *.pbix

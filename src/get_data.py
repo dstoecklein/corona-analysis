@@ -4,6 +4,8 @@ import requests
 import eurostat
 from datetime import datetime
 from typing import Union
+from pygenesis.py_genesis_client import PyGenesisClient
+from read_config import read_config_file
 
 
 def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
@@ -53,7 +55,7 @@ def rki(url: str, purpose: str, save_file: bool, path: str, is_excel: bool = Fal
         )
 
     if save_file:
-        filename = datetime.now().strftime(purpose + '_%Y-%m-%d.csv')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
 
         df.to_csv(
             path + filename,
@@ -87,7 +89,7 @@ def estat(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
     )
 
     if save_file:
-        filename = datetime.now().strftime(purpose + '_%Y-%m-%d.csv')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
 
         df.to_csv(
             path + filename,
@@ -122,7 +124,7 @@ def divi(url: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
     )
 
     if save_file:
-        filename = datetime.now().strftime(purpose + '_%Y-%m-%d.csv')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
 
         df.to_csv(
             path + filename,
@@ -132,3 +134,53 @@ def divi(url: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
         )
 
     return df
+
+
+def genesis(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
+    """
+    Reads a given URL from DeStatis and returns it as a Pandas Dataframe
+
+    :param code: Code (table name) as per https://www-genesis.destatis.de/
+    :param purpose: Should indicate which type of data should be loaded (e.g. Tests, R-Value, etc.)
+    :param save_file: Determines if the file should be saved as .csv
+    :param path: Path in which the file should be saved
+    :return: pd.Dataframe
+    """
+
+    if save_file and path == '':
+        raise RuntimeError('save_file is true but no path given')
+    if not save_file and path != '':
+        raise RuntimeError('Path was given but save_file is false')
+
+    config_db = read_config_file('config_db.yaml')
+    client = PyGenesisClient(
+        site='DESTATIS',
+        username=config_db['genesis']['username'],
+        password=config_db['genesis']['password']
+    )
+
+    df = client.read(code)
+
+    if save_file:
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
+
+        df.to_csv(
+            path + filename,
+            sep=',',
+            encoding='utf8',
+            index=False
+        )
+
+    return df
+
+
+
+import os
+if __name__ == '__main__':
+    config = read_config_file()
+    genesis(
+        code=config['genesis']['hospitals_annual'],
+        purpose='hospitals',
+        save_file=True,
+        path=os.path.join(config['paths']['root'], config['paths']['hospitals'], '')
+    )
