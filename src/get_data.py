@@ -1,6 +1,7 @@
 import io
 import pandas as pd
 import requests
+import eurostat
 from datetime import datetime
 from typing import Union
 
@@ -18,7 +19,7 @@ def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
 
 def rki(url: str, purpose: str, save_file: bool, path: str, is_excel: bool = False, sheet_name: str = '') -> pd.DataFrame:
     """
-    Reads a given URL from RKI and returns it as Pandas Dataframe
+    Reads a given URL from RKI and returns it as a Pandas Dataframe
 
     :param url: URL from the RKI
     :param purpose: Should indicate which type of data should be loaded (e.g. Tests, R-Value, etc.)
@@ -50,6 +51,40 @@ def rki(url: str, purpose: str, save_file: bool, path: str, is_excel: bool = Fal
             engine='python',
             sep=','
         )
+
+    if save_file:
+        filename = datetime.now().strftime(purpose + '_%Y-%m-%d.csv')
+
+        df.to_csv(
+            path + filename,
+            sep=',',
+            encoding='utf8',
+            index=False
+        )
+
+    return df
+
+
+def estat(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
+    """
+    Reads a given Table from Eurostat using eurostat package and returns it as a Pandas Dataframe
+
+    :param code: Code (table name) as per https://ec.europa.eu/
+    :param purpose: Should indicate which type of data should be loaded (e.g. Tests, R-Value, etc.)
+    :param save_file: Determines if the file should be saved as .csv
+    :param path: Path in which the file should be saved
+    :return: pd.Dataframe
+    """
+
+    if save_file and path == '':
+        raise RuntimeError('save_file is true but no path given')
+    if not save_file and path != '':
+        raise RuntimeError('Path was given but save_file is false')
+
+    df = eurostat.get_data_df(
+        code=code,
+        flags=False
+    )
 
     if save_file:
         filename = datetime.now().strftime(purpose + '_%Y-%m-%d.csv')

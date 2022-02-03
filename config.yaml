@@ -19,6 +19,7 @@ estat:
   estat_life_expectancy: 'demo_mlexpec'
   estats_population_structure_indicators: 'demo_pjanind'
 paths:
+  root: 'files'
   population: 'population'
   covid: 'covid'
   hospitals: 'hospitals'
