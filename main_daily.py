@@ -6,7 +6,8 @@ from src.hospitals import divi_transform
 from src.web_scraper import rki_scrap, divi_scrap
 import os
 import re
-import yaml
+from src.read_config import read_yaml
+from src.get_data import rki, estat, divi, genesis
 import argparse
 
 """
@@ -20,7 +21,7 @@ VACC_PATH = paths.get_vaccinations_path()
 
 def main(config_path):
     rki_procedure(config_path)
-    divi_procedure(config_path)
+    #divi_procedure(config_path)
     # rki_bulk_procedure()
     # divi_bulk_procedure()
 
@@ -128,7 +129,14 @@ def divi_bulk_procedure():
 
 
 if __name__ == '__main__':
-    args = argparse.ArgumentParser()
-    args.add_argument('--config', default='config.yaml')
-    parsed_args = args.parse_args()
-    main(config_path=parsed_args.config)
+    config = read_yaml()
+    df = rki(
+        url=config['urls']['rki_covid'],
+        purpose='RKI_COVID19',
+        save_file=True,
+        path=os.path.join(config['paths']['root'], config['paths']['covid'], '')
+    )
+    today = dt.date.today()
+    today = dt.datetime(today.year, today.month, today.day)
+    df_rki_daily = rki_transform.covid_daily(df=df, date=today)
+    print(df_rki_daily.head())

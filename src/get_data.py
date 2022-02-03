@@ -5,7 +5,6 @@ import eurostat
 from datetime import datetime
 from typing import Union
 from pygenesis.py_genesis_client import PyGenesisClient
-from read_config import read_config_file
 
 
 def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
@@ -136,10 +135,11 @@ def divi(url: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
     return df
 
 
-def genesis(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
+def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
     """
     Reads a given URL from DeStatis and returns it as a Pandas Dataframe
 
+    :param config_db: Configuration file for the database and Genesis login
     :param code: Code (table name) as per https://www-genesis.destatis.de/
     :param purpose: Should indicate which type of data should be loaded (e.g. Tests, R-Value, etc.)
     :param save_file: Determines if the file should be saved as .csv
@@ -152,7 +152,6 @@ def genesis(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame
     if not save_file and path != '':
         raise RuntimeError('Path was given but save_file is false')
 
-    config_db = read_config_file('config_db.yaml')
     client = PyGenesisClient(
         site='DESTATIS',
         username=config_db['genesis']['username'],
@@ -172,15 +171,3 @@ def genesis(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame
         )
 
     return df
-
-
-
-import os
-if __name__ == '__main__':
-    config = read_config_file()
-    genesis(
-        code=config['genesis']['hospitals_annual'],
-        purpose='hospitals',
-        save_file=True,
-        path=os.path.join(config['paths']['root'], config['paths']['hospitals'], '')
-    )

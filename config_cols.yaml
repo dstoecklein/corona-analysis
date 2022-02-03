@@ -1,0 +1,88 @@
+rki:
+  covid:
+    translation: [
+        'fid',
+        'subdivision_1_id',
+        'subdivision_2',
+        'agegroup',
+        'sex',
+        'cases',
+        'deaths',
+        'reporting_date',
+        'subdivision_2_id',
+        'data_date',
+        'new_cases',
+        'new_deaths',
+        'reference_date',
+        'new_recovered',
+        'recovered',
+        'date_of_disease_onset',
+        'agegroup2'
+    ]
+    FID: 'FID'
+    IdBundesland: 'IdBundesland'
+    Bundesland: 'Bundesland'
+    Landkreis: 'Landkreis'
+    Altersgruppe: 'Altersgruppe'
+    Geschlecht: 'Geschlecht'
+    AnzahlFall: 'AnzahlFall'
+    AnzahlTodesfall: 'AnzahlTodesfall'
+    Meldedatum: 'Meldedatum'
+    IdLandkreis: 'IdLandkreis'
+    Datenstand: 'Datenstand'
+    NeuerFall: 'NeuerFall'
+    NeuerTodesfall: 'NeuerTodesfall'
+    Refdatum: 'Refdatum'
+    NeuGenesen: 'NeuGenesen'
+    AnzahlGenesen: 'AnzahlGenesen'
+    IstErkrankungsbeginn: 'IstErkrankungsbeginn'
+    Altersgruppe2: 'Altersgruppe2'
+  tests:
+    translation: [
+        'calendar_week',
+        'amount',
+        'positive',
+        'positive_percentage',
+        'amount_transferring_laboratories'
+    ]
+    Kalenderwoche: 'Kalenderwoche'
+    Anzahl Testungen: 'Anzahl Testungen'
+    Positiv getestet: 'Positiv getestet'
+    Positivenanteil (%): 'Positivenanteil (%)'
+    Anzahl übermittelnder Labore: 'Anzahl übermittelnder Labore'
+  rvalue:
+    translation: [
+        'date',
+        'point_estimation_covid',
+        'll_prediction_interval_covid',
+        'ul_prediction_interval_covid',
+        'point_estimation_covid_smoothed',
+        'll_prediction_interval_covid_smoothed',
+        'ul_prediction_interval_covid_smoothed',
+        'point_estimation_7_day_rvalue',
+        'll_prediction_interval_7_day_rvalue',
+        'ul_prediction_interval_7_day_rvalue'
+    ]
+    Datum: 'Datum'
+    PS_COVID_Faelle: 'PS_COVID_Faelle'
+    UG_PI_COVID_Faelle: 'UG_PI_COVID_Faelle'
+    OG_PI_COVID_Faelle: 'OG_PI_COVID_Faelle'
+    PS_COVID_Faelle_ma4: 'PS_COVID_Faelle_ma4'
+    UG_PI_COVID_Faelle_ma4: 'UG_PI_COVID_Faelle_ma4'
+    OG_PI_COVID_Faelle_ma4: 'OG_PI_COVID_Faelle_ma4'
+    PS_7_Tage_R_Wert: 'PS_7_Tage_R_Wert'
+    UG_PI_7_Tage_R_Wert: 'UG_PI_7_Tage_R_Wert'
+    OG_PI_7_Tage_R_Wert: 'OG_PI_7_Tage_R_Wert'
+  vaccinations:
+    translation: [
+        'date',
+        'subdivision_1_id',
+        'vaccine',
+        'vaccine_series',
+        'amount'
+    ]
+    Impfdatum: 'Impfdatum'
+    BundeslandId_Impfort: 'BundeslandId_Impfort'
+    Impfstoff: 'Impfstoff'
+    Impfserie: 'Impfserie'
+    Anzahl: 'Anzahl'

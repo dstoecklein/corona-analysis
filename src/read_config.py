@@ -1,7 +1,7 @@
 import yaml
 
 
-def read_config_file(config_path: str = 'config.yaml') -> dict:
+def read_yaml(config_path: str = 'config.yaml') -> dict:
     """
     Reads the .yaml configuration file and returns it as a dictionary.
 
