@@ -5,10 +5,7 @@ from datetime import datetime
 from src.utils import paths, web_scrap_helper
 
 # constants
-HEADER = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/87.0.4280.88 Safari/537.36",
-          "X-Requested-With": "XMLHttpRequest"}
+
 
 URL_COVID = 'https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data'
 URL_TESTS = 'https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Testzahlen-gesamt.xlsx?__blob=publicationFile'
