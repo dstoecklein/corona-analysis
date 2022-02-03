@@ -97,3 +97,38 @@ def estat(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
         )
 
     return df
+
+
+def divi(url: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
+    """
+    Reads a given URL from DIVI and returns it as a Pandas Dataframe
+
+    :param url: URL from the DIVI
+    :param purpose: Should indicate which type of data should be loaded (e.g. Tests, R-Value, etc.)
+    :param save_file: Determines if the file should be saved as .csv
+    :param path: Path in which the file should be saved
+    :return: pd.Dataframe
+    """
+
+    if save_file and path == '':
+        raise RuntimeError('save_file is true but no path given')
+    if not save_file and path != '':
+        raise RuntimeError('Path was given but save_file is false')
+
+    df = pd.read_csv(
+        http_request(url),
+        engine='python',
+        sep=','
+    )
+
+    if save_file:
+        filename = datetime.now().strftime(purpose + '_%Y-%m-%d.csv')
+
+        df.to_csv(
+            path + filename,
+            sep=',',
+            encoding='utf8',
+            index=False
+        )
+
+    return df
