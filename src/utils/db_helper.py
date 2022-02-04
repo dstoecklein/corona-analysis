@@ -6,7 +6,7 @@ from sqlalchemy.sql import text
 from src.database import config
 import pandas as pd
 import time
-
+import numpy as np
 
 class DB:
 
@@ -53,6 +53,9 @@ class DB:
                pipe(self.sort_columns, table).
                pipe(self.add_meta_columns)
                ).copy()
+
+        tmp = tmp.replace([np.inf, -np.inf], np.nan)
+        tmp = tmp.fillna(0)
 
         # create table object (sqlalchemy)
         table_obj = self.get_table_obj(table)
