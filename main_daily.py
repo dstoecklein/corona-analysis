@@ -6,8 +6,6 @@ from src.hospitals import divi_transform
 from src.web_scraper import rki_scrap, divi_scrap
 import os
 import re
-import yaml
-import argparse
 
 """
 Runs daily via batch
@@ -18,14 +16,14 @@ HOSP_PATH = paths.get_hospitals_path()
 VACC_PATH = paths.get_vaccinations_path()
 
 
-def main(config_path):
-    rki_procedure(config_path)
-    divi_procedure(config_path)
+def main():
+    rki_procedure()
+    divi_procedure()
     # rki_bulk_procedure()
     # divi_bulk_procedure()
 
 
-def divi_procedure(config_path):
+def divi_procedure():
     db = database.ProjDB()
 
     # --Scraping Data--
@@ -43,7 +41,7 @@ def divi_procedure(config_path):
     db.db_close()
 
 
-def rki_procedure(config_path):
+def rki_procedure():
     db = database.ProjDB()
 
     # --Scraping Data--
@@ -128,7 +126,4 @@ def divi_bulk_procedure():
 
 
 if __name__ == '__main__':
-    args = argparse.ArgumentParser()
-    args.add_argument('--config', default='config.yaml')
-    parsed_args = args.parse_args()
-    main(config_path=parsed_args.config)
+    main()
