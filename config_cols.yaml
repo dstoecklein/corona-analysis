@@ -3,11 +3,12 @@ rki:
     translation: [
         'fid',
         'subdivision_1_id',
+        'subdivision_1',
         'subdivision_2',
-        'agegroup',
+        'rki_agegroups',
         'sex',
-        'cases',
-        'deaths',
+        'amount_cases',
+        'amount_deaths',
         'reporting_date',
         'subdivision_2_id',
         'data_date',
@@ -15,28 +16,48 @@ rki:
         'new_deaths',
         'reference_date',
         'new_recovered',
-        'recovered',
+        'amount_recovered',
         'date_of_disease_onset',
-        'agegroup2'
+        'rki_agegroups2'
     ]
-    FID: 'FID'
-    IdBundesland: 'IdBundesland'
-    Bundesland: 'Bundesland'
-    Landkreis: 'Landkreis'
-    Altersgruppe: 'Altersgruppe'
-    Geschlecht: 'Geschlecht'
-    AnzahlFall: 'AnzahlFall'
-    AnzahlTodesfall: 'AnzahlTodesfall'
-    Meldedatum: 'Meldedatum'
-    IdLandkreis: 'IdLandkreis'
-    Datenstand: 'Datenstand'
-    NeuerFall: 'NeuerFall'
-    NeuerTodesfall: 'NeuerTodesfall'
-    Refdatum: 'Refdatum'
-    NeuGenesen: 'NeuGenesen'
-    AnzahlGenesen: 'AnzahlGenesen'
-    IstErkrankungsbeginn: 'IstErkrankungsbeginn'
-    Altersgruppe2: 'Altersgruppe2'
+    german:
+      FID: 'FID'
+      IdBundesland: 'IdBundesland'
+      Bundesland: 'Bundesland'
+      Landkreis: 'Landkreis'
+      Altersgruppe: 'Altersgruppe'
+      Geschlecht: 'Geschlecht'
+      AnzahlFall: 'AnzahlFall'
+      AnzahlTodesfall: 'AnzahlTodesfall'
+      Meldedatum: 'Meldedatum'
+      IdLandkreis: 'IdLandkreis'
+      Datenstand: 'Datenstand'
+      NeuerFall: 'NeuerFall'
+      NeuerTodesfall: 'NeuerTodesfall'
+      Refdatum: 'Refdatum'
+      NeuGenesen: 'NeuGenesen'
+      AnzahlGenesen: 'AnzahlGenesen'
+      IstErkrankungsbeginn: 'IstErkrankungsbeginn'
+      Altersgruppe2: 'Altersgruppe2'
+    english:
+      fid: 'fid'
+      subdivision_1_id: 'subdivision_1_id'
+      subdivision_1: 'subdivision_1'
+      subdivision_2: 'subdivision_2'
+      rki_agegroups: 'rki_agegroups'
+      sex: 'sex'
+      amount_cases: 'amount_cases'
+      amount_deaths: 'amount_deaths'
+      reporting_date: 'reporting_date'
+      subdivision_2_id: 'subdivision_2_id'
+      data_date: 'data_date'
+      new_cases: 'new_cases'
+      new_deaths: 'new_deaths'
+      reference_date: 'reference_date'
+      new_recovered: 'new_recovered'
+      amount_recovered: 'amount_recovered'
+      date_of_disease_onset: 'date_of_disease_onset'
+      rki_agegroups2: 'rki_agegroups2'
   tests:
     translation: [
         'calendar_week',

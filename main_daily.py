@@ -8,6 +8,7 @@ import os
 import re
 from src.read_config import read_yaml
 from src.get_data import rki, estat, divi, genesis
+from src.covid import rki_daily
 import argparse
 
 """
@@ -128,15 +129,16 @@ def divi_bulk_procedure():
     db.db_close()
 
 
+TODAY = dt.date.today()
+TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 if __name__ == '__main__':
     config = read_yaml()
+    config_cols = read_yaml('config_cols.yaml')
     df = rki(
         url=config['urls']['rki_covid'],
         purpose='RKI_COVID19',
         save_file=True,
         path=os.path.join(config['paths']['root'], config['paths']['covid'], '')
     )
-    today = dt.date.today()
-    today = dt.datetime(today.year, today.month, today.day)
-    df_rki_daily = rki_transform.covid_daily(df=df, date=today)
-    print(df_rki_daily.head())
+    df = rki_daily(config_cols=config_cols, df=df, date=TODAY)
+

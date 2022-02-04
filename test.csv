@@ -1,0 +1,2 @@
+reporting_date;fid;subdivision_1_id;amount_cases;amount_deaths;subdivision_2_id;new_cases;new_deaths;new_recovered;amount_recovered;date_of_disease_onset;cases;cases_delta;cases_7d;cases_7d_sympt;cases_delta_ref;cases_7d_ref;cases_delta_ref_sympt;cases_7d_ref_sympt;deaths;deaths_delta;recovered;recovered_delta;active_cases;active_cases_delta;geo
+2022-02-04;7401410742846;30864658;10670322;118499;32118955507;17067;-33712960;-2704813;7952764;2753837;10671602;248838;1122185;91394;156925;1076187;1107;45396;118504;170;7953160;83988;2599938;164680;DE
