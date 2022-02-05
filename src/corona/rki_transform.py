@@ -3,17 +3,17 @@ import pandas as pd
 from src.utils import covid_helper, date_helper, rki_helper, db_helper as database
 
 
-def covid_daily(df: pd.DataFrame, date: dt.datetime):
-    db = database.ProjDB()
-    tmp = df.copy()
-    tmp = rki_helper.pre_process_covid(df=tmp)
-    tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
-    tmp = tmp.groupby('reporting_date').sum().reset_index()
-    tmp['geo'] = 'DE'
-    tmp = rki_helper.calc_7d_incidence(df=tmp, level=0, reference_year='2020')
-    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
-    db.db_close()
-    return tmp
+# def covid_daily(df: pd.DataFrame, date: dt.datetime):
+#     db = database.ProjDB()
+#     tmp = df.copy()
+#     tmp = rki_helper.pre_process_covid(df=tmp)
+#     tmp = rki_helper.covid_calc_numbers(df=tmp, date=date)
+#     tmp = tmp.groupby('reporting_date').sum().reset_index()
+#     tmp['geo'] = 'DE'
+#     tmp = rki_helper.calc_7d_incidence(df=tmp, level=0, reference_year='2020')
+#     tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
+#     db.db_close()
+#     return tmp
 
 
 def covid_daily_states(df: pd.DataFrame, date: dt.datetime):

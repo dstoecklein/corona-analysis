@@ -8,7 +8,7 @@ import os
 import re
 from src.read_config import read_yaml
 from src.get_data import rki, estat, divi, genesis
-from src.covid import rki_daily
+from src.covid import rki_daily, rki_daily_states
 import argparse
 
 """
@@ -141,5 +141,5 @@ if __name__ == '__main__':
         save_file=True,
         path=os.path.join(config['paths']['root'], config['paths']['covid'], '')
     )
-    df = rki_daily(config=config, config_cols=config_cols, config_db=config_db, df=df, date=TODAY)
+    df = rki_daily_states(config=config, config_cols=config_cols, config_db=config_db, df=df, date=TODAY)
 
