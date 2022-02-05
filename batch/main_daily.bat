@@ -1,3 +1,4 @@
+git checkout master
 @ECHO OFF 
 :: Section 2: Execute python script.
 ECHO ============================

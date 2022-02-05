@@ -31,4 +31,4 @@ paths:
   mortality: 'mortality'
   various: 'various'
 7d_incidence:
-  reference_years: 2020
+  reference_year: 2020

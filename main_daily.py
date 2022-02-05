@@ -134,11 +134,12 @@ TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 if __name__ == '__main__':
     config = read_yaml()
     config_cols = read_yaml('config_cols.yaml')
+    config_db = read_yaml('config_db.yaml')
     df = rki(
         url=config['urls']['rki_covid'],
         purpose='RKI_COVID19',
         save_file=True,
         path=os.path.join(config['paths']['root'], config['paths']['covid'], '')
     )
-    df = rki_daily(config_cols=config_cols, df=df, date=TODAY)
+    df = rki_daily(config=config, config_cols=config_cols, config_db=config_db, df=df, date=TODAY)
 

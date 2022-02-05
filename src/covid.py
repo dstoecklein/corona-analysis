@@ -7,7 +7,7 @@ TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 
 
 def rki_daily(config: dict, config_cols: dict, config_db: dict, df: pd.DataFrame, date: dt.datetime):
-    #db = database.ProjDB()
+    db = database.ProjDB(config_db=config_db)
     incidence_reference_year = config['7d_incidence']['reference_year']
     tmp = df.copy()
     tmp.columns = config_cols['rki']['covid']['translation']
@@ -22,4 +22,8 @@ def rki_daily(config: dict, config_cols: dict, config_db: dict, df: pd.DataFrame
         level=0,
         reference_year=incidence_reference_year
     )
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
+    db.insert_or_update(df=tmp, table=config_db['mysql']['tables']['covid_daily'])
+    db.db_close()
+    #return tmp
     tmp.to_csv("test.csv", sep=";", index=False)

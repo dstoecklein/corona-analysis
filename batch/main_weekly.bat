@@ -1,3 +1,4 @@
+git checkout master
 @ECHO OFF
 ECHO Please Wait...
 :: Section 2: Execute python script.

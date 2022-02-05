@@ -3,22 +3,21 @@ from sqlalchemy.schema import MetaData
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import Table
 from sqlalchemy.sql import text
-from src.database import config
 import pandas as pd
 import time
 import numpy as np
 
-class DB:
 
-    def __init__(self, db_name: str):
+class DB:
+    def __init__(self, config_db: dict):
         self.engine = create_engine(
-            config.dialect +
-            config.username +
+            config_db['mysql']['login']['dialect'] +
+            config_db['mysql']['login']['username'] +
             ':' +
-            config.password +
+            config_db['mysql']['login']['password'] +
             '@' +
-            config.ip +
-            db_name
+            config_db['mysql']['login']['ip'] +
+            config_db['mysql']['db_name']
         )
         self.connection = self.engine.connect()
 
@@ -129,8 +128,8 @@ class DB:
 
 class RawDB(DB):
 
-    def __init__(self):
-        super().__init__('rohdaten')
+    def __init__(self, config_db: dict):
+        super().__init__(config_db=config_db)
 
     def get_table_df(self, table: str):
         return pd.read_sql("SELECT * FROM " + table, self.connection)
@@ -272,8 +271,8 @@ class RawDB(DB):
 # TODO: RENAME
 class ProjDB(DB):
 
-    def __init__(self):
-        super().__init__('corona_analysis')
+    def __init__(self, config_db: dict):
+        super().__init__(config_db=config_db)
 
     def get_table(self, table: str):
         return pd.read_sql("SELECT * FROM " + table, self.connection)

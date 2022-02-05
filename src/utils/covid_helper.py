@@ -6,6 +6,7 @@ from src.utils import db_helper as database
 def rki_calc_numbers(config_cols: dict, df: pd.DataFrame, date: dt.datetime):
     tmp = df.copy()
 
+    # cols from file
     amount_cases = config_cols['rki']['covid']['english']['amount_cases']
     amount_deaths = config_cols['rki']['covid']['english']['amount_deaths']
     amount_recovered = config_cols['rki']['covid']['english']['amount_recovered']
@@ -139,62 +140,47 @@ def rki_calc_numbers(config_cols: dict, df: pd.DataFrame, date: dt.datetime):
     # override to today's date
     tmp['reporting_date'] = date
 
-    # tmp = tmp[
-    #     ['IdBundesland',
-    #      'IdLandkreis',
-    #      'rki_agegroups',
-    #      'reporting_date',
-    #      'cases',
-    #      'cases_delta',
-    #      'cases_delta_ref',
-    #      'cases_delta_ref_sympt',
-    #      'cases_7d',
-    #      'cases_7d_sympt',
-    #      'cases_7d_ref',
-    #      'cases_7d_ref_sympt',
-    #      'deaths',
-    #      'deaths_delta',
-    #      'recovered',
-    #      'recovered_delta',
-    #      'active_cases',
-    #      'active_cases_delta'
-    #      ]
-    # ]
-
     return tmp
 
 
 def rki_calc_7d_incidence(config_cols: dict, config_db: dict, df: pd.DataFrame, level: int, reference_year: str):
     tmp = df.copy()
 
+    # cols from files
     subdivision_1_id = config_cols['rki']['covid']['english']['subdivision_1_id']
     subdivision_2_id = config_cols['rki']['covid']['english']['subdivision_2_id']
 
+    # cols form database
+    nuts_0 = config_db['mysql']['cols']['_countries']['nuts_0']
+    iso_3166_1_alpha2 = config_db['mysql']['cols']['_countries']['iso_3166_1_alpha2']
+    ags = config_db['mysql']['cols']['_country_subdivs_3']['ags']
+    bundesland_id = config_db['mysql']['cols']['_country_subdivs_1']['bundesland_id']
+
     # create db connection
-    db = database.ProjDB()
+    db = database.ProjDB(config_db=config_db)
 
     if level == 3:
-        df_population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', level=3, year=reference_year)
+        df_population = db.get_population(country='DE', country_code=iso_3166_1_alpha2, level=3, year=reference_year)
         # merge states population
         tmp = tmp.merge(df_population,
                         left_on=subdivision_2_id,
-                        right_on='ags',
+                        right_on=ags,
                         how='left',
                         )
         tmp = tmp[tmp['country_subdivs_3_fk'].notna()]
     elif level == 1:
-        df_population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', level=1, year=reference_year)
+        df_population = db.get_population(country='DE', country_code=iso_3166_1_alpha2, level=1, year=reference_year)
         tmp = tmp.merge(df_population,
                         left_on=subdivision_1_id,
-                        right_on='bundesland_id',
+                        right_on=bundesland_id,
                         how='left',
                         )
         tmp = tmp[tmp['country_subdivs_1_fk'].notna()]
     else:
-        df_population = db.get_population(country='DE', country_code='iso_3166_1_alpha2', level=0, year=reference_year)
+        df_population = db.get_population(country='DE', country_code=iso_3166_1_alpha2, level=0, year=reference_year)
         tmp = tmp.merge(df_population,
                         left_on='geo',
-                        right_on='nuts_0',
+                        right_on=nuts_0,
                         how='left',
                         )
 
