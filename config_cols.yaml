@@ -94,7 +94,7 @@ rki:
     PS_7_Tage_R_Wert: 'PS_7_Tage_R_Wert'
     UG_PI_7_Tage_R_Wert: 'UG_PI_7_Tage_R_Wert'
     OG_PI_7_Tage_R_Wert: 'OG_PI_7_Tage_R_Wert'
-  vaccinations:
+  vaccinations_daily_states:
     translation: [
         'date',
         'subdivision_1_id',
@@ -107,3 +107,96 @@ rki:
     Impfstoff: 'Impfstoff'
     Impfserie: 'Impfserie'
     Anzahl: 'Anzahl'
+  vaccinations_daily:
+    translation: [
+        'vacc_date',
+        'bundesland_id',
+        'first',
+        'second',
+        'third'
+    ]
+    german:
+      Datum: 'Datum'
+      Bundesland: 'Bundesland'
+      BundeslandId_Impfort: 'BundeslandId_Impfort'
+      Impfungen_gesamt: 'Impfungen_gesamt'
+      Impfungen_gesamt_min1: 'Impfungen_gesamt_min1'
+      Impfungen_gesamt_voll: 'Impfungen_gesamt_voll'
+      Impfungen_gesamt_boost: 'Impfungen_gesamt_boost'
+      Impfquote_gesamt_min1: 'Impfquote_gesamt_min1'
+      Impfquote_05bis17_min1: 'Impfquote_05bis17_min1'
+      Impfquote_05bis11_min1: 'Impfquote_05bis11_min1'
+      Impfquote_12bis17_min1: 'Impfquote_12bis17_min1'
+      Impfquote_18plus_min1: 'Impfquote_18plus_min1'
+      Impfquote_18bis59_min1: 'Impfquote_18bis59_min1'
+      Impfquote_60plus_min1: 'Impfquote_60plus_min1'
+      Impfquote_gesamt_voll: 'Impfquote_gesamt_voll'
+      Impfquote_05bis17_voll: 'Impfquote_05bis17_voll'
+      Impfquote_05bis11_voll: 'Impfquote_05bis11_voll'
+      Impfquote_12bis17_voll: 'Impfquote_12bis17_voll'
+      Impfquote_18plus_voll: 'Impfquote_18plus_voll'
+      Impfquote_18bis59_voll: 'Impfquote_18bis59_voll'
+      Impfquote_60plus_voll: 'Impfquote_60plus_voll'
+      Impfquote_gesamt_boost: 'Impfquote_gesamt_boost'
+      Impfquote_12bis17_boost: 'Impfquote_12bis17_boost'
+      Impfquote_18plus_boost: 'Impfquote_18plus_boost'
+      Impfquote_18bis59_boost: 'Impfquote_18bis59_boost'
+      Impfquote_60plus_boost: 'Impfquote_60plus_boost'
+    english:
+      vacc_date: 'vacc_date'
+      subdivision_1: 'subdivision_1'
+      bundesland_id: 'bundesland_id'
+      vaccination_total: 'vaccination_total'
+      vaccination_total_first: 'vaccination_total_first'
+      vaccination_total_second: 'vaccination_total_second'
+      vaccination_total_third: 'vaccination_total_third'
+      vaccination_rate_first: 'vaccination_rate_first'
+      vaccination_rate_05to17_first: 'vaccination_rate_05to17_first'
+      vaccination_rate_05to11_first: 'vaccination_rate_05to11_first'
+      vaccination_rate_12to17_first: 'vaccination_rate_12to17_first'
+      vaccination_rate_18plus_first: 'vaccination_rate_18plus_first'
+      vaccination_rate_18to59_first: 'vaccination_rate_18to59_first'
+      vaccination_rate_60plus_first: 'vaccination_rate_60plus_first'
+      vaccination_rate_second: 'vaccination_rate_second'
+      vaccination_rate_05to17_second: 'vaccination_rate_05to17_second'
+      vaccination_rate_05to11_second: 'vaccination_rate_05to11_second'
+      vaccination_rate_12to17_second: 'vaccination_rate_12to17_second'
+      vaccination_rate_18plus_second: 'vaccination_rate_18plus_second'
+      vaccination_rate_18to59_second: 'vaccination_rate_18to59_second'
+      vaccination_rate_60plus_second: 'vaccination_rate_60plus_second'
+      vaccination_rate_third: 'vaccination_rate_third'
+      vaccination_rate_12to17_third: 'vaccination_rate_12to17_third'
+      vaccination_rate_18plus_third: 'vaccination_rate_18plus_third'
+      vaccination_rate_18to59_third: 'vaccination_rate_18to59_third'
+      vaccination_rate_60plus_third: 'vaccination_rate_60plus_third'
+    drop: [
+        'Bundesland',
+        'Impfungen_gesamt',
+        'Impfquote_gesamt_min1',
+        'Impfquote_05bis17_min1',
+        'Impfquote_05bis11_min1',
+        'Impfquote_12bis17_min1',
+        'Impfquote_18plus_min1',
+        'Impfquote_18bis59_min1',
+        'Impfquote_60plus_min1',
+        'Impfquote_gesamt_voll',
+        'Impfquote_05bis17_voll',
+        'Impfquote_05bis11_voll',
+        'Impfquote_12bis17_voll',
+        'Impfquote_18plus_voll',
+        'Impfquote_18bis59_voll',
+        'Impfquote_60plus_voll',
+        'Impfquote_gesamt_boost',
+        'Impfquote_12bis17_boost',
+        'Impfquote_18plus_boost',
+        'Impfquote_18bis59_boost',
+        'Impfquote_60plus_boost'
+    ]
+    add:
+      vaccine_series_fk: 'vaccine_series_fk'
+      amount: 'amount'
+    replace: {
+        'first': 1,
+        'second': 2,
+        'third': 3
+    }

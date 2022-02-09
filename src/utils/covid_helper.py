@@ -201,6 +201,8 @@ def rki_pre_process(config_cols: dict, df: pd.DataFrame):
     reporting_date = config_cols['rki']['covid']['english']['reporting_date']
     reference_date = config_cols['rki']['covid']['english']['reference_date']
 
+    tmp.columns = config_cols['rki']['covid']['translation']
+
     if reporting_date in tmp.columns:
         try:
             tmp[reporting_date] = pd.to_datetime(tmp[reporting_date], infer_datetime_format=True).dt.date
