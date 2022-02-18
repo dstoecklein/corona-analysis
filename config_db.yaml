@@ -1,0 +1,32 @@
+mysql:
+  db_name: 'corona_analysis'
+  login:
+    username: 'root'
+    password: ',S<91lVRQlJF}c;X4h[3y,N;l?:iMfEs'
+    dialect: 'mysql+pymysql://'
+    ip: '127.0.0.1/'
+  tables:
+    covid_daily: 'covid_daily'
+    covid_daily_states: 'covid_daily_states'
+    vaccinations_daily: 'vaccinations_daily'
+  cols:
+    _countries:
+      countries:
+        germany: 'DE'
+      iso_3166_1_alpha2: 'iso_3166_1_alpha2'
+      iso_3166_1_alpha3: 'iso_3166_1_alpha3'
+      iso_3166_1_numeric: 'iso_3166_1_numeric'
+      nuts_0: 'nuts_0'#
+    _country_subdivs_1:
+      iso_3166_2: 'iso_3166_2'
+      nuts_1: 'nuts_1'
+      bundesland_id: 'bundesland_id'
+    _country_subdivs_2:
+      nuts_2: 'nuts_2'
+    _country_subdivs_3:
+      nuts_3: 'nuts_3'
+      ags: 'ags'
+genesis:
+  login:
+    genesis_username: 'DEO1ZHXK52'
+    genesis_password: 'y93UGcttS2wZ8gtrKQ%'

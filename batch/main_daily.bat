@@ -3,7 +3,7 @@
 ECHO ============================
 ECHO Receiving daily data...
 ECHO ============================
-CALL conda activate corona_analysis
+CALL conda activate data_science
 python ..\main_daily.py
 ECHO ============================
 ECHO Moving files to archive...
