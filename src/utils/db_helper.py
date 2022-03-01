@@ -77,6 +77,8 @@ class DB:
         # unique_key is a string-concatenation of all foreign-keys
 
         tmp = df.copy()
+        tmp = tmp.replace([np.inf, -np.inf], np.nan)
+        tmp = tmp.fillna(0)
         tmp['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
 
         foreign_keys = [col for col in tmp if col.endswith('_fk')]
@@ -91,6 +93,8 @@ class DB:
     # need to sort the columns in order to create correct unique_key
     def sort_columns(self, df: pd.DataFrame, table: str):
         tmp = df.copy()
+        tmp = tmp.replace([np.inf, -np.inf], np.nan)
+        tmp = tmp.fillna(0)
         result = self.connection.execute('SELECT * FROM ' + table)
         cols = list(result.keys())
         cols = [each_col.lower() for each_col in cols]  # lower all column names
