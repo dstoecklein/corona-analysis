@@ -538,7 +538,10 @@ class ProjDB(DB):
             ['astrazeneca', 'astra', 'oxford/astrazeneca'], 'Vaxzevria',
             inplace=True
         )
-
+        tmp[left_on].replace(
+            ['novavax', 'covovax'], 'Nuvaxovid',
+            inplace=True
+        )
         tmp[left_on] = tmp[left_on].str.lower()
 
         tmp = tmp.merge(df_vaccines,
