@@ -17,7 +17,11 @@ class DataConfig(BaseModel):
 
 
 class ColConfig(BaseModel):
-    pass
+    rki_covid_daily: dict
+    rki_tests_weekly: dict
+    rki_rvalue_daily: dict
+    rki_vaccinations_daily_cumulative: dict
+    rki_vaccinations_daily_states: dict
 
 class DBConfig(BaseModel):
     db_name: str
@@ -28,7 +32,8 @@ class DBConfig(BaseModel):
 
 
 class MasterConfig(BaseModel):
-    app_config: DataConfig
+    data_config: DataConfig
+    col_config: ColConfig
 
 def get_config_path() -> Path:
     return CONFIG_PATH
@@ -56,7 +61,8 @@ def create_and_validate_config(file_name: str = None) -> MasterConfig:
     config_file = read_config_file(file_name=file_name)
 
     _config = MasterConfig(
-        app_config=DataConfig(**config_file.data)
+        data_config=DataConfig(**config_file.data),
+        col_config=ColConfig(**config_file.data)
     )
     return _config
 
@@ -72,4 +78,4 @@ def create_and_validate_config_db(file_name: str = None) -> DBConfig:
 
 config = create_and_validate_config(CONFIG_FILE)
 config_db = create_and_validate_config_db(CONFIG_FILE_DB)
-print(config_db.cols["_countries"]["countries"]["germany"])
+print(config.col_config.rki_rvalue_daily["translation"])
