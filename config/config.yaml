@@ -1,7 +1,3 @@
-header: { Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            User-Agent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
-            X-Requested-With: 'XMLHttpRequest'
-  }
 urls:
   rki_covid: 'https://www.arcgis.com/sharing/rest/content/items/f10774f1c63e40168479a1feb6c7ca74/data'
   rki_tests: 'https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Testzahlen-gesamt.xlsx?__blob=publicationFile'
@@ -13,14 +9,14 @@ urls:
   divi_itcu_daily_counties: 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-tagesdaten.csv'
   divi_itcu_daily_states: 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-bundeslaender.csv'
   owid_covid: 'https://covid.ourworldindata.org/data/owid-covid-data.csv'
-estat:
+estat_tables:
   estsat_weekly_deaths_agegroups: 'demo_r_mwk_10'
   estsat_death_causes_annual_agegroups: 'hlth_cd_aro'
   estat_population_agegroups: 'demo_pjangroup'
   estat_population_nuts_2: 'demo_r_d2jan'
   estat_life_expectancy: 'demo_mlexpec'
   estats_population_structure_indicators: 'demo_pjanind'
-genesis:
+genesis_tables:
   hospitals_annual: '23111-0001'
   hospital_staff_annual: '23111-0002'
 paths:
@@ -34,3 +30,4 @@ paths:
   various: 'various'
 7d_incidence:
   reference_year: 2020
+  
