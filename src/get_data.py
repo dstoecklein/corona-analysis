@@ -6,7 +6,7 @@ import eurostat
 import pandas as pd
 import requests
 from pygenesis.py_genesis_client import PyGenesisClient
-
+from pathlib import Path
 
 def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
     response = requests.get(url)
@@ -19,7 +19,7 @@ def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
         return response.content
 
 
-def rki(url: str, purpose: str, save_file: bool, path: str, is_excel: bool = False, sheet_name: str = '') -> pd.DataFrame:
+def rki(url: str, purpose: str, save_file: bool, path: Path, is_excel: bool = False, sheet_name: str = '') -> pd.DataFrame:
     """
     Reads a given URL from RKI and returns it as a Pandas Dataframe
 
@@ -58,7 +58,7 @@ def rki(url: str, purpose: str, save_file: bool, path: str, is_excel: bool = Fal
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
 
         df.to_csv(
-            path + filename,
+            path / filename,
             sep=',',
             encoding='utf8',
             index=False
