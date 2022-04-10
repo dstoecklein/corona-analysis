@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 from pydantic import BaseModel
 from strictyaml import YAML, load
 
@@ -14,6 +15,7 @@ class DataConfig(BaseModel):
     urls: dict
     estat_tables: dict
     genesis_tables: dict
+    incidence_reference_year: str
 
 
 class ColConfig(BaseModel):
@@ -22,6 +24,7 @@ class ColConfig(BaseModel):
     rki_rvalue_daily: dict
     rki_vaccinations_daily_cumulative: dict
     rki_vaccinations_daily_states: dict
+
 
 class DBConfig(BaseModel):
     db_name: str
@@ -32,11 +35,13 @@ class DBConfig(BaseModel):
 
 
 class MasterConfig(BaseModel):
-    data_config: DataConfig
-    col_config: ColConfig
+    data: DataConfig
+    cols: ColConfig
+
 
 def get_config_path() -> Path:
     return CONFIG_PATH
+
 
 def read_config_file(file_path: Path = None, file_name: str = None) -> YAML:
     if not file_path:
@@ -56,26 +61,26 @@ def read_config_file(file_path: Path = None, file_name: str = None) -> YAML:
 
 def create_and_validate_config(file_name: str = None) -> MasterConfig:
     if file_name is None:
-        raise Exception(f"File name must be specified")
+        raise Exception("File name must be specified")
 
     config_file = read_config_file(file_name=file_name)
 
     _config = MasterConfig(
-        data_config=DataConfig(**config_file.data),
-        col_config=ColConfig(**config_file.data)
+        data=DataConfig(**config_file.data),
+        cols=ColConfig(**config_file.data)
     )
     return _config
+
 
 # Handle DB config seperately because of sensitive information
 def create_and_validate_config_db(file_name: str = None) -> DBConfig:
     if file_name is None:
-        raise Exception(f"File name must be specified")
+        raise Exception("File name must be specified")
 
     config_file = read_config_file(file_name=file_name)
 
     _config = DBConfig(**config_file.data)
     return _config
 
-config = create_and_validate_config(CONFIG_FILE)
-config_db = create_and_validate_config_db(CONFIG_FILE_DB)
-print(config.col_config.rki_rvalue_daily["translation"])
+config = create_and_validate_config(file_name=CONFIG_FILE)
+config_db = create_and_validate_config_db(file_name=CONFIG_FILE_DB)

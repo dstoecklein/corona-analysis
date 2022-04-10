@@ -1,7 +1,10 @@
 import datetime as dt
-import pandas as pd
-from src.utils import covid_helper, date_helper, rki_helper, db_helper as database
 
+import pandas as pd
+
+from utils import covid_helper, date_helper
+from utils import db_helper as database
+from utils import rki_helper
 
 # def covid_daily(df: pd.DataFrame, date: dt.datetime):
 #     db = database.ProjDB()

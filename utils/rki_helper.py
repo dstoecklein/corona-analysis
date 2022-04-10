@@ -1,6 +1,8 @@
-import pandas as pd
 import datetime as dt
-from src.utils import db_helper as database
+
+import pandas as pd
+
+from utils import db_helper as database
 
 
 def covid_calc_numbers(df: pd.DataFrame, date: dt.datetime):

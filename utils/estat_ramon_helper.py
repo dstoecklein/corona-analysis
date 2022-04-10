@@ -3,6 +3,7 @@
 # Todo: Make this less messy, define methods etc...
 
 import pandas as pd
+
 from src.utils import db_helper as database
 
 # create db connection

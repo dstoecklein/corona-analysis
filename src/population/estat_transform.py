@@ -1,5 +1,7 @@
 import pandas as pd
-from src.utils import estat_helper, db_helper as database
+
+from utils import db_helper as database
+from utils import estat_helper
 
 
 def population_countries(df: pd.DataFrame):

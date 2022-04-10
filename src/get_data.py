@@ -1,9 +1,10 @@
 import io
-import pandas as pd
-import requests
-import eurostat
 from datetime import datetime
 from typing import Union
+
+import eurostat
+import pandas as pd
+import requests
 from pygenesis.py_genesis_client import PyGenesisClient
 
 

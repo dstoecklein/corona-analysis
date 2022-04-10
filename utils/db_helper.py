@@ -1,23 +1,24 @@
-from sqlalchemy import create_engine
-from sqlalchemy.schema import MetaData
-from sqlalchemy.dialects.mysql import insert
-from sqlalchemy import Table
-from sqlalchemy.sql import text
-import pandas as pd
 import time
-import numpy as np
 
+import numpy as np
+import pandas as pd
+from sqlalchemy import Table, create_engine
+from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.schema import MetaData
+from sqlalchemy.sql import text
+
+from config.core import config_db
 
 class DB:
-    def __init__(self, config_db: dict):
+    def __init__(self):
         self.engine = create_engine(
-            config_db['mysql']['login']['dialect'] +
-            config_db['mysql']['login']['username'] +
+            config_db.login['dialect'] +
+            config_db.login['username'] +
             ':' +
-            config_db['mysql']['login']['password'] +
+            config_db.login['password'] +
             '@' +
-            config_db['mysql']['login']['ip'] +
-            config_db['mysql']['db_name']
+            config_db.login['ip'] +
+            config_db.db_name
         )
         self.connection = self.engine.connect()
 
@@ -271,8 +272,8 @@ class RawDB(DB):
 # TODO: RENAME
 class ProjDB(DB):
 
-    def __init__(self, config_db: dict):
-        super().__init__(config_db=config_db)
+    def __init__(self):
+        super().__init__()
 
     def get_table(self, table: str):
         return pd.read_sql("SELECT * FROM " + table, self.connection)

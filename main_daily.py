@@ -1,33 +1,31 @@
 import pandas as pd
 import datetime as dt
-from src.utils import paths, db_helper as database
+from utils import db_helper as database
 from src.corona import rki_transform
 from src.hospitals import divi_transform
-from src.web_scraper import rki_scrap, divi_scrap
 import os
 import re
-from src.read_config import read_yaml
-from src.get_data import rki, estat, divi, genesis
-from src.covid import rki_daily, rki_daily_states
-import argparse
+from config import core
+from config.core import config, config_db
 
 """
 Runs daily via batch
 """
 
-COVID_PATH = paths.get_covid_path()
-HOSP_PATH = paths.get_hospitals_path()
-VACC_PATH = paths.get_vaccinations_path()
+# Constants
+COVID_FILES_PATH = core.FILES_PATH / 'covid'
+HOSP_FILES_PATH = core.FILES_PATH / 'hospitals'
+VACC_FILES_PATH = core.FILES_PATH / 'vaccinations'
 
 
-def main(config_path):
-    rki_procedure(config_path)
+""" def main():
+    rki_procedure()
     #divi_procedure(config_path)
     # rki_bulk_procedure()
-    # divi_bulk_procedure()
+    # divi_bulk_procedure() """
 
 
-def divi_procedure(config_path):
+""" def divi_procedure():
     db = database.ProjDB()
 
     # --Scraping Data--
@@ -42,10 +40,10 @@ def divi_procedure(config_path):
     db.insert_or_update(df=df_divi_counties, table='itcu_daily_counties')
     db.insert_or_update(df=df_divi_states, table='itcu_daily_states')
 
-    db.db_close()
+    db.db_close() """
 
 
-def rki_procedure(config_path):
+""" def rki_procedure():
     db = database.ProjDB()
 
     # --Scraping Data--
@@ -73,21 +71,21 @@ def rki_procedure(config_path):
     db.insert_or_update(df=df_rki_weekly_cumulative, table='covid_weekly_cumulative')
     db.insert_or_update(df_rvalue, table='rvalue_daily')
     db.insert_or_update(df=df_vaccinations_daily_states, table='vaccinations_daily_states')
-    db.db_close()
+    db.db_close() """
 
 
-def rki_bulk_procedure():
+""" def rki_bulk_procedure():
     db = database.ProjDB()
 
-    for filename in os.listdir(COVID_PATH):
+    for filename in os.listdir(COVID_FILES_PATH):
         if filename.endswith('.csv') or filename.endswith('.xz'):
             extract = re.search(r'\d{4}-\d{2}-\d{2}', filename)
             date = dt.datetime.strptime(extract.group(), '%Y-%m-%d')
 
             try:
-                df = pd.read_csv(COVID_PATH + filename, engine='python', sep=',', encoding='utf8')
+                df = pd.read_csv(COVID_FILES_PATH + filename, engine='python', sep=',', encoding='utf8')
             except UnicodeDecodeError:
-                df = pd.read_csv(COVID_PATH + filename, engine='python', sep=',', encoding='ISO-8859-1')
+                df = pd.read_csv(COVID_FILES_PATH + filename, engine='python', sep=',', encoding='ISO-8859-1')
 
             # --Transformation--
             df_rki_daily = rki_transform.covid_daily(df=df, date=date)
@@ -103,19 +101,19 @@ def rki_bulk_procedure():
             db.insert_or_update(df=df_rki_daily_agegroups, table='covid_daily_agegroups')
             db.insert_or_update(df=df_rki_weekly_cumulative, table='covid_weekly_cumulative')
 
-    db.db_close()
+    db.db_close() """
 
 
-def divi_bulk_procedure():
+""" def divi_bulk_procedure():
     db = database.ProjDB()
 
-    for filename in os.listdir(HOSP_PATH):
+    for filename in os.listdir(HOSP_FILES_PATH):
         if filename.endswith('.csv') or filename.endswith('.xz'):
 
             try:
-                df = pd.read_csv(HOSP_PATH + filename, engine='python', sep=',', encoding='utf8')
+                df = pd.read_csv(HOSP_FILES_PATH + filename, engine='python', sep=',', encoding='utf8')
             except UnicodeDecodeError:
-                df = pd.read_csv(HOSP_PATH + filename, engine='python', sep=',', encoding='ISO-8859-1')
+                df = pd.read_csv(HOSP_FILES_PATH + filename, engine='python', sep=',', encoding='ISO-8859-1')
 
             if '_COUNTIES' in filename:
                 df_divi_counties = divi_transform.itcu_daily_counties(df=df)
@@ -126,20 +124,19 @@ def divi_bulk_procedure():
             else:
                 return
 
-    db.db_close()
+    db.db_close() """
 
 
+from src.get_data import rki, estat, divi, genesis
+from src.covid import rki_daily, rki_daily_states
 TODAY = dt.date.today()
 TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 if __name__ == '__main__':
-    config = read_yaml()
-    config_cols = read_yaml('config_cols.yaml')
-    config_db = read_yaml('config_db.yaml')
     df = rki(
-        url=config['urls']['rki_covid'],
+        url=config.data.urls['rki_covid_daily'],
         purpose='RKI_COVID19',
         save_file=True,
-        path=os.path.join(config['paths']['root'], config['paths']['covid'], '')
+        path=COVID_FILES_PATH
     )
-    df = rki_daily_states(config=config, config_cols=config_cols, config_db=config_db, df=df, date=TODAY)
-
+    tmp = rki_daily(df=df)
+  

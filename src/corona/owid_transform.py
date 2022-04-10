@@ -1,5 +1,6 @@
 import pandas as pd
-from src.utils import db_helper as database
+
+from utils import db_helper as database
 
 
 def daily_covid(insert_into: str, country_code: str):

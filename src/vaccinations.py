@@ -1,5 +1,7 @@
 import datetime as dt
+
 import pandas as pd
+
 from utils import db_helper as database
 
 
@@ -28,24 +30,3 @@ def rki_vaccinations_daily(config_cols: dict, config_db: dict, df: pd.DataFrame)
     tmp = db.merge_countries_fk(df=tmp, left_on="GEO", country_code="nuts_0")
     db.insert_or_update(df=tmp, table=table)
     db.db_close()
-
-
-import os
-from read_config import read_yaml
-from get_data import rki, estat, divi, genesis
-TODAY = dt.date.today()
-TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
-if __name__ == '__main__':
-    config = read_yaml('config.yaml')
-    config_cols = read_yaml('config_cols.yaml')
-    config_db = read_yaml('config_db.yaml')
-    df = rki(
-        url=config['urls']['vaccination_rates_github'],
-        purpose='RKI_VACC_RATES',
-        save_file=False,
-        path=None
-        #path=os.path.join('..', config['paths']['root'], config['paths']['vaccinations'], '')
-    )
-    df = rki_vaccinations_daily(config_cols=config_cols, config_db=config_db, df=df)
-    
-
