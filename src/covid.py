@@ -21,7 +21,9 @@ def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     tmp.rename(columns=RKI_DAILY_TRANSLATION, inplace=True)
     tmp = covid_helper.rki_pre_process(df=tmp)
     tmp = covid_helper.rki_calc_numbers(df=tmp, date=date)
+    tmp.to_csv("Test.csv", sep=";")
     tmp = tmp.groupby('reporting_date').sum().reset_index()
+    tmp.to_csv("Test2.csv", sep=";")
     tmp['geo'] = 'DE'
     tmp = covid_helper.rki_calc_7d_incidence(
         df=tmp,
@@ -29,7 +31,7 @@ def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
         reference_year=INCIDENCE_REF_YEAR
     )
     tmp = db.merge_calendar_days_fk(df=tmp, left_on='reporting_date')
-    tmp.to_csv("Test.csv", sep=";")
+    
     #db.insert_or_update(df=tmp, table=RKI_DAILY_TABLE)
     #db.db_close()
 
