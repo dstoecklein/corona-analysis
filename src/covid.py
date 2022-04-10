@@ -15,7 +15,7 @@ RKI_DAILY_TABLE = config_db.tables['covid_daily']
 RKI_DAILY_STATES_TABLE = config_db.tables['covid_daily_states']
 
 def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
-    db = database.ProjDB(config_db=config_db)
+    db = database.ProjDB()
     
     tmp = df.copy()
     tmp.rename(RKI_DAILY_TRANSLATION, inplace=True)
@@ -37,7 +37,7 @@ def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
 
 
 def rki_daily_states(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
-    db = database.ProjDB(config_db=config_db)
+    db = database.ProjDB()
     tmp = df.copy()
     tmp.rename(RKI_DAILY_TRANSLATION, inplace=True)
     tmp = covid_helper.rki_pre_process(df=tmp)
