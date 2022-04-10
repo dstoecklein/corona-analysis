@@ -134,9 +134,9 @@ TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 if __name__ == '__main__':
     df = rki(
         url=config.data.urls['rki_covid_daily'],
-        purpose='RKI_COVID19',
+        purpose='RKI_COVID19_STATES',
         save_file=True,
         path=COVID_FILES_PATH
     )
-    tmp = rki_daily(df=df)
+    tmp = rki_daily_states(df=df)
   
