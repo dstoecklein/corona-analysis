@@ -146,7 +146,7 @@ def rki_calc_numbers(df: pd.DataFrame, date: dt.datetime) -> pd.DataFrame:
     tmp['active_cases_delta'] = tmp['cases_delta'] - (tmp['deaths_delta'] + tmp['recovered_delta'])
 
     # override to today's date
-    tmp['REPORTING_DATE'] = date
+    tmp['reporting_date'] = date
 
     return tmp
 
