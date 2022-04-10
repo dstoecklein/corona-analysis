@@ -18,7 +18,7 @@ def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     db = database.ProjDB()
     
     tmp = df.copy()
-    tmp.rename(RKI_DAILY_TRANSLATION, inplace=True)
+    tmp.rename(columns=RKI_DAILY_TRANSLATION, inplace=True)
     tmp = covid_helper.rki_pre_process(df=tmp)
     tmp = covid_helper.rki_calc_numbers(df=tmp, date=date)
     tmp = tmp.groupby('reporting_date').sum().reset_index()
@@ -39,7 +39,7 @@ def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
 def rki_daily_states(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     db = database.ProjDB()
     tmp = df.copy()
-    tmp.rename(RKI_DAILY_TRANSLATION, inplace=True)
+    tmp.rename(columns=RKI_DAILY_TRANSLATION, inplace=True)
     tmp = covid_helper.rki_pre_process(df=tmp)
     tmp = covid_helper.rki_calc_numbers(df=tmp, date=date)
     tmp = tmp[tmp['subdivision_1_id'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
