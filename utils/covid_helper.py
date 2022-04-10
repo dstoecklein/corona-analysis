@@ -193,10 +193,8 @@ def rki_calc_7d_incidence(df: pd.DataFrame, level: int, reference_year: str) -> 
     return tmp
 
 
-def rki_pre_process(config_col: dict, df: pd.DataFrame) -> pd.DataFrame:
+def rki_pre_process(df: pd.DataFrame) -> pd.DataFrame:
     tmp = df.copy()
-
-    tmp.columns = config_col['rki']['covid']['translation']
 
     if REPORTING_DATE in tmp.columns:
         try:
