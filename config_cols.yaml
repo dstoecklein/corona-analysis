@@ -200,3 +200,34 @@ rki:
         'second': 2,
         'third': 3
     }
+
+  vaccinations_daily_github:
+    translation: {
+        'timestamp': 'timestamp',
+        'ISODate': 'calendar_days',
+        'IdBundesland': 'bundesland_id',
+        'Bundesland': 'subdivision_1',
+        'Impfungenkumulativ': 'first_vaccination',
+        'DifferenzzumVortag': 'first_vaccination_delta',
+        'IndikationnachAlter': 'indication_by_age',
+        'BeruflicheIndikation': 'indication_by_profession',
+        'MedizinischeIndikation': 'indication_by_medical',
+        'PflegeheimbewohnerIn': 'nursing_home_resident',
+        'ZweiteImpfungkumulativ': 'second_vaccination',
+        'ZweiteImpfungDifferenzzumVortag': 'second_vaccination_delta',
+        'Auffrischimpfungen': 'booster_vaccination'
+    }
+    col:
+      timestamp: 'timestamp'
+      calendar_days: 'calendar_days'
+      bundesland_id: 'bundesland_id'
+      subdivision_1: 'subdivision_1'
+      first_vaccination: 'first_vaccination'
+      first_vaccination_delta: 'first_vaccination_delta'
+      indication_by_age: 'indication_by_age'
+      indication_by_profession: 'indication_by_profession'
+      indication_by_medical: 'indication_by_medical'
+      nursing_home_resident: 'nursing_home_resident'
+      second_vaccination: 'second_vaccination'
+      second_vaccination_delta: 'second_vaccination_delta'
+      booster_vaccination: 'booster_vaccination'

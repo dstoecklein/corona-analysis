@@ -23,7 +23,7 @@ def rki(url: str, purpose: str, save_file: bool, path: str, is_excel: bool = Fal
     Reads a given URL from RKI and returns it as a Pandas Dataframe
 
     :param url: URL from the RKI
-    :param purpose: Should indicate which type of data should be loaded (e.g. Tests, R-Value, etc.)
+    :param purpose: Indicate which purpose the data fullfills (e.g. Tests, R-Value, etc.)
     :param save_file: Determines if the file should be saved as .csv
     :param path: Path in which the file should be saved
     :param is_excel: Determines if given URL is an Excel-file
@@ -31,9 +31,9 @@ def rki(url: str, purpose: str, save_file: bool, path: str, is_excel: bool = Fal
     :return: pd.Dataframe
     """
 
-    if save_file and path == '':
+    if save_file and path is None:
         raise RuntimeError('save_file is true but no path given')
-    if not save_file and path != '':
+    if not save_file and path is not None:
         raise RuntimeError('Path was given but save_file is false')
     if is_excel and sheet_name == '':
         raise RuntimeError('Excel file given but no Sheet')

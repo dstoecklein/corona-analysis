@@ -9,6 +9,7 @@ urls:
   rki_rvalue: 'https://raw.githubusercontent.com/robert-koch-institut/SARS-CoV-2-Nowcasting_und_-R-Schaetzung/main/Nowcast_R_aktuell.csv'
   rki_vaccination_states: 'https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/master/Aktuell_Deutschland_Bundeslaender_COVID-19-Impfungen.csv'
   rki_vaccination_rates: 'https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/master/Aktuell_Deutschland_Impfquoten_COVID-19.csv'
+  vaccination_rates_github: 'https://raw.githubusercontent.com/micb25/RKI_COVID19_DATA/master/Impfquotenmonitoring/RKI_COVID19_Impfquotenmonitoring.csv'
   divi_itcu_daily_counties: 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-tagesdaten.csv'
   divi_itcu_daily_states: 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-bundeslaender.csv'
   owid_covid: 'https://covid.ourworldindata.org/data/owid-covid-data.csv'
