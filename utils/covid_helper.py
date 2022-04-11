@@ -217,44 +217,6 @@ def rki_pre_process(df: pd.DataFrame) -> pd.DataFrame:
     return tmp
 
 
-def pre_process_tests(df: pd.DataFrame) -> pd.DataFrame:
-    tmp = df.copy()
-    tmp.columns = ['calendar_week', 'amount', 'positive', 'positive_percentage', 'amount_transferring_laboratories']
-    tmp = tmp[1:]  # delete first row
-    tmp = tmp[:-1]  # delete last row
-    # create ISO dates
-    tmp[['iso_cw', 'iso_year']] = tmp['calendar_week'].str.split('/', expand=True)
-    tmp['iso_cw'] = tmp['iso_cw'].str.zfill(2)
-    tmp['iso_key'] = tmp['iso_year'] + tmp['iso_cw']
-    tmp['iso_key'] = pd.to_numeric(tmp['iso_key'], errors='coerce')
-
-    return tmp
-
-
-def pre_process_rvalue(df: pd.DataFrame) -> pd.DataFrame:
-    tmp = df.copy()
-    tmp = tmp.fillna(0)
-    tmp['Datum'] = pd.to_datetime(tmp['Datum'])
-    tmp.rename(
-        columns={
-            'Datum': 'date',
-            'PS_COVID_Faelle': 'point_estimation_covid',
-            'UG_PI_COVID_Faelle': 'll_prediction_interval_covid',
-            'OG_PI_COVID_Faelle': 'ul_prediction_interval_covid',
-            'PS_COVID_Faelle_ma4': 'point_estimation_covid_smoothed',
-            'UG_PI_COVID_Faelle_ma4': 'll_prediction_interval_covid_smoothed',
-            'OG_PI_COVID_Faelle_ma4': 'ul_prediction_interval_covid_smoothed',
-            'PS_7_Tage_R_Wert': 'point_estimation_7_day_rvalue',
-            'UG_PI_7_Tage_R_Wert': 'll_prediction_interval_7_day_rvalue',
-            'OG_PI_7_Tage_R_Wert': 'ul_prediction_interval_7_day_rvalue'
-
-        },
-        inplace=True
-    )
-
-    return tmp
-
-
 def pre_process_vaccination_states(df: pd.DataFrame) -> pd.DataFrame:
     tmp = df.copy()
     tmp = tmp[tmp['Impfstoff'].notna()]

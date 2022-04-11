@@ -130,7 +130,7 @@ def rki_daily_agegroups(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     db.db_close()
 
 
-def rki_weekly_cummulative(df: pd.DataFrame) -> None:
+def rki_weekly_cumulative(df: pd.DataFrame) -> None:
     db = database.ProjDB()
     tmp = df.copy()
     tmp.rename(columns=RKI_DAILY_TRANSLATION, inplace=True)

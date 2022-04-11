@@ -52,15 +52,3 @@ def create_calendar_day(df: pd.DataFrame):
 
     tmp.to_csv("days.csv", sep=";", index=False)
     return tmp
-
-# df = pd.read_csv("days_new.csv", sep=";")
-# df['iso_day'] = pd.to_datetime(df['iso_day'], infer_datetime_format=True).dt.date
-# df['iso_day'] = pd.to_datetime(df['iso_day'], infer_datetime_format=True)
-# df['iso_week'] = df['iso_day'].apply(lambda x: x.isocalendar()[1]).astype(str).str.zfill(2)
-# df['iso_year'] = df['iso_day'].apply(lambda x: x.isocalendar()[0]).astype(str)
-# df['iso_key'] = df['iso_year'] + df['iso_week']
-# df['iso_year'] = pd.to_numeric(df['iso_year'], errors='coerce')
-# df['iso_key'] = pd.to_numeric(df['iso_key'], errors='coerce')
-# create_calendar_years(df=df)
-# create_calendar_weeks(df=df)
-# create_calendar_day(df=df)

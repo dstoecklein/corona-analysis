@@ -128,15 +128,18 @@ VACC_FILES_PATH = core.FILES_PATH / 'vaccinations'
 
 
 from src.get_data import rki, estat, divi, genesis
-from src.covid import rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cummulative
+from src.covid import rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
+from src.tests import rki_weekly
+from src import rvalue
+
 TODAY = dt.date.today()
 TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 if __name__ == '__main__':
     df = rki(
-        url=config.data.urls['rki_covid_daily'],
-        purpose='RKI_COVID19_WEEKLY',
+        url=config.data.urls['rki_rvalue_daily'],
+        purpose='RKI_TESTS_WEEKLY',
         save_file=True,
         path=COVID_FILES_PATH
     )
-    tmp = rki_weekly_cummulative(df=df)
+    tmp = rvalue.rki_daily(df=df)
   
