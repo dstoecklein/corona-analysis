@@ -61,7 +61,29 @@ rki_covid_daily:
     amount_recovered: 'amount_recovered'
     date_of_disease_onset: 'date_of_disease_onset'
     rki_agegroups2: 'rki_agegroups2'
-
+    geo: 'geo'
+    iso_key: 'iso_key'
+  agegroup_mapping:
+    A00-A04: '00-04'
+    A05-A14: '05-14'
+    A15-A34: '15-34'
+    A35-A59: '35-59'
+    A60-A79: '60-79'
+    A80+: '80+'
+    unbekannt: 'UNK'
+  berlin_district_mapping:
+    11001: 11000
+    11002: 11000
+    11003: 11000
+    11004: 11000
+    11005: 11000
+    11006: 11000
+    11007: 11000
+    11008: 11000
+    11009: 11000
+    11010: 11000
+    11011: 11000
+    11012: 11000
 rki_tests_weekly:
   translation:
     Kalenderwoche: 'calendar_week'
@@ -75,7 +97,10 @@ rki_tests_weekly:
     positive: 'positive'
     positive_percentage: 'positive_percentage'
     amount_transferring_laboratories: 'amount_transferring_laboratories'
-
+    iso_cw: 'iso_cw'
+    iso_year: 'iso_year'
+    is_key: 'iso_key'
+    geo: 'geo'
 rki_rvalue_daily:
   translation: 
     Datum: 'date'
@@ -99,7 +124,7 @@ rki_rvalue_daily:
     point_estimation_7_day_rvalue: 'point_estimation_7_day_rvalue'
     ll_prediction_interval_7_day_rvalue: 'll_prediction_interval_7_day_rvalue'
     ul_prediction_interval_7_day_rvalue: 'ul_prediction_interval_7_day_rvalue'
-
+    geo: 'geo'
 rki_vaccinations_daily_cumulative:
   translation:
     timestamp: 'timestamp'

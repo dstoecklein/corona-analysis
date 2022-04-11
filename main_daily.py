@@ -14,8 +14,10 @@ Runs daily via batch
 
 # Constants
 COVID_FILES_PATH = core.FILES_PATH / 'covid'
+COVID_TEST_FILES_PATH = core.FILES_PATH / 'covid_tests'
+COVID_RVALUE_FILES_PATH = core.FILES_PATH / 'covid_rvalue'
+COVID_VACC_FILES_PATH = core.FILES_PATH / 'covid_vaccinations'
 HOSP_FILES_PATH = core.FILES_PATH / 'hospitals'
-VACC_FILES_PATH = core.FILES_PATH / 'vaccinations'
 
 
 """ def main():
@@ -128,18 +130,40 @@ VACC_FILES_PATH = core.FILES_PATH / 'vaccinations'
 
 
 from src.get_data import rki, estat, divi, genesis
-from src.covid import rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
-from src.tests import rki_weekly
-from src import rvalue
+from src import covid, covid_rvalue, covid_tests
+#rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
+from src import covid_tests #rki_weekly
 
 TODAY = dt.date.today()
 TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 if __name__ == '__main__':
-    df = rki(
-        url=config.data.urls['rki_rvalue_daily'],
-        purpose='RKI_TESTS_WEEKLY',
+    df_rki_covid_daily = rki(
+        url=config.data.urls['rki_covid_daily'],
+        purpose='RKI_COVID19_DAILY',
         save_file=True,
         path=COVID_FILES_PATH
     )
-    tmp = rvalue.rki_daily(df=df)
+    df_rki_tests_weekly = rki(
+        url=config.data.urls['rki_tests_weekly'],
+        purpose='RKI_TESTS_WEEKLY',
+        save_file=True,
+        path=COVID_TEST_FILES_PATH,
+        is_excel=True,
+        sheet_name='1_Testzahlerfassung'
+    )
+    df_rki_rvalue_daily = rki(
+        url=config.data.urls['rki_rvalue_daily'],
+        purpose='RKI_RVALUE_DAILY',
+        save_file=True,
+        path=COVID_FILES_PATH
+    )
+    covid.rki_daily(df=df_rki_covid_daily)
+    covid.rki_daily_states(df=df_rki_covid_daily)
+    covid.rki_daily_counties(df=df_rki_covid_daily)
+    covid.rki_daily_agegroups(df=df_rki_covid_daily)
+    covid.rki_weekly_cumulative(df=df_rki_covid_daily)
+    covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
+    
+    # remove from daily
+    covid_tests.rki_weekly(df=df_rki_tests_weekly)
   

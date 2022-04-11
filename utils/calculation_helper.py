@@ -23,6 +23,7 @@ ISO_3166_1_ALPHA2 = config_db.cols['_countries']['iso_3166_1_alpha2']
 AGS = config_db.cols['_country_subdivs_3']['ags']
 BUNDESLAND_ID = config_db.cols['_country_subdivs_1']['bundesland_id']
 
+
 def rki_calc_numbers(df: pd.DataFrame, date: dt.datetime) -> pd.DataFrame:
     tmp = df.copy()
 
@@ -190,29 +191,6 @@ def rki_calc_7d_incidence(df: pd.DataFrame, level: int, reference_year: str) -> 
     tmp['incidence_7d_ref_sympt'] = (tmp['cases_7d_ref_sympt'] / tmp['population']) * 100000
 
     db.db_close()
-
-    return tmp
-
-
-def rki_pre_process(df: pd.DataFrame) -> pd.DataFrame:
-    tmp = df.copy()
-
-    if REPORTING_DATE in tmp.columns:
-        try:
-            tmp[REPORTING_DATE] = pd.to_datetime(tmp[REPORTING_DATE], infer_datetime_format=True).dt.date
-            tmp[REPORTING_DATE] = pd.to_datetime(tmp[REPORTING_DATE], infer_datetime_format=True)
-        except (KeyError, TypeError):
-            print('Error trying to convert Date columns')
-
-    if REFERENCE_DATE in tmp.columns:
-        try:
-            tmp[REFERENCE_DATE] = pd.to_datetime(tmp[REFERENCE_DATE], infer_datetime_format=True).dt.date
-            tmp[REFERENCE_DATE] = pd.to_datetime(tmp[REFERENCE_DATE], infer_datetime_format=True)
-        except (KeyError, TypeError):
-            print('Error trying to convert Date columns')
-
-    # remove whitespaces from header
-    tmp.columns = tmp.columns.str.replace(' ', '')
 
     return tmp
 

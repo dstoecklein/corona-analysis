@@ -32,6 +32,7 @@ class DBConfig(BaseModel):
     tables: dict
     cols: dict
     genesis_login: dict
+    agegroup_intervals: dict
 
 
 class MasterConfig(BaseModel):
