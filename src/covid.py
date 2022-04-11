@@ -26,7 +26,7 @@ BERLIN_DISTRICT_MAPPING = config.cols.rki_covid_daily['berlin_district_mapping']
 REFERENCE_DATE = config.cols.rki_covid_daily["cols"]['reference_date']
 GERMANY = config_db.cols['_countries']['countries']['germany'] # 'DE'
 NUTS_0 = config_db.cols['_countries']['nuts_0']
-AGEGROUP_INTERVAL_RKI = config_db.agegroup_intervals
+AGEGROUP_INTERVAL_RKI = config_db.agegroup_intervals['rki']
 GEO = config.cols.rki_covid_daily['cols']['geo']
 ISO_KEY = config.cols.rki_covid_daily['cols']['iso_key']
 
