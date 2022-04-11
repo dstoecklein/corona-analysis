@@ -13,9 +13,9 @@ INCIDENCE_REF_YEAR = config.data.incidence_reference_year
 RKI_DAILY_TRANSLATION = config.cols.rki_covid_daily['translation']
 RKI_DAILY_TABLE = config_db.tables['covid_daily']
 RKI_DAILY_STATES_TABLE = config_db.tables['covid_daily_states']
-SUBDIVISION_2_ID = config.cols.rki_covid_daily['subdivision_2_id']
-REPORTING_DATE = config.cols.rki_covid_daily['reporting_date']
-BUNDESLAND_ID = config.cols.rki_covid_daily['bundesland_id']
+SUBDIVISION_2_ID = config.cols.rki_covid_daily['cols']['subdivision_2_id']
+REPORTING_DATE = config.cols.rki_covid_daily['cols']['reporting_date']
+BUNDESLAND_ID = config.cols.rki_covid_daily['cols']['bundesland_id']
 
 
 def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
