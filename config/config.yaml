@@ -99,7 +99,7 @@ rki_tests_weekly:
     amount_transferring_laboratories: 'amount_transferring_laboratories'
     iso_cw: 'iso_cw'
     iso_year: 'iso_year'
-    is_key: 'iso_key'
+    iso_key: 'iso_key'
     geo: 'geo'
 rki_rvalue_daily:
   translation: 
