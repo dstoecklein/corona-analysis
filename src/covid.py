@@ -89,5 +89,5 @@ def rki_daily_counties(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
         reference_year='2021'
     )
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
-    db.insert_or_update(df=tmp, table=RKI_DAILY_STATES_TABLE)
+    db.insert_or_update(df=tmp, table=RKI_DAILY_COUNTIES_TABLE)
     db.db_close()
