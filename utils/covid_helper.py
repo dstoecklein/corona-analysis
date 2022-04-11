@@ -17,6 +17,7 @@ REFERENCE_DATE = config.cols.rki_covid_daily["cols"]['reference_date']
 DATE_OF_DISEASE_ONSET = config.cols.rki_covid_daily["cols"]['date_of_disease_onset'] # IstErkrankungsbeginn
 SUBDIVISION_1 = config.cols.rki_covid_daily['cols']['subdivision_1']
 SUBDIVISION_2 = config.cols.rki_covid_daily['cols']['subdivision_2']
+SUBDIVISION_2_ID = config.cols.rki_covid_daily['cols']['subdivision_2_id']
 NUTS_0 = config_db.cols['_countries']['nuts_0']
 ISO_3166_1_ALPHA2 = config_db.cols['_countries']['iso_3166_1_alpha2']
 AGS = config_db.cols['_country_subdivs_3']['ags']
@@ -161,7 +162,7 @@ def rki_calc_7d_incidence(df: pd.DataFrame, level: int, reference_year: str) -> 
         df_population = db.get_population(country='DE', country_code=ISO_3166_1_ALPHA2, level=3, year=reference_year)
         # merge states population
         tmp = tmp.merge(df_population,
-                        left_on=SUBDIVISION_2,
+                        left_on=SUBDIVISION_2_ID,
                         right_on=AGS,
                         how='left',
                         )
@@ -169,7 +170,7 @@ def rki_calc_7d_incidence(df: pd.DataFrame, level: int, reference_year: str) -> 
     elif level == 1:
         df_population = db.get_population(country='DE', country_code=ISO_3166_1_ALPHA2, level=1, year=reference_year)
         tmp = tmp.merge(df_population,
-                        left_on=SUBDIVISION_1,
+                        left_on=BUNDESLAND_ID,
                         right_on=BUNDESLAND_ID,
                         how='left',
                         )

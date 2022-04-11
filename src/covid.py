@@ -40,9 +40,9 @@ def rki_daily_states(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     tmp.rename(columns=RKI_DAILY_TRANSLATION, inplace=True)
     tmp = covid_helper.rki_pre_process(df=tmp)
     tmp = covid_helper.rki_calc_numbers(df=tmp, date=date)
-    tmp.to_csv("test.csv", sep=";")
     tmp = tmp[tmp['bundesland_id'] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
     tmp = tmp.groupby(['bundesland_id', 'reporting_date']).sum().reset_index()
+    tmp.to_csv("test.csv", sep=";")
     tmp = covid_helper.rki_calc_7d_incidence(
         df=tmp,
         level=1,
