@@ -2,7 +2,7 @@ import datetime as dt
 
 import pandas as pd
 
-from utils import covid_helper
+from utils import covid_helper, date_helper
 from utils import db_helper as database
 from config.core import config, config_db
 
@@ -125,5 +125,21 @@ def rki_daily_agegroups(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     )
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
     tmp = db.merge_agegroups_fk(df=tmp, left_on=RKI_AGEGROUPS, interval='rki')
+    db.insert_or_update(df=tmp, table=RKI_DAILY_AGEGROUPS_TABLE)
+    db.db_close()
+
+
+def rki_weekly_cummulative(df: pd.DataFrame) -> None:
+    db = database.ProjDB()
+    tmp = df.copy()
+    tmp.rename(columns=RKI_DAILY_TRANSLATION, inplace=True)
+    tmp = covid_helper.rki_pre_process(df=tmp)
+    tmp = covid_helper.rki_calc_numbers(df=tmp, date=tmp[REPORTING_DATE])
+    tmp = date_helper.create_iso_key(df=tmp, column_name=REPORTING_DATE)
+    tmp = tmp.groupby(['iso_key']).sum().reset_index()
+
+    tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
+    tmp['geo'] = 'DE'
+    tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='nuts_0')
     db.insert_or_update(df=tmp, table=RKI_DAILY_AGEGROUPS_TABLE)
     db.db_close()
