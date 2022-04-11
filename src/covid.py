@@ -15,7 +15,7 @@ RKI_DAILY_TABLE = config_db.tables['covid_daily']
 RKI_DAILY_STATES_TABLE = config_db.tables['covid_daily_states']
 RKI_DAILY_COUNTIES_TABLE = config_db.tables['covid_daily_counties']
 RKI_DAILY_AGEGROUPS_TABLE = config_db.tables['covid_daily_agegroups']
-RKI_WEEKLY_CUMMULATIVE = config_db.tables['covid_weekly_cummulative']
+RKI_WEEKLY_CUMULATIVE = config_db.tables['covid_weekly_cumulative']
 SUBDIVISION_2_ID = config.cols.rki_covid_daily['cols']['subdivision_2_id']
 REPORTING_DATE = config.cols.rki_covid_daily['cols']['reporting_date']
 BUNDESLAND_ID = config.cols.rki_covid_daily['cols']['bundesland_id']
@@ -142,5 +142,5 @@ def rki_weekly_cummulative(df: pd.DataFrame) -> None:
     tmp = db.merge_calendar_weeks_fk(df=tmp, left_on='iso_key')
     tmp['geo'] = 'DE'
     tmp = db.merge_countries_fk(df=tmp, left_on='geo', country_code='nuts_0')
-    db.insert_or_update(df=tmp, table=RKI_WEEKLY_CUMMULATIVE)
+    db.insert_or_update(df=tmp, table=RKI_WEEKLY_CUMULATIVE)
     db.db_close()
