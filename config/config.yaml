@@ -157,13 +157,13 @@ rki_vaccinations_daily_cumulative:
 
 rki_vaccinations_daily_states:
   translation:
-    Impfdatum: 'date'
+    Impfdatum: 'vacc_date'
     BundeslandId_Impfort: 'subdivision_1_id'
     Impfstoff: 'vaccine'
     Impfserie: 'vaccine_series'
     Anzahl: 'amount'
   cols:
-    date: 'date'
+    vacc_date: 'vacc_date'
     subdivision_1_id: 'subdivision_1_id'
     vaccine: 'vaccine'
     vaccine_series: 'vaccine_series'

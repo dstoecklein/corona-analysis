@@ -79,6 +79,7 @@ class DB:
 
         foreign_keys = [col for col in tmp if col.endswith('_fk')]
         # avoid decimals
+        tmp.to_csv("test.csv", sep=";")
         for fk in foreign_keys:
             tmp[fk] = tmp[fk].astype(int)
 
@@ -530,6 +531,10 @@ class ProjDB(DB):
         )
         tmp[left_on].replace(
             ['astrazeneca', 'astra', 'oxford/astrazeneca'], 'Vaxzevria',
+            inplace=True
+        )
+        tmp[left_on].replace(
+            ['novavax', 'covovax'], 'Nuvaxovid',
             inplace=True
         )
 

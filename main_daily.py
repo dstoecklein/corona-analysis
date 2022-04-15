@@ -124,7 +124,7 @@ HOSP_FILES_PATH = core.FILES_PATH / 'hospitals'
 
 
 from src.get_data import rki, estat, divi, genesis
-from src import covid, covid_rvalue, covid_tests, vaccinations
+from src import covid, covid_rvalue, covid_tests, covid_vaccinations
 #rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
 
 TODAY = dt.date.today()
@@ -150,10 +150,16 @@ if __name__ == '__main__':
         purpose='RKI_RVALUE_DAILY',
         save_file=True,
         path=COVID_FILES_PATH
-    )"""
+    )
     df_rki_vacc_daily_cumulative = rki(
         url=config.data.urls['rki_vaccinations_daily_cumulative'],
         purpose='RKI_VACC_DAILY_CUMULATIVE',
+        save_file=True,
+        path=COVID_VACC_FILES_PATH
+    )"""
+    df_rki_vacc_daily_states = rki(
+        url=config.data.urls['rki_vaccination_states'],
+        purpose='RKI_VACC_DAILY_STATES',
         save_file=True,
         path=COVID_VACC_FILES_PATH
     )
@@ -168,4 +174,5 @@ if __name__ == '__main__':
     # remove from daily
     covid_tests.rki_weekly(df=df_rki_tests_weekly)
     """
-    vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
+    #covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
+    covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
