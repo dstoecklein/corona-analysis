@@ -4,7 +4,7 @@
 
 import pandas as pd
 
-from src.utils import db_helper as database
+from utils import db_helper as database
 
 # create db connection
 db = database.ProjDB()

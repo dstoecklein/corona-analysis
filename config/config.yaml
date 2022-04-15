@@ -128,7 +128,7 @@ rki_rvalue_daily:
 rki_vaccinations_daily_cumulative:
   translation:
     timestamp: 'timestamp'
-    ISODate: 'calendar_days'
+    ISODate: 'reporting_date'
     IdBundesland: 'bundesland_id'
     Bundesland: 'subdivision_1'
     Impfungenkumulativ: 'first_vaccination'
@@ -142,7 +142,7 @@ rki_vaccinations_daily_cumulative:
     Auffrischimpfungen: 'booster_vaccination'
   cols:
     timestamp: 'timestamp'
-    calendar_days: 'calendar_days'
+    reporting_date: 'reporting_date'
     bundesland_id: 'bundesland_id'
     subdivision_1: 'subdivision_1'
     first_vaccination: 'first_vaccination'

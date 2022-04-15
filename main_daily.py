@@ -1,12 +1,6 @@
-import pandas as pd
 import datetime as dt
-from utils import db_helper as database
-from src.corona import rki_transform
-from src.hospitals import divi_transform
-import os
-import re
 from config import core
-from config.core import config, config_db
+from config.core import config
 
 """
 Runs daily via batch
@@ -130,13 +124,13 @@ HOSP_FILES_PATH = core.FILES_PATH / 'hospitals'
 
 
 from src.get_data import rki, estat, divi, genesis
-from src import covid, covid_rvalue, covid_tests
+from src import covid, covid_rvalue, covid_tests, vaccinations
 #rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
-from src import covid_tests #rki_weekly
 
 TODAY = dt.date.today()
 TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 if __name__ == '__main__':
+    """
     df_rki_covid_daily = rki(
         url=config.data.urls['rki_covid_daily'],
         purpose='RKI_COVID19_DAILY',
@@ -156,7 +150,14 @@ if __name__ == '__main__':
         purpose='RKI_RVALUE_DAILY',
         save_file=True,
         path=COVID_FILES_PATH
+    )"""
+    df_rki_vacc_daily_cumulative = rki(
+        url=config.data.urls['rki_vaccinations_daily_cumulative'],
+        purpose='RKI_VACC_DAILY_CUMULATIVE',
+        save_file=True,
+        path=COVID_VACC_FILES_PATH
     )
+    """
     covid.rki_daily(df=df_rki_covid_daily)
     covid.rki_daily_states(df=df_rki_covid_daily)
     covid.rki_daily_counties(df=df_rki_covid_daily)
@@ -166,4 +167,5 @@ if __name__ == '__main__':
     
     # remove from daily
     covid_tests.rki_weekly(df=df_rki_tests_weekly)
-  
+    """
+    vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
