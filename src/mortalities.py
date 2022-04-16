@@ -53,7 +53,8 @@ def estat_deaths_weekly_agegroups(df: pd.DataFrame) -> None:
     tmp['iso_cw'] = tmp['iso_cw'].astype(int)
     tmp = tmp[tmp['iso_cw'] != 99]
 
-    tmp = tmp[tmp['iso_year'] >= 1990]
+    # tmp = tmp[tmp['iso_year'] >= 1990] # use this when building DB from scratch
+    tmp = tmp[tmp['iso_year'] >= dt.datetime.now().year - 1] # only get last + current year
 
     # assign 10-year agegroups
     tmp = tmp.assign(agegroup_10y=tmp['age'].map(ESTAT_DEATHS_WEEKLY_AGEGROUP_10Y_MAP)).fillna('UNK')
@@ -96,6 +97,9 @@ def estat_death_causes_annual_agegroups(df: pd.DataFrame) -> None:
     # false icd10 categories
     tmp.loc[tmp['icd10'].str.contains('K72-K75'), 'icd10'] = 'K71-K77'
     tmp.loc[tmp['icd10'].str.contains('B180-B182'), 'icd10'] = 'B171-B182'
+
+    tmp['year'] = pd.to_numeric(tmp['year'], errors='coerce')
+    tmp = tmp[tmp['year'] >= dt.datetime.now().year - 1] # only get last + current year
 
     tmp = db.merge_calendar_years_fk(tmp, left_on='year')
     tmp = db.merge_classifications_icd10_fk(tmp, left_on='icd10')
