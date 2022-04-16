@@ -30,7 +30,8 @@ class ColConfig(BaseModel):
     estat_death_causes_annual_agegroups: dict
     estat_population_agegroups: dict
     genesis_hospitals_annual: dict
-    genesis_hospitals_staff_annual:dict
+    genesis_hospitals_staff_annual: dict
+
 
 class DBConfig(BaseModel):
     db_name: str
@@ -73,8 +74,7 @@ def create_and_validate_config(file_name: str = None) -> MasterConfig:
     config_file = read_config_file(file_name=file_name)
 
     _config = MasterConfig(
-        data=DataConfig(**config_file.data),
-        cols=ColConfig(**config_file.data)
+        data=DataConfig(**config_file.data), cols=ColConfig(**config_file.data)
     )
     return _config
 
@@ -88,6 +88,7 @@ def create_and_validate_config_db(file_name: str = None) -> DBConfig:
 
     _config = DBConfig(**config_file.data)
     return _config
+
 
 config = create_and_validate_config(file_name=CONFIG_FILE)
 config_db = create_and_validate_config_db(file_name=CONFIG_FILE_DB)
