@@ -186,7 +186,7 @@ if __name__ == '__main__':
         purpose='ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUPS',
         save_file=True,
         path=MORTALITIES_PATH
-    )"""
+    )
     df_estat_population_countries = estat(
         code=config.data.estat_tables['estat_population_nuts_2'],
         purpose="POP_COUNTRIES",
@@ -207,6 +207,16 @@ if __name__ == '__main__':
         purpose="POP_AGEGROUPS",
         save_file=False
     )
+    df_estat_life_exp = estat(
+        code=config.data.estat_tables['estat_life_expectancy'],
+        purpose="LIFE_EXP",
+        save_file=False
+    )
+    df_estat_median_age = estat(
+        code=config.data.estat_tables['estat_population_structure_indicators'],
+        purpose="POP_STRUCT_IND",
+        save_file=False
+    )"""
     """
     covid.rki_daily(df=df_rki_covid_daily)
     covid.rki_daily_states(df=df_rki_covid_daily)
@@ -227,8 +237,12 @@ if __name__ == '__main__':
    
     mortalities.estat_deaths_weekly_agegroups(df=df_estat_deaths_weekly_agegroups)
     mortalities.estat_death_causes_annual_agegroups(df=df_estat_death_causes_annual_agegroups)
-    """
+    
     population.estat_population_countries(df=df_estat_population_countries)
     population.estat_population_subdivision_1(df=df_estat_population_subdiv1)
     population.estat_population_subdivision_2(df=df_estat_population_subdiv2)
     population.estat_population_agegroups(df=df_estat_population_agegroups)
+    
+    population.estat_life_exp_at_birth(df=df_estat_life_exp)
+    population.estat_median_age(df=df_estat_median_age)
+    """

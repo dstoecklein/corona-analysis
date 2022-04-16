@@ -9,6 +9,8 @@ ESTAT_POPULATION_COUNTRIES_TABLE = config_db.tables['population_countries']
 ESTAT_POPULATION_SUBDIVS1_TABLE = config_db.tables['population_subdivs_1']
 ESTAT_POPULATION_SUBDIVS2_TABLE = config_db.tables['population_subdivs_2']
 ESTAT_POPULATION_AGEGROUPS_TABLE = config_db.tables['population_countries_agegroups']
+ESTAT_LIFE_EXP_TABLE = config_db.tables['life_expectancy']
+ESTAT_MEDIAN_AGE_TABLE = config_db.tables['median_age']
 
 
 def _estat_pp_cols(df: pd.DataFrame) -> pd.DataFrame:
@@ -101,7 +103,6 @@ def estat_population_agegroups(df: pd.DataFrame) -> None:
     db = database.ProjDB()
     tmp = df.copy()
     tmp = _estat_pp_cols(df=tmp)
-
     tmp = tmp.query(
         '''
         geo.str.len() == 2 \
@@ -163,8 +164,7 @@ def estat_life_exp_at_birth(df: pd.DataFrame) -> None:
 
     tmp = db.merge_calendar_years_fk(tmp, left_on='year')
     tmp = db.merge_countries_fk(tmp, left_on='geo', country_code='iso_3166_1_alpha2')
-    #
-    tmp.to_csv("estat_life_exp.csv", sep=";")
+    db.insert_or_update(df=tmp, table=ESTAT_LIFE_EXP_TABLE)
     db.db_close()
 
 
@@ -191,6 +191,5 @@ def estat_median_age(df: pd.DataFrame) -> None:
 
     tmp = db.merge_calendar_years_fk(tmp, left_on='year')
     tmp = db.merge_countries_fk(tmp, left_on='geo', country_code='iso_3166_1_alpha2')
-    #
-    tmp.to_csv("estat_median_age.csv", sep=";")
+    db.insert_or_update(df=tmp, table=ESTAT_MEDIAN_AGE_TABLE)
     db.db_close()

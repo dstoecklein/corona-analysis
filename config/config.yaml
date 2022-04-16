@@ -15,7 +15,7 @@ estat_tables:
   estat_population_agegroups: 'demo_pjangroup'
   estat_population_nuts_2: 'demo_r_d2jan'
   estat_life_expectancy: 'demo_mlexpec'
-  estats_population_structure_indicators: 'demo_pjanind'
+  estat_population_structure_indicators: 'demo_pjanind'
 genesis_tables:
   hospitals_annual: '23111-0001'
   hospital_staff_annual: '23111-0002'
