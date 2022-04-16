@@ -28,6 +28,8 @@ class ColConfig(BaseModel):
     divi_itcu_daily_states: dict
     estat_deaths_weekly_agegroups: dict
     estat_death_causes_annual_agegroups: dict
+    estat_population_agegroups: dict
+
 
 class DBConfig(BaseModel):
     db_name: str

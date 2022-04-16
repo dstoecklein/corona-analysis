@@ -124,7 +124,7 @@ MORTALITIES_PATH = core.FILES_PATH / 'mortalities'
 
 
 from src.get_data import rki, estat, divi, genesis
-from src import covid, covid_rvalue, covid_tests, covid_vaccinations, intensive_care_units, mortalities
+from src import covid, covid_rvalue, covid_tests, covid_vaccinations, intensive_care_units, mortalities, population
 #rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
 
 TODAY = dt.date.today()
@@ -174,7 +174,7 @@ if __name__ == '__main__':
         purpose='DIVI_ITCU_DAILY_STATES',
         save_file=True,
         path=ITCU_FILES_PATH
-    )"""
+    )
     df_estat_deaths_weekly_agegroups = estat(
         code=config.data.estat_tables['estsat_weekly_deaths_agegroups'],
         purpose='ESTAT_DEATHS_WEEKLY_AGEGROUPS',
@@ -186,6 +186,26 @@ if __name__ == '__main__':
         purpose='ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUPS',
         save_file=True,
         path=MORTALITIES_PATH
+    )"""
+    df_estat_population_countries = estat(
+        code=config.data.estat_tables['estat_population_nuts_2'],
+        purpose="POP_COUNTRIES",
+        save_file=False
+    )
+    df_estat_population_subdiv1 = estat(
+        code=config.data.estat_tables['estat_population_nuts_2'],
+        purpose="POP_SUBDIV1",
+        save_file=False
+    )
+    df_estat_population_subdiv2 = estat(
+        code=config.data.estat_tables['estat_population_nuts_2'],
+        purpose="POP_SUBDIV2",
+        save_file=False
+    )
+    df_estat_population_agegroups = estat(
+        code=config.data.estat_tables['estat_population_agegroups'],
+        purpose="POP_AGEGROUPS",
+        save_file=False
     )
     """
     covid.rki_daily(df=df_rki_covid_daily)
@@ -204,6 +224,11 @@ if __name__ == '__main__':
     intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
     
     intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
-    """
+   
     mortalities.estat_deaths_weekly_agegroups(df=df_estat_deaths_weekly_agegroups)
     mortalities.estat_death_causes_annual_agegroups(df=df_estat_death_causes_annual_agegroups)
+    """
+    population.estat_population_countries(df=df_estat_population_countries)
+    population.estat_population_subdivision_1(df=df_estat_population_subdiv1)
+    population.estat_population_subdivision_2(df=df_estat_population_subdiv2)
+    population.estat_population_agegroups(df=df_estat_population_agegroups)

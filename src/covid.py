@@ -21,8 +21,8 @@ REPORTING_DATE = config.cols.rki_covid_daily['cols']['reporting_date']
 BUNDESLAND_ID = config.cols.rki_covid_daily['cols']['bundesland_id']
 SEX = config.cols.rki_covid_daily['cols']['sex']
 RKI_AGEGROUPS = config.cols.rki_covid_daily['cols']['rki_agegroups']
-RKI_AGEGROUP_MAPPING = config.cols.rki_covid_daily['agegroup_mapping']
-BERLIN_DISTRICT_MAPPING = config.cols.rki_covid_daily['berlin_district_mapping']
+RKI_AGEGROUP_MAP = config.cols.rki_covid_daily['agegroup_map']
+BERLIN_DISTRICT_MAP = config.cols.rki_covid_daily['berlin_district_map']
 REFERENCE_DATE = config.cols.rki_covid_daily["cols"]['reference_date']
 GERMANY = config_db.cols['_countries']['countries']['germany'] # 'DE'
 NUTS_0 = config_db.cols['_countries']['nuts_0']
@@ -97,7 +97,7 @@ def rki_daily_counties(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     tmp = calculation_helper.rki_calc_numbers(df=tmp, date=date)
     tmp = tmp[tmp[BUNDESLAND_ID] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
-    tmp[SUBDIVISION_2_ID] = tmp[SUBDIVISION_2_ID].astype(int).replace(BERLIN_DISTRICT_MAPPING) # combine berlin district
+    tmp[SUBDIVISION_2_ID] = tmp[SUBDIVISION_2_ID].astype(int).replace(BERLIN_DISTRICT_MAP) # combine berlin district
     tmp = tmp.groupby([SUBDIVISION_2_ID, REPORTING_DATE]).sum().reset_index()
     tmp = calculation_helper.rki_calc_7d_incidence(
         df=tmp,
@@ -118,9 +118,7 @@ def rki_daily_agegroups(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     tmp = tmp[tmp[SEX] != 'unbekannt']
     tmp = calculation_helper.rki_calc_numbers(df=tmp, date=date)
     tmp = tmp.groupby([RKI_AGEGROUPS, REPORTING_DATE]).sum().reset_index()
-    tmp.replace({
-        RKI_AGEGROUPS: RKI_AGEGROUP_MAPPING
-    }, inplace=True)
+    tmp.replace({RKI_AGEGROUPS: RKI_AGEGROUP_MAP}, inplace=True)
     tmp[GEO] = GERMANY
     tmp = calculation_helper.rki_calc_7d_incidence(
         df=tmp,

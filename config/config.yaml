@@ -63,7 +63,7 @@ rki_covid_daily:
     rki_agegroups2: 'rki_agegroups2'
     geo: 'geo'
     iso_key: 'iso_key'
-  agegroup_mapping:
+  agegroup_map:
     A00-A04: '00-04'
     A05-A14: '05-14'
     A15-A34: '15-34'
@@ -71,7 +71,7 @@ rki_covid_daily:
     A60-A79: '60-79'
     A80+: '80+'
     unbekannt: 'UNK'
-  berlin_district_mapping:
+  berlin_district_map:
     11001: 11000
     11002: 11000
     11003: 11000
@@ -228,13 +228,13 @@ divi_itcu_daily_states:
     operating_situation_restricted: 'operating_situation_restricted'
     operating_situation_not_specified: 'operating_situation_not_specified'
     cases_covid_initial_reception: 'cases_covid_initial_reception'
-  umlaut_mapping:
+  umlaut_map:
     ae: 'ä'
     ue: 'ü'
     oe: 'ö'
     _: '-'
 estat_deaths_weekly_agegroups:
-  agegroup_10y_mapping:
+  agegroup_10y_map:
     Y_LT10: '00-09'
     Y10-19: '10-19'
     Y20-29: '20-29'
@@ -245,7 +245,7 @@ estat_deaths_weekly_agegroups:
     Y70-79: '70-79'
     Y_GE80: '80+'
 estat_death_causes_annual_agegroups:
-  agegroup_10y_mapping:
+  agegroup_10y_map:
     Y_LT1: '00-09'
     Y1-4: '00-09'
     Y5-9: '00-09'
@@ -267,3 +267,22 @@ estat_death_causes_annual_agegroups:
     Y85-89: '80+'
     Y90-94: '80+'
     Y_GE95: '80+'
+estat_population_agegroups:
+  agegroup_10y_map:
+    Y_LT5: '00-09'
+    Y5-9: '00-09'
+    Y10-14: '10-19'
+    Y15-19: '10-19'
+    Y20-24: '20-29'
+    Y25-29: '20-29'
+    Y30-34: '30-39'
+    Y35-39: '30-39'
+    Y40-44: '40-49'
+    Y45-49: '40-49'
+    Y50-54: '50-59'
+    Y55-59: '50-59'
+    Y60-64: '60-69'
+    Y65-69: '60-69'
+    Y70-74: '70-79'
+    Y75-79: '70-79'
+    Y_GE80: '80+'

@@ -2,13 +2,12 @@ import datetime as dt
 
 import pandas as pd
 
-from utils import calculation_helper
 from utils import db_helper as database
 from config.core import config, config_db
 
 
-ESTAT_DEATHS_WEEKLY_AGEGROUP_10Y_MAPPING = config.cols.estat_deaths_weekly_agegroups['agegroup_10y_mapping']
-ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUP_10Y_MAPPING = config.cols.estat_death_causes_annual_agegroups['agegroup_10y_mapping']
+ESTAT_DEATHS_WEEKLY_AGEGROUP_10Y_MAP = config.cols.estat_deaths_weekly_agegroups['agegroup_10y_map']
+ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUP_10Y_MAP = config.cols.estat_death_causes_annual_agegroups['agegroup_10y_map']
 ESTAT_DEATHS_WEEKLY_AGEGROUPS_TABLE = config_db.tables['deaths_weekly_agegroups']
 ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUPS_TABLE = config_db.tables['death_causes_annual_agegroups']
 
@@ -57,7 +56,7 @@ def estat_deaths_weekly_agegroups(df: pd.DataFrame) -> None:
     tmp = tmp[tmp['iso_year'] >= 1990]
 
     # assign 10-year agegroups
-    tmp = tmp.assign(agegroup_10y=tmp['age'].map(ESTAT_DEATHS_WEEKLY_AGEGROUP_10Y_MAPPING)).fillna('UNK')
+    tmp = tmp.assign(agegroup_10y=tmp['age'].map(ESTAT_DEATHS_WEEKLY_AGEGROUP_10Y_MAP)).fillna('UNK')
 
     tmp = db.merge_agegroups_fk(tmp, left_on='agegroup_10y', interval='10y')
     tmp = db.merge_calendar_weeks_fk(tmp, left_on='iso_key')
@@ -92,7 +91,7 @@ def estat_death_causes_annual_agegroups(df: pd.DataFrame) -> None:
     )
 
     # assign 10-year agegroups
-    tmp = tmp.assign(agegroup_10y=tmp['age'].map(ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUP_10Y_MAPPING)).fillna('UNK')
+    tmp = tmp.assign(agegroup_10y=tmp['age'].map(ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUP_10Y_MAP)).fillna('UNK')
 
     # false icd10 categories
     tmp.loc[tmp['icd10'].str.contains('K72-K75'), 'icd10'] = 'K71-K77'

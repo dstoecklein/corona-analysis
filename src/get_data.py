@@ -19,7 +19,7 @@ def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
         return response.content
 
 
-def rki(url: str, purpose: str, save_file: bool, path: Path, is_excel: bool = False, sheet_name: str = '') -> pd.DataFrame:
+def rki(url: str, purpose: str, save_file: bool, path: Path = None, is_excel: bool = False, sheet_name: str = '') -> pd.DataFrame:
     """
     Reads a given URL from RKI and returns it as a Pandas Dataframe
 
@@ -67,7 +67,7 @@ def rki(url: str, purpose: str, save_file: bool, path: Path, is_excel: bool = Fa
     return df
 
 
-def estat(code: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
+def estat(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataFrame:
     """
     Reads a given Table from Eurostat using eurostat package and returns it as a Pandas Dataframe
 
@@ -78,9 +78,9 @@ def estat(code: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
     :return: pd.Dataframe
     """
 
-    if save_file and path == '':
+    if save_file and path is None:
         raise RuntimeError('save_file is true but no path given')
-    if not save_file and path != '':
+    if not save_file and path is not None:
         raise RuntimeError('Path was given but save_file is false')
 
     df = eurostat.get_data_df(
@@ -101,7 +101,7 @@ def estat(code: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
     return df
 
 
-def divi(url: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
+def divi(url: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataFrame:
     """
     Reads a given URL from DIVI and returns it as a Pandas Dataframe
 
@@ -112,9 +112,9 @@ def divi(url: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
     :return: pd.Dataframe
     """
 
-    if save_file and path == '':
+    if save_file and path is None:
         raise RuntimeError('save_file is true but no path given')
-    if not save_file and path != '':
+    if not save_file and path is not None:
         raise RuntimeError('Path was given but save_file is false')
 
     df = pd.read_csv(
@@ -136,7 +136,7 @@ def divi(url: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
     return df
 
 
-def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
+def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataFrame:
     """
     Reads a given URL from DeStatis and returns it as a Pandas Dataframe
 
@@ -148,9 +148,9 @@ def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: Pat
     :return: pd.Dataframe
     """
 
-    if save_file and path == '':
+    if save_file and path is None:
         raise RuntimeError('save_file is true but no path given')
-    if not save_file and path != '':
+    if not save_file and path is not None:
         raise RuntimeError('Path was given but save_file is false')
 
     client = PyGenesisClient(
