@@ -48,13 +48,14 @@ def daily():
         save_file=True,
         path=COVID_VACC_FILES_PATH
     )
+    """
     df_divi_itcu_daily_counties = divi(
         url=config.data.urls['divi_itcu_daily_counties'],
         purpose='DIVI_ITCU_DAILY_COUNTIES',
         save_file=True,
         path=ITCU_FILES_PATH
     )
-    """
+    
     df_divi_itcu_daily_states = divi(
         url=config.data.urls['divi_itcu_daily_states'],
         purpose='DIVI_ITCU_DAILY_STATES',
@@ -70,9 +71,9 @@ def daily():
     covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
     covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
     covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
-    intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
     """
-    intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
+    intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
+    #intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
 
 def weekly():
     df_rki_tests_weekly = rki(

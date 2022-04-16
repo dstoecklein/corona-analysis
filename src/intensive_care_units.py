@@ -33,6 +33,7 @@ def divi_daily_counties(df: pd.DataFrame) -> None:
     tmp = df.copy()
     tmp.rename(columns=DIVI_DAILY_COUNTIES_TRANSLATION, inplace=True)
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE, utc=False)
+    tmp = tmp[tmp[REPORTING_DATE] > dt.datetime.now() - pd.to_timedelta("90day")] # only get last 90 days
     tmp = db.merge_subdivisions_fk(df=tmp, left_on=AGS, level=3, subdiv_code=AGS)
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
     db.insert_or_update(df=tmp, table=DIVI_DAILY_COUNTIES_TABLE)
