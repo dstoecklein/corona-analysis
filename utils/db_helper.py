@@ -131,7 +131,7 @@ class DB:
 class RawDB(DB):
 
     def __init__(self, config_db: dict):
-        super().__init__(config_db=config_db)
+        super().__init__()
 
     def get_table_df(self, table: str):
         return pd.read_sql("SELECT * FROM " + table, self.connection)
@@ -707,6 +707,8 @@ class ProjDB(DB):
         # TODO
 
     def insert_only_new_rows(self, df: pd.DataFrame, table: str):
+        pass
+        """
         self.insert_and_replace(df, 'tmp')
 
         cols = ', '.join(self.get_column_names(table))
@@ -721,3 +723,4 @@ class ProjDB(DB):
             ")" \
             ";"
         self.connection.execute(query)
+        """

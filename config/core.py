@@ -51,7 +51,7 @@ def get_config_path() -> Path:
     return CONFIG_PATH
 
 
-def read_config_file(file_path: Path = None, file_name: str = None) -> YAML:
+def read_config_file(file_name: str, file_path: Path = None) -> YAML:
     if not file_path:
         file_path = get_config_path()
 
