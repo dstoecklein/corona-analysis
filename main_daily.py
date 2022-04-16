@@ -12,7 +12,7 @@ COVID_TEST_FILES_PATH = core.FILES_PATH / 'covid_tests'
 COVID_RVALUE_FILES_PATH = core.FILES_PATH / 'covid_rvalue'
 COVID_VACC_FILES_PATH = core.FILES_PATH / 'covid_vaccinations'
 ITCU_FILES_PATH = core.FILES_PATH / 'itcus'
-
+MORTALITIES_PATH = core.FILES_PATH / 'mortalities'
 
 """ def main():
     rki_procedure()
@@ -124,7 +124,7 @@ ITCU_FILES_PATH = core.FILES_PATH / 'itcus'
 
 
 from src.get_data import rki, estat, divi, genesis
-from src import covid, covid_rvalue, covid_tests, covid_vaccinations, intensive_care_units
+from src import covid, covid_rvalue, covid_tests, covid_vaccinations, intensive_care_units, mortalities
 #rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
 
 TODAY = dt.date.today()
@@ -168,12 +168,24 @@ if __name__ == '__main__':
         purpose='DIVI_ITCU_DAILY_COUNTIES',
         save_file=True,
         path=ITCU_FILES_PATH
-    )"""
+    )
     df_divi_itcu_daily_states = divi(
         url=config.data.urls['divi_itcu_daily_states'],
         purpose='DIVI_ITCU_DAILY_STATES',
         save_file=True,
         path=ITCU_FILES_PATH
+    )"""
+    df_estat_deaths_weekly_agegroups = estat(
+        code=config.data.estat_tables['estsat_weekly_deaths_agegroups'],
+        purpose='ESTAT_DEATHS_WEEKLY_AGEGROUPS',
+        save_file=True,
+        path=MORTALITIES_PATH
+    )
+    df_estat_death_causes_annual_agegroups = estat(
+        code=config.data.estat_tables['estsat_death_causes_annual_agegroups'],
+        purpose='ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUPS',
+        save_file=True,
+        path=MORTALITIES_PATH
     )
     """
     covid.rki_daily(df=df_rki_covid_daily)
@@ -190,5 +202,8 @@ if __name__ == '__main__':
     covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
     
     intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
-    """
+    
     intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
+    """
+    mortalities.estat_deaths_weekly_agegroups(df=df_estat_deaths_weekly_agegroups)
+    mortalities.estat_death_causes_annual_agegroups(df=df_estat_death_causes_annual_agegroups)
