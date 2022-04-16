@@ -31,7 +31,7 @@ GEO = config.cols.rki_covid_daily['cols']['geo']
 ISO_KEY = config.cols.rki_covid_daily['cols']['iso_key']
 
 
-def _rki_daily_pp(df: pd.DataFrame) -> pd.DataFrame: # pre processor for daily RKI covid data
+def _convert_date(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
     tmp = df.copy()
 
     tmp.rename(columns=RKI_DAILY_TRANSLATION, inplace=True)
@@ -56,7 +56,7 @@ def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     db = database.ProjDB()
     tmp = df.copy()
  
-    tmp = _rki_daily_pp(df=tmp)
+    tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     tmp = calculation_helper.rki_calc_numbers(df=tmp, date=date)
     tmp = tmp.groupby(REPORTING_DATE).sum().reset_index()
     tmp[GEO] = GERMANY
@@ -75,7 +75,7 @@ def rki_daily_states(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     db = database.ProjDB()
     tmp = df.copy()
 
-    tmp = _rki_daily_pp(df=tmp)
+    tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     tmp = calculation_helper.rki_calc_numbers(df=tmp, date=date)
     tmp = tmp[tmp[BUNDESLAND_ID] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
     tmp = tmp.groupby([BUNDESLAND_ID, REPORTING_DATE]).sum().reset_index()
@@ -94,7 +94,7 @@ def rki_daily_counties(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     db = database.ProjDB()
     tmp = df.copy()
 
-    tmp = _rki_daily_pp(df=tmp)
+    tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     tmp = calculation_helper.rki_calc_numbers(df=tmp, date=date)
     tmp = tmp[tmp[BUNDESLAND_ID] > 0]  # ignore rows with IdBundesland -1 (nicht erhoben)
     tmp[SUBDIVISION_2_ID] = tmp[SUBDIVISION_2_ID].astype(int).replace(BERLIN_DISTRICT_MAPPING) # combine berlin district
@@ -114,7 +114,7 @@ def rki_daily_agegroups(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
     db = database.ProjDB()
     tmp = df.copy()
 
-    tmp = _rki_daily_pp(df=tmp)
+    tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     tmp = tmp[tmp[SEX] != 'unbekannt']
     tmp = calculation_helper.rki_calc_numbers(df=tmp, date=date)
     tmp = tmp.groupby([RKI_AGEGROUPS, REPORTING_DATE]).sum().reset_index()
@@ -137,7 +137,7 @@ def rki_daily_agegroups(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
 def rki_weekly_cumulative(df: pd.DataFrame) -> None:
     db = database.ProjDB()
     tmp = df.copy()
-    tmp = _rki_daily_pp(df=tmp)
+    tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     tmp = calculation_helper.rki_calc_numbers(df=tmp, date=tmp[REPORTING_DATE])
     tmp = tmp.assign(iso_key=tmp[REPORTING_DATE].dt.strftime('%G%V').astype(int))
     tmp = tmp.groupby([ISO_KEY]).sum().reset_index()

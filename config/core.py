@@ -24,7 +24,8 @@ class ColConfig(BaseModel):
     rki_rvalue_daily: dict
     rki_vaccinations_daily_cumulative: dict
     rki_vaccinations_daily_states: dict
-
+    divi_itcu_daily_counties: dict
+    divi_itcu_daily_states: dict
 
 class DBConfig(BaseModel):
     db_name: str

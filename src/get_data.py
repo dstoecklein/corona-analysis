@@ -67,7 +67,7 @@ def rki(url: str, purpose: str, save_file: bool, path: Path, is_excel: bool = Fa
     return df
 
 
-def estat(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
+def estat(code: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
     """
     Reads a given Table from Eurostat using eurostat package and returns it as a Pandas Dataframe
 
@@ -92,7 +92,7 @@ def estat(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
 
         df.to_csv(
-            path + filename,
+            path / filename,
             sep=',',
             encoding='utf8',
             index=False
@@ -101,7 +101,7 @@ def estat(code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
     return df
 
 
-def divi(url: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
+def divi(url: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
     """
     Reads a given URL from DIVI and returns it as a Pandas Dataframe
 
@@ -127,7 +127,7 @@ def divi(url: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
 
         df.to_csv(
-            path + filename,
+            path / filename,
             sep=',',
             encoding='utf8',
             index=False
@@ -136,7 +136,7 @@ def divi(url: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
     return df
 
 
-def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: str) -> pd.DataFrame:
+def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: Path) -> pd.DataFrame:
     """
     Reads a given URL from DeStatis and returns it as a Pandas Dataframe
 
@@ -165,7 +165,7 @@ def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: str
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
 
         df.to_csv(
-            path + filename,
+            path / filename,
             sep=',',
             encoding='utf8',
             index=False

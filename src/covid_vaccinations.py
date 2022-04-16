@@ -22,7 +22,7 @@ VACCINE_SERIES = config.cols.rki_vaccinations_daily_states['cols']['vaccine_seri
 SUBDIVISION_1_ID = config.cols.rki_vaccinations_daily_states['cols']['subdivision_1_id']
 
 
-def _rki_daily_pp(df: pd.DataFrame, date_col: str) -> pd.DataFrame: # pre processor for daily RKI vacc data
+def _convert_date(df: pd.DataFrame, date_col: str) -> pd.DataFrame: 
     tmp = df.copy()
 
     if date_col in tmp.columns:
@@ -41,7 +41,7 @@ def rki_vaccinations_daily_cumulative(df: pd.DataFrame) -> None:
 
     tmp.rename(columns=RKI_DAILY_CUMULATIVE_TRANSLATION, inplace=True)
 
-    tmp = _rki_daily_pp(df=tmp, date_col=REPORTING_DATE)
+    tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
 
     tmp = tmp[tmp[BUNDESLAND_ID] == 0] # gesamt
     tmp[GEO] = GERMANY # init with germany as country
@@ -57,7 +57,7 @@ def rki_vaccinations_daily_states(df: pd.DataFrame) -> None:
 
     tmp.rename(columns=RKI_DAILY_STATES_TRANSLATION, inplace=True)
 
-    tmp = _rki_daily_pp(df=tmp, date_col=VACC_DATE)
+    tmp = _convert_date(df=tmp, date_col=VACC_DATE)
 
     tmp = db.merge_vaccines_fk(df=tmp, left_on=VACCINE)
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=VACC_DATE)
