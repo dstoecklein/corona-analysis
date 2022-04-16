@@ -13,7 +13,6 @@ AGS = config.cols.divi_itcu_daily_counties['cols']['ags']
 DIVI_DAILY_COUNTIES_TABLE = config_db.tables['itcu_daily_counties']
 DIVI_DAILY_STATES_TABLE = config_db.tables['itcu_daily_states']
 SUBDIVISION_1 = config.cols.divi_itcu_daily_states['cols']['subdivision_1']
-UMLAUT_MAP = config.cols.divi_itcu_daily_states['umlaut_map']
 CASES_COVID_INITIAL_RECEPTION = config.cols.divi_itcu_daily_states['cols']['cases_covid_initial_reception']
 
 
@@ -47,7 +46,11 @@ def divi_daily_states(df: pd.DataFrame) -> None:
     tmp.rename(columns=DIVI_DAILY_STATES_TRANSLATION, inplace=True)
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE, utc=True)
     tmp[SUBDIVISION_1] = tmp[SUBDIVISION_1].str.lower()
-    tmp[SUBDIVISION_1] = tmp[SUBDIVISION_1].replace(UMLAUT_MAP, regex=True).astype(str)
+    tmp[SUBDIVISION_1] = tmp[SUBDIVISION_1].str.replace('ae', 'ä')
+    tmp[SUBDIVISION_1] = tmp[SUBDIVISION_1].str.replace('ue', 'ü')
+    tmp[SUBDIVISION_1] = tmp[SUBDIVISION_1].str.replace('oe', 'ö')
+    tmp[SUBDIVISION_1] = tmp[SUBDIVISION_1].str.replace('_', '-')
+    tmp[SUBDIVISION_1] = tmp[SUBDIVISION_1].astype(str)
     tmp = db.merge_subdivisions_fk(df=tmp, left_on=SUBDIVISION_1, level=1, subdiv_code=SUBDIVISION_1)
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
     tmp[CASES_COVID_INITIAL_RECEPTION] = tmp[CASES_COVID_INITIAL_RECEPTION].fillna(0)

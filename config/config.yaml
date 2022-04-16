@@ -228,11 +228,6 @@ divi_itcu_daily_states:
     operating_situation_restricted: 'operating_situation_restricted'
     operating_situation_not_specified: 'operating_situation_not_specified'
     cases_covid_initial_reception: 'cases_covid_initial_reception'
-  umlaut_map:
-    ae: 'ä'
-    ue: 'ü'
-    oe: 'ö'
-    _: '-'
 estat_deaths_weekly_agegroups:
   agegroup_10y_map:
     Y_LT10: '00-09'
