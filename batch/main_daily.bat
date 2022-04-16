@@ -4,13 +4,13 @@ git checkout master
 ECHO ============================
 ECHO Receiving daily data...
 ECHO ============================
-CALL conda activate corona_analysis
-python ..\main_daily.py
+CALL conda activate data_science
+tox -e daily
 ECHO ============================
 ECHO Moving files to archive...
 ECHO ============================
-move ..\files\covid\*.csv ..\files\covid\Archive
-move ..\files\hospitals\*.csv ..\files\hospitals\Archive
+move ..\files\covid\*.csv ..\files\covid\archive
+move ..\files\hospitals\*.csv ..\files\hospitals\archive
 ECHO ============================
 ECHO End
 ECHO ============================
