@@ -7,6 +7,7 @@ import pandas as pd
 import requests
 from pygenesis.py_genesis_client import PyGenesisClient
 from pathlib import Path
+from config.core import config_db
 
 def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
     response = requests.get(url)
@@ -136,7 +137,7 @@ def divi(url: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataF
     return df
 
 
-def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataFrame:
+def genesis(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataFrame:
     """
     Reads a given URL from DeStatis and returns it as a Pandas Dataframe
 
@@ -155,8 +156,8 @@ def genesis(config_db: dict, code: str, purpose: str, save_file: bool, path: Pat
 
     client = PyGenesisClient(
         site='DESTATIS',
-        username=config_db['genesis']['username'],
-        password=config_db['genesis']['password']
+        username=config_db.genesis_login['username'],
+        password=config_db.genesis_login['password']
     )
 
     df = client.read(code)

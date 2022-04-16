@@ -286,3 +286,37 @@ estat_population_agegroups:
     Y70-74: '70-79'
     Y75-79: '70-79'
     Y_GE80: '80+'
+genesis_hospitals_annual:
+  translation:
+    index.0: 'iso_year'
+    Krankenhäuser.Anzahl: 'amount_hospitals'
+    Betten.Anzahl: 'amount_beds'
+    Betten je 100.000 Einwohner.Anzahl: 'amount_beds_per_100000_population'
+    Patienten.Anzahl: 'amount_patients'
+    Patienten je 100.000 Einwohner.Anzahl: 'amount_patients_per_100000_population'
+    Berechnungs-/Belegungstage.1000: 'occupancy_days'
+    Durchschnittliche Verweildauer.Tage: 'avg_days_of_hospitalization'
+    Durchschnittliche Bettenauslastung.Prozent: 'avg_bed_occupancy_percent'
+  cols:
+    iso_year: 'iso_year'
+    amount_hospitals: 'amount_hospitals'
+    amount_beds: 'amount_beds'
+    amount_beds_per_100000_population: 'amount_beds_per_100000_population'
+    amount_patients: 'amount_patients'
+    amount_patients_per_100000_population: 'amount_patients_per_100000_population'
+    occupancy_days: 'occupancy_days'
+    avg_days_of_hospitalization: 'avg_days_of_hospitalization'
+    avg_bed_occupancy_percent: 'avg_bed_occupancy_percent'
+genesis_hospitals_staff_annual:
+  translation:
+    index.0: 'iso_year'
+    Personal.Anzahl: 'total_staff'
+    Hauptamtliche Ärzte.Anzahl: 'full_time_doctors'
+    Nichtärztliches Personal.Anzahl: 'non_medical_staff'
+    Nichtärztliches Personal im Pflegedienst.Anzahl: 'non_medical_staff_in_nursing_service'  
+  cols:
+    iso_year: 'iso_year'
+    total_staff: 'total_staff'
+    full_time_doctors: 'full_time_doctors'
+    non_medical_staff: 'non_medical_staff'
+    non_medical_staff_in_nursing_service: 'non_medical_staff_in_nursing_service'

@@ -13,6 +13,7 @@ COVID_RVALUE_FILES_PATH = core.FILES_PATH / 'covid_rvalue'
 COVID_VACC_FILES_PATH = core.FILES_PATH / 'covid_vaccinations'
 ITCU_FILES_PATH = core.FILES_PATH / 'itcus'
 MORTALITIES_PATH = core.FILES_PATH / 'mortalities'
+HOSPITALS_PATH = core.FILES_PATH / 'hospitals'
 
 """ def main():
     rki_procedure()
@@ -124,7 +125,7 @@ MORTALITIES_PATH = core.FILES_PATH / 'mortalities'
 
 
 from src.get_data import rki, estat, divi, genesis
-from src import covid, covid_rvalue, covid_tests, covid_vaccinations, intensive_care_units, mortalities, population
+from src import covid, covid_rvalue, covid_tests, covid_vaccinations, intensive_care_units, mortalities, population, hospital
 #rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
 
 TODAY = dt.date.today()
@@ -216,7 +217,19 @@ if __name__ == '__main__':
         code=config.data.estat_tables['estat_population_structure_indicators'],
         purpose="POP_STRUCT_IND",
         save_file=False
+    )
+    df_genesis_hospitals_annual = genesis(
+        code=config.data.genesis_tables['hospitals_annual'],
+        purpose='HOSP_ANNUAL',
+        save_file=True,
+        path=HOSPITALS_PATH
     )"""
+    df_genesis_hospital_staff_annual = genesis(
+        code=config.data.genesis_tables['hospital_staff_annual'],
+        purpose='HOSP_STAFF_ANNUAL',
+        save_file=True,
+        path=HOSPITALS_PATH
+    )
     """
     covid.rki_daily(df=df_rki_covid_daily)
     covid.rki_daily_states(df=df_rki_covid_daily)
@@ -245,4 +258,6 @@ if __name__ == '__main__':
     
     population.estat_life_exp_at_birth(df=df_estat_life_exp)
     population.estat_median_age(df=df_estat_median_age)
+    hospital.genesis_hospitals_annual(df=df_genesis_hospitals_annual)
     """
+    hospital.genesis_hospital_staff_annual(df=df_genesis_hospital_staff_annual)
