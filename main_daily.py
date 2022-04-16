@@ -1,10 +1,16 @@
+import argparse
 import datetime as dt
 from config import core
 from config.core import config
+from utils.get_data import rki, estat, divi, genesis
+from utils.csv_bulk import rki_bulk, divi_bulk
+from src import (
+    covid, covid_rvalue, covid_tests, covid_vaccinations, 
+    intensive_care_units, mortalities, population, hospital)
 
-"""
-Runs daily via batch
-"""
+
+TODAY = dt.date.today()
+TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
 
 # Constants
 COVID_FILES_PATH = core.FILES_PATH / 'covid'
@@ -15,136 +21,13 @@ ITCU_FILES_PATH = core.FILES_PATH / 'itcus'
 MORTALITIES_PATH = core.FILES_PATH / 'mortalities'
 HOSPITALS_PATH = core.FILES_PATH / 'hospitals'
 
-""" def main():
-    rki_procedure()
-    #divi_procedure(config_path)
-    # rki_bulk_procedure()
-    # divi_bulk_procedure() """
 
-
-""" def divi_procedure():
-    db = database.ProjDB()
-
-    # --Scraping Data--
-    df_divi_counties = divi_scrap.itcu_daily_counties(save_file=True)
-    df_divi_states = divi_scrap.itcu_daily_states(save_file=True)
-
-    # --Transformation--
-    df_divi_counties = divi_transform.itcu_daily_counties(df=df_divi_counties)
-    df_divi_states = divi_transform.itcu_daily_states(df=df_divi_states)
-
-    # --DB insert--
-    db.insert_or_update(df=df_divi_counties, table='itcu_daily_counties')
-    db.insert_or_update(df=df_divi_states, table='itcu_daily_states')
-
-    db.db_close() """
-
-
-""" def rki_procedure():
-    db = database.ProjDB()
-
-    # --Scraping Data--
-    df = rki_scrap.covid_daily(save_file=True)
-    df_rvalue = rki_scrap.rvalue_daily(save_file=False)
-    df_vaccinations_daily_states = rki_scrap.vaccinations_daily_stastes(save_file=False)
-
-    today = dt.date.today()
-    today = dt.datetime(today.year, today.month, today.day)
-
-    # --Transformation--
-    df_rki_daily = rki_transform.covid_daily(df=df, date=today)
-    df_rki_daily_states = rki_transform.covid_daily_states(df=df, date=today)
-    df_rki_daily_counties = rki_transform.covid_daily_counties(df=df, date=today)
-    df_rki_daily_agegroups = rki_transform.covid_daily_agegroups(df=df, date=today)
-    df_rki_weekly_cumulative = rki_transform.covid_weekly_cummulative(df=df)
-    df_rvalue = rki_transform.rvalue_daily(df=df_rvalue)
-    df_vaccinations_daily_states = rki_transform.vaccinations_daily_states(df=df_vaccinations_daily_states)
-
-    # --DB insert--
-    db.insert_or_update(df=df_rki_daily, table='covid_daily')
-    db.insert_or_update(df=df_rki_daily_states, table='covid_daily_states')
-    db.insert_or_update(df=df_rki_daily_counties, table='covid_daily_counties')
-    db.insert_or_update(df=df_rki_daily_agegroups, table='covid_daily_agegroups')
-    db.insert_or_update(df=df_rki_weekly_cumulative, table='covid_weekly_cumulative')
-    db.insert_or_update(df_rvalue, table='rvalue_daily')
-    db.insert_or_update(df=df_vaccinations_daily_states, table='vaccinations_daily_states')
-    db.db_close() """
-
-
-""" def rki_bulk_procedure():
-    db = database.ProjDB()
-
-    for filename in os.listdir(COVID_FILES_PATH):
-        if filename.endswith('.csv') or filename.endswith('.xz'):
-            extract = re.search(r'\d{4}-\d{2}-\d{2}', filename)
-            date = dt.datetime.strptime(extract.group(), '%Y-%m-%d')
-
-            try:
-                df = pd.read_csv(COVID_FILES_PATH + filename, engine='python', sep=',', encoding='utf8')
-            except UnicodeDecodeError:
-                df = pd.read_csv(COVID_FILES_PATH + filename, engine='python', sep=',', encoding='ISO-8859-1')
-
-            # --Transformation--
-            df_rki_daily = rki_transform.covid_daily(df=df, date=date)
-            df_rki_daily_states = rki_transform.covid_daily_states(df=df, date=date)
-            df_rki_daily_counties = rki_transform.covid_daily_counties(df=df, date=date)
-            df_rki_daily_agegroups = rki_transform.covid_daily_agegroups(df=df, date=date)
-            df_rki_weekly_cumulative = rki_transform.covid_weekly_cummulative(df=df)
-
-            # --DB insert--
-            db.insert_or_update(df=df_rki_daily, table='covid_daily')
-            db.insert_or_update(df=df_rki_daily_states, table='covid_daily_states')
-            db.insert_or_update(df=df_rki_daily_counties, table='covid_daily_counties')
-            db.insert_or_update(df=df_rki_daily_agegroups, table='covid_daily_agegroups')
-            db.insert_or_update(df=df_rki_weekly_cumulative, table='covid_weekly_cumulative')
-
-    db.db_close() """
-
-
-""" def divi_bulk_procedure():
-    db = database.ProjDB()
-
-    for filename in os.listdir(HOSP_FILES_PATH):
-        if filename.endswith('.csv') or filename.endswith('.xz'):
-
-            try:
-                df = pd.read_csv(HOSP_FILES_PATH + filename, engine='python', sep=',', encoding='utf8')
-            except UnicodeDecodeError:
-                df = pd.read_csv(HOSP_FILES_PATH + filename, engine='python', sep=',', encoding='ISO-8859-1')
-
-            if '_COUNTIES' in filename:
-                df_divi_counties = divi_transform.itcu_daily_counties(df=df)
-                db.insert_or_update(df=df_divi_counties, table='itcu_daily_counties')
-            elif '_STATES' in filename:
-                df_divi_states = divi_transform.itcu_daily_states(df=df)
-                db.insert_or_update(df=df_divi_states, table='itcu_daily_states')
-            else:
-                return
-
-    db.db_close() """
-
-
-from src.get_data import rki, estat, divi, genesis
-from src import covid, covid_rvalue, covid_tests, covid_vaccinations, intensive_care_units, mortalities, population, hospital
-#rki_daily, rki_daily_states, rki_daily_counties, rki_daily_agegroups, rki_weekly_cumulative
-
-TODAY = dt.date.today()
-TODAY = dt.datetime(TODAY.year, TODAY.month, TODAY.day)
-if __name__ == '__main__':
-    """
+def daily():
     df_rki_covid_daily = rki(
         url=config.data.urls['rki_covid_daily'],
         purpose='RKI_COVID19_DAILY',
         save_file=True,
         path=COVID_FILES_PATH
-    )
-    df_rki_tests_weekly = rki(
-        url=config.data.urls['rki_tests_weekly'],
-        purpose='RKI_TESTS_WEEKLY',
-        save_file=True,
-        path=COVID_TEST_FILES_PATH,
-        is_excel=True,
-        sheet_name='1_Testzahlerfassung'
     )
     df_rki_rvalue_daily = rki(
         url=config.data.urls['rki_rvalue_daily'],
@@ -175,6 +58,27 @@ if __name__ == '__main__':
         purpose='DIVI_ITCU_DAILY_STATES',
         save_file=True,
         path=ITCU_FILES_PATH
+    ) 
+
+    covid.rki_daily(df=df_rki_covid_daily)
+    covid.rki_daily_states(df=df_rki_covid_daily)
+    covid.rki_daily_counties(df=df_rki_covid_daily)
+    covid.rki_daily_agegroups(df=df_rki_covid_daily)
+    covid.rki_weekly_cumulative(df=df_rki_covid_daily)
+    covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
+    covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
+    covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
+    intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
+    intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
+
+def weekly():
+    df_rki_tests_weekly = rki(
+        url=config.data.urls['rki_tests_weekly'],
+        purpose='RKI_TESTS_WEEKLY',
+        save_file=True,
+        path=COVID_TEST_FILES_PATH,
+        is_excel=True,
+        sheet_name='1_Testzahlerfassung'
     )
     df_estat_deaths_weekly_agegroups = estat(
         code=config.data.estat_tables['estsat_weekly_deaths_agegroups'],
@@ -182,6 +86,12 @@ if __name__ == '__main__':
         save_file=True,
         path=MORTALITIES_PATH
     )
+
+    covid_tests.rki_weekly(df=df_rki_tests_weekly)
+    mortalities.estat_deaths_weekly_agegroups(df=df_estat_deaths_weekly_agegroups)
+
+
+def annual():
     df_estat_death_causes_annual_agegroups = estat(
         code=config.data.estat_tables['estsat_death_causes_annual_agegroups'],
         purpose='ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUPS',
@@ -223,41 +133,44 @@ if __name__ == '__main__':
         purpose='HOSP_ANNUAL',
         save_file=True,
         path=HOSPITALS_PATH
-    )"""
+    )
     df_genesis_hospital_staff_annual = genesis(
         code=config.data.genesis_tables['hospital_staff_annual'],
         purpose='HOSP_STAFF_ANNUAL',
         save_file=True,
         path=HOSPITALS_PATH
     )
-    """
-    covid.rki_daily(df=df_rki_covid_daily)
-    covid.rki_daily_states(df=df_rki_covid_daily)
-    covid.rki_daily_counties(df=df_rki_covid_daily)
-    covid.rki_daily_agegroups(df=df_rki_covid_daily)
-    covid.rki_weekly_cumulative(df=df_rki_covid_daily)
-    covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
-    
-    # remove from daily
-    covid_tests.rki_weekly(df=df_rki_tests_weekly)
-    
-    #covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
-    covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
-    
-    intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
-    
-    intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
-   
-    mortalities.estat_deaths_weekly_agegroups(df=df_estat_deaths_weekly_agegroups)
+
     mortalities.estat_death_causes_annual_agegroups(df=df_estat_death_causes_annual_agegroups)
-    
     population.estat_population_countries(df=df_estat_population_countries)
     population.estat_population_subdivision_1(df=df_estat_population_subdiv1)
     population.estat_population_subdivision_2(df=df_estat_population_subdiv2)
     population.estat_population_agegroups(df=df_estat_population_agegroups)
-    
     population.estat_life_exp_at_birth(df=df_estat_life_exp)
     population.estat_median_age(df=df_estat_median_age)
     hospital.genesis_hospitals_annual(df=df_genesis_hospitals_annual)
-    """
     hospital.genesis_hospital_staff_annual(df=df_genesis_hospital_staff_annual)
+
+
+if __name__ == '__main__':
+    args = argparse.ArgumentParser()
+    args.add_argument('--procedure', default='daily')
+    procedure = args.parse_args()._get_kwargs()[0][1]
+
+    if procedure == 'daily':
+        print("executing daily procedure...")
+        daily()
+    elif procedure == 'weekly':
+        print("executing weekly procedure...")
+        weekly()
+    elif procedure == 'annual':
+        print("executing annual procedure...")
+        annual()
+    elif procedure == 'rki_bulk':
+        print("executing rki bulk (csv) procedure...")
+        rki_bulk()
+    elif procedure == 'divi_bulk':
+        print("executing divi bulk (csv) procedure...")
+        divi_bulk()
+    else:
+        Exception("Invalid argument! Use 'daily', 'weekly', 'annual', 'rki_bulk' or 'divi_bulk'")
