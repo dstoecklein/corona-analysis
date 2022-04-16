@@ -23,6 +23,7 @@ HOSPITALS_PATH = core.FILES_PATH / 'hospitals'
 
 
 def daily():
+    """
     df_rki_covid_daily = rki(
         url=config.data.urls['rki_covid_daily'],
         purpose='RKI_COVID19_DAILY',
@@ -53,13 +54,14 @@ def daily():
         save_file=True,
         path=ITCU_FILES_PATH
     )
+    """
     df_divi_itcu_daily_states = divi(
         url=config.data.urls['divi_itcu_daily_states'],
         purpose='DIVI_ITCU_DAILY_STATES',
         save_file=True,
         path=ITCU_FILES_PATH
     ) 
-
+    """
     covid.rki_daily(df=df_rki_covid_daily)
     covid.rki_daily_states(df=df_rki_covid_daily)
     covid.rki_daily_counties(df=df_rki_covid_daily)
@@ -69,6 +71,7 @@ def daily():
     covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
     covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
     intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
+    """
     intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
 
 def weekly():
