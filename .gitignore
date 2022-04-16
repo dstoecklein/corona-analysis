@@ -13,20 +13,13 @@
 *.flv
 *.mov
 *.wmv
-
-# data dumps
-files/
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 
 # db stuff
-src/database/config.py
 config_db.yaml
-src/database/sql/
-paths.py
 *.pbix
-src/population/nuts0.csv
-src/population/test.csv
 doc/
