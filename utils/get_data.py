@@ -56,13 +56,12 @@ def rki(url: str, purpose: str, save_file: bool, path: Path = None, is_excel: bo
         )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.xz')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.ftr')
         
-        df.to_csv(
+        df.to_feather(
             path / filename,
-            sep=',',
-            encoding='utf8',
-            index=False
+            compression='zstd', 
+            compression_level=9
         )
 
     return df
@@ -90,13 +89,12 @@ def estat(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.Dat
     )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.xz')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.ftr')
 
-        df.to_csv(
+        df.to_feather(
             path / filename,
-            sep=',',
-            encoding='utf8',
-            index=False
+            compression='zstd', 
+            compression_level=9
         )
 
     return df
@@ -125,13 +123,12 @@ def divi(url: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataF
     )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.xz')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.ftr')
 
-        df.to_csv(
+        df.to_feather(
             path / filename,
-            sep=',',
-            encoding='utf8',
-            index=False
+            compression='zstd', 
+            compression_level=9
         )
 
     return df
@@ -163,13 +160,12 @@ def genesis(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.D
     df = client.read(code)
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.xz')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.ftr')
 
-        df.to_csv(
+        df.to_feather(
             path / filename,
-            sep=',',
-            encoding='utf8',
-            index=False
+            compression='zstd', 
+            compression_level=9
         )
 
     return df
