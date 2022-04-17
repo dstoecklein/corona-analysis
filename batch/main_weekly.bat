@@ -1,3 +1,4 @@
+git checkout master
 @ECHO OFF
 ECHO Please Wait...
 :: Section 2: Execute python script.
@@ -5,12 +6,16 @@ ECHO ============================
 ECHO Receiving weekly data...
 ECHO ============================
 CALL conda activate data_science
+<<<<<<< HEAD
 python ..\main_weekly.py
+=======
+tox -e weekly
+>>>>>>> dev
 ECHO ============================
 ECHO Moving files to archive...
 ECHO ============================
-move ..\files\tests\*.csv ..\files\tests\Archive
-move ..\files\mortality\*.csv ..\files\mortality\Archive
+move ..\files\covid_tests\*.csv ..\files\covid_tests\archive
+move ..\files\mortalities\*.csv ..\files\mortalities\archive
 ECHO End
 ECHO ============================
 CALL conda deactivate
