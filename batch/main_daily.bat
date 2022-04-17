@@ -5,7 +5,6 @@ ECHO ============================
 ECHO Receiving daily data...
 ECHO ============================
 CALL conda activate data_science
-python ..\main_daily.py
 =======
 tox -e daily
 ECHO ============================

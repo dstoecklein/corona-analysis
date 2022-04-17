@@ -6,7 +6,6 @@ ECHO ============================
 ECHO Receiving weekly data...
 ECHO ============================
 CALL conda activate data_science
-python ..\main_weekly.py
 =======
 tox -e weekly
 ECHO ============================
