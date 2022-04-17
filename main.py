@@ -33,7 +33,7 @@ def daily():
         url=config.data.urls['rki_rvalue_daily'],
         purpose='RKI_RVALUE_DAILY',
         save_file=True,
-        path=COVID_FILES_PATH
+        path=COVID_RVALUE_FILES_PATH
     )
     df_rki_vacc_daily_cumulative = rki(
         url=config.data.urls['rki_vaccinations_daily_cumulative'],
