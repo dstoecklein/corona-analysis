@@ -38,7 +38,7 @@ def _convert_date(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
 
 
 def rki_vaccinations_daily_cumulative(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
 
     tmp.rename(columns=RKI_DAILY_CUMULATIVE_TRANSLATION, inplace=True)
@@ -54,7 +54,7 @@ def rki_vaccinations_daily_cumulative(df: pd.DataFrame) -> None:
 
 
 def rki_vaccinations_daily_states(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
 
     tmp.rename(columns=RKI_DAILY_STATES_TRANSLATION, inplace=True)

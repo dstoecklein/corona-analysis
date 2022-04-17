@@ -32,7 +32,7 @@ def _convert_date(df: pd.DataFrame, date_col: str, utc: bool) -> pd.DataFrame:
 
 
 def divi_daily_counties(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp.rename(columns=DIVI_DAILY_COUNTIES_TRANSLATION, inplace=True)
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE, utc=False)
@@ -46,7 +46,7 @@ def divi_daily_counties(df: pd.DataFrame) -> None:
 
 
 def divi_daily_states(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp.rename(columns=DIVI_DAILY_STATES_TRANSLATION, inplace=True)
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE, utc=True)

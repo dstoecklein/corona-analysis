@@ -167,11 +167,17 @@ if __name__ == '__main__':
     elif procedure == 'annual':
         print("executing annual procedure...")
         annual()
-    elif procedure == 'rki_bulk':
+    elif procedure == 'rki_bulk_csv':
         print("executing rki bulk (csv) procedure...")
-        rki_bulk()
-    elif procedure == 'divi_bulk':
+        rki_bulk(filetype='csv')
+    elif procedure == 'rki_bulk_ftr':
+        print("executing rki bulk (feather) procedure...")
+        rki_bulk(filetype='ftr')
+    elif procedure == 'divi_bulk_csv':
         print("executing divi bulk (csv) procedure...")
-        divi_bulk()
+        divi_bulk(filetype='csv')
+    elif procedure == 'divi_bulk_ftr':
+        print("executing divi bulk (feather) procedure...")
+        divi_bulk(filetype='ftr')
     else:
-        Exception("Invalid argument! Use 'daily', 'weekly', 'annual', 'rki_bulk' or 'divi_bulk'")
+        Exception("Invalid argument! Expected 'daily', 'weekly', 'annual', 'rki_bulk_csv', 'divi_bulk_csv', 'rki_bulk_ftr' or 'divi_bulk_ftr'")
