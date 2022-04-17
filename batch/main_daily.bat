@@ -5,11 +5,9 @@ ECHO ============================
 ECHO Receiving daily data...
 ECHO ============================
 CALL conda activate data_science
-<<<<<<< HEAD
 python ..\main_daily.py
 =======
 tox -e daily
->>>>>>> dev
 ECHO ============================
 ECHO Moving files to archive...
 ECHO ============================
