@@ -6,10 +6,6 @@ from sqlalchemy import Table, create_engine
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.schema import MetaData
 from sqlalchemy.sql import text
-from src.database import config
-import pandas as pd
-import time
-import numpy as np
 
 from config.core import config_db
 
@@ -57,13 +53,8 @@ class DB:
                pipe(self.sort_columns, table).
                pipe(self.add_meta_columns)
                ).copy()
-
         tmp = tmp.replace([np.inf, -np.inf], np.nan)
         tmp = tmp.fillna(0)
-
-        tmp = tmp.replace([np.inf, -np.inf], np.nan)
-        tmp = tmp.fillna(0)
-
         # create table object (sqlalchemy)
         table_obj = self.get_table_obj(table)
 
@@ -84,8 +75,6 @@ class DB:
         # unique_key is a string-concatenation of all foreign-keys
 
         tmp = df.copy()
-        tmp = tmp.replace([np.inf, -np.inf], np.nan)
-        tmp = tmp.fillna(0)
         tmp['last_update'] = time.strftime('%Y-%m-%d %H:%M:%S')
 
         foreign_keys = [col for col in tmp if col.endswith('_fk')]
@@ -101,8 +90,6 @@ class DB:
     # need to sort the columns in order to create correct unique_key
     def sort_columns(self, df: pd.DataFrame, table: str):
         tmp = df.copy()
-        tmp = tmp.replace([np.inf, -np.inf], np.nan)
-        tmp = tmp.fillna(0)
         result = self.connection.execute('SELECT * FROM ' + table)
         cols = list(result.keys())
         cols = [each_col.lower() for each_col in cols]  # lower all column names
@@ -607,7 +594,7 @@ class ProjDB(DB):
                 FROM population_subdivs_3
                 INNER JOIN _country_subdivs_3
                 ON population_subdivs_3.country_subdivs_3_fk = _country_subdivs_3.country_subdivs_3_id
-				INNER JOIN _country_subdivs_2
+                INNER JOIN _country_subdivs_2
                 ON _country_subdivs_3.country_subdivs_2_fk = _country_subdivs_2.country_subdivs_2_id
                 INNER JOIN _country_subdivs_1
                 ON _country_subdivs_2.country_subdivs_1_fk = _country_subdivs_1.country_subdivs_1_id
