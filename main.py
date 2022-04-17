@@ -96,8 +96,7 @@ def annual():
     df_estat_death_causes_annual_agegroups = estat(
         code=config.data.estat_tables['estsat_death_causes_annual_agegroups'],
         purpose='ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUPS',
-        save_file=True,
-        path=MORTALITIES_PATH
+        save_file=False
     )
     df_estat_population_countries = estat(
         code=config.data.estat_tables['estat_population_nuts_2'],
@@ -141,7 +140,11 @@ def annual():
         save_file=True,
         path=HOSPITALS_PATH
     )
-
+    df_genesis_population_subdiv3 = genesis(
+        code=config.data.genesis_tables['population_subdivision_3'],
+        purpose='POP_SUBDIV3',
+        save_file=False
+    )
     mortalities.estat_death_causes_annual_agegroups(df=df_estat_death_causes_annual_agegroups)
     population.estat_population_countries(df=df_estat_population_countries)
     population.estat_population_subdivision_1(df=df_estat_population_subdiv1)
@@ -151,6 +154,7 @@ def annual():
     population.estat_median_age(df=df_estat_median_age)
     hospital.genesis_hospitals_annual(df=df_genesis_hospitals_annual)
     hospital.genesis_hospital_staff_annual(df=df_genesis_hospital_staff_annual)
+    population.genesis_population_subdivision_3(df=df_genesis_population_subdiv3)
 
 
 if __name__ == '__main__':

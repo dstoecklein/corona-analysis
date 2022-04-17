@@ -19,6 +19,8 @@ def genesis_hospitals_annual(df: pd.DataFrame) -> None:
     db = database.DB()
     tmp = df.copy()
     tmp.rename(columns=GENESIS_HOSP_ANNUAL_TRANSLATION, inplace=True)
+    tmp[ISO_YEAR] = tmp[ISO_YEAR].astype(int)
+    tmp = tmp[tmp[ISO_YEAR] >= 2015]
     tmp = db.merge_calendar_years_fk(df=tmp, left_on=ISO_YEAR)
     tmp[GEO] = GERMANY
     tmp = db.merge_countries_fk(df=tmp, left_on=GEO, country_code=ISO_3166_1_ALPHA2)
@@ -30,7 +32,8 @@ def genesis_hospital_staff_annual(df: pd.DataFrame) -> None:
     db = database.DB()
     tmp = df.copy()
     tmp.rename(columns=GENESIS_HOSP_STAFF_ANNUAL_TRANSLATION, inplace=True)
-    tmp[ISO_YEAR] = pd.to_datetime(tmp[ISO_YEAR], infer_datetime_format=True).dt.year
+    tmp[ISO_YEAR] = pd.to_datetime(tmp[ISO_YEAR], infer_datetime_format=True).dt.year.astype(int)
+    tmp = tmp[tmp[ISO_YEAR] >= 2015]
     tmp = db.merge_calendar_years_fk(df=tmp, left_on=ISO_YEAR)
     tmp[GEO] = GERMANY
     tmp = db.merge_countries_fk(df=tmp, left_on=GEO, country_code=ISO_3166_1_ALPHA2)

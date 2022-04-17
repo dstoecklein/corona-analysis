@@ -31,7 +31,8 @@ class ColConfig(BaseModel):
     estat_population_agegroups: dict
     genesis_hospitals_annual: dict
     genesis_hospitals_staff_annual: dict
-
+    genesis_population_subdivision_3: dict
+    
 
 class DBConfig(BaseModel):
     db_name: str

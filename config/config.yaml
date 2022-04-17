@@ -19,6 +19,7 @@ estat_tables:
 genesis_tables:
   hospitals_annual: '23111-0001'
   hospital_staff_annual: '23111-0002'
+  population_subdivision_3: '12411-0015'
 incidence_reference_year: 2020
 
 # cols
@@ -315,3 +316,12 @@ genesis_hospitals_staff_annual:
     full_time_doctors: 'full_time_doctors'
     non_medical_staff: 'non_medical_staff'
     non_medical_staff_in_nursing_service: 'non_medical_staff_in_nursing_service'
+genesis_population_subdivision_3:
+  translation:
+    index.0: 'ags'
+    index.1: 'subdivision_3'
+  cols:
+    ags: 'ags'
+    subdivision_3: 'subdivision_3'
+    year: 'year'
+    population: 'population'
