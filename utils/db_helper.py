@@ -6,15 +6,12 @@ from sqlalchemy import Table, create_engine
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.schema import MetaData
 from sqlalchemy.sql import text
-<<<<<<< HEAD:src/utils/db_helper.py
 from src.database import config
 import pandas as pd
 import time
 import numpy as np
-=======
 
 from config.core import config_db
->>>>>>> dev:utils/db_helper.py
 
 class DB:
     def __init__(self):
@@ -60,15 +57,13 @@ class DB:
                pipe(self.sort_columns, table).
                pipe(self.add_meta_columns)
                ).copy()
-<<<<<<< HEAD:src/utils/db_helper.py
 
         tmp = tmp.replace([np.inf, -np.inf], np.nan)
         tmp = tmp.fillna(0)
 
-=======
         tmp = tmp.replace([np.inf, -np.inf], np.nan)
         tmp = tmp.fillna(0)
->>>>>>> dev:utils/db_helper.py
+
         # create table object (sqlalchemy)
         table_obj = self.get_table_obj(table)
 
@@ -555,10 +550,7 @@ class ProjDB(DB):
             ['novavax', 'covovax'], 'Nuvaxovid',
             inplace=True
         )
-<<<<<<< HEAD:src/utils/db_helper.py
-=======
 
->>>>>>> dev:utils/db_helper.py
         tmp[left_on] = tmp[left_on].str.lower()
 
         tmp = tmp.merge(df_vaccines,
