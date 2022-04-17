@@ -9,7 +9,8 @@ from sqlalchemy.sql import text
 
 from config.core import config_db
 
-class DB:
+
+class DB: # MySQL DB
     def __init__(self):
         self.engine = create_engine(
             config_db.login['dialect'] +
@@ -107,7 +108,6 @@ class DB:
         # tmp.drop(columns=[col for col in tmp if col not in cols], inplace=True)
         # tmp = tmp[cols]
         # return tmp
-
         return tmp.reindex(columns=cols)
 
     def get_table_obj(self, table: str):
@@ -126,155 +126,6 @@ class DB:
         cols = [each_col.lower() for each_col in cols]
 
         return cols
-
-
-class RawDB(DB):
-
-    def __init__(self, config_db: dict):
-        super().__init__()
-
-    def get_table_df(self, table: str):
-        return pd.read_sql("SELECT * FROM " + table, self.connection)
-
-    def get_estat_annual_population(self, country_code: str):
-        if country_code == 'DE':
-            query = \
-                '''
-                SELECT * 
-                FROM estat_annual_population
-                WHERE geo = "''' + country_code + '''"
-                AND geo != 'DE_TOT' 
-                AND age != 'UNK' AND age !='TOTAL' AND age != 'Y_GE75' AND age != 'Y_GE80'
-                AND sex = 'T';
-                '''
-        else:
-            query = \
-                '''
-                SELECT * 
-                FROM estat_annual_population
-                WHERE geo = "''' + country_code + '''"
-                AND age != 'UNK' AND age !='TOTAL' AND age != 'Y_GE75' AND age != 'Y_GE80'
-                AND sex = 'T';
-                '''
-
-        return pd.read_sql(query, self.connection)
-
-    def get_estat_weekly_deaths(self, country_code: str):
-        """
-        Retreives weekly deaths from Eurostat dataset in DB 'rohdaten'
-
-        Parameters:
-        country_code (str): Eurostat Country Code
-
-        Returns:
-        DataFrame: Weekly Deaths per Agegroup and Years
-        """
-
-        query = \
-            '''
-            SELECT * 
-            FROM estat_weekly_deaths
-            WHERE geo = "''' + country_code + '''"
-            AND age != 'UNK' AND age !='TOTAL' AND age != 'Y80-89' AND age != 'Y_GE90'
-            AND sex = 'T';
-            '''
-
-        return pd.read_sql(query, self.connection)
-
-    def get_estat_annual_death_causes(self, country_code: str):
-        """
-        Retreives weekly deaths from Eurostat dataset in DB 'rohdaten'
-
-        Parameters:
-        country_code (str): Eurostat Country Code
-
-        Returns:
-        DataFrame: Weekly Deaths per Agegroup and Years with death causes
-        """
-
-        query = \
-            '''
-            SELECT * 
-            FROM estat_annual_death_causes
-            WHERE geo = "''' + country_code + '''"
-            AND age != 'TOTAL' AND age !='Y_LT15' AND age != 'Y15-24' AND age != 'Y_LT25' AND age != 'Y_LT65' 
-            AND age != 'Y_GE65' AND age != 'Y_GE85'
-            AND sex = 'T';
-            '''
-
-        return pd.read_sql(query, self.connection)
-
-    def get_owid_daily_covid(self, country_code: str):
-        """
-        Retreives daily covid from Our World in Data dataset in DB 'rohdaten'
-
-        Parameters:
-        country_code (str): ISO Country Code
-
-        Returns:
-        DataFrame: Daily covid data
-        """
-
-        query = \
-            '''
-            SELECT * 
-            FROM owid_daily_covid
-            WHERE iso_code = "''' + country_code + '''"
-            ;
-            '''
-
-        return pd.read_sql(query, self.connection)
-
-    def get_oecd_weekly_deaths_total(self, country_code: str):
-        """
-        Retreives total weekly deaths from OECD dataset in DB 'rohdaten'
-
-        Parameters:
-        country_code (str): ISO Country Code
-
-        Returns:
-        DataFrame: Weekly Deaths per week
-        """
-
-        query = \
-            '''
-            SELECT * 
-            FROM oecd_weekly_deaths
-            WHERE country = "''' + country_code + '''"
-            AND gender = 'TOTAL' AND age ='TOTAL' AND variable = 'ALLCAUNB'
-            ;
-            '''
-
-        return pd.read_sql(query, self.connection)
-
-    def get_oecd_weekly_covid_deaths_total(self, country_code: str):
-        """
-        Retreives total weekly deaths from OECD dataset in DB 'rohdaten'
-
-        Parameters:
-        country_code (str): ISO Country Code
-
-        Returns:
-        DataFrame: Weekly Deaths per week
-        """
-
-        query = \
-            '''
-            SELECT * 
-            FROM oecd_weekly_deaths
-            WHERE country = "''' + country_code + '''"
-            AND gender = 'TOTAL' AND age ='TOTAL' AND variable = 'COVIDNB'
-            ;
-            '''
-
-        return pd.read_sql(query, self.connection)
-
-
-# TODO: RENAME
-class ProjDB(DB):
-
-    def __init__(self):
-        super().__init__()
 
     def get_table(self, table: str):
         return pd.read_sql("SELECT * FROM " + table, self.connection)
@@ -703,11 +554,12 @@ class ProjDB(DB):
         return df
 
     def get_population_by_agegroups(self, year: str):
-        query = ''
+        pass
         # TODO
 
     def insert_only_new_rows(self, df: pd.DataFrame, table: str):
         pass
+        # TODO
         """
         self.insert_and_replace(df, 'tmp')
 

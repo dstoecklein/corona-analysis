@@ -37,7 +37,7 @@ def _estat_pp_cols(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def estat_deaths_weekly_agegroups(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols(df=tmp)
 
@@ -84,7 +84,7 @@ def estat_deaths_weekly_agegroups(df: pd.DataFrame) -> None:
 
 
 def estat_death_causes_annual_agegroups(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols(df=tmp)
 

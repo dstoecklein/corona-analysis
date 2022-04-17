@@ -77,7 +77,7 @@ def _estat_pp_population_states(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def estat_population_countries(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
@@ -89,7 +89,7 @@ def estat_population_countries(df: pd.DataFrame) -> None:
 
 
 def estat_population_subdivision_1(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
@@ -104,7 +104,7 @@ def estat_population_subdivision_1(df: pd.DataFrame) -> None:
 
 
 def estat_population_subdivision_2(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
@@ -119,7 +119,7 @@ def estat_population_subdivision_2(df: pd.DataFrame) -> None:
 
 
 def estat_population_agegroups(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols(df=tmp)
     tmp = tmp.query(
@@ -156,7 +156,7 @@ def estat_population_agegroups(df: pd.DataFrame) -> None:
 
 
 def estat_life_exp_at_birth(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols_float(df=tmp)
 
@@ -184,7 +184,7 @@ def estat_life_exp_at_birth(df: pd.DataFrame) -> None:
 
 
 def estat_median_age(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols_float(df=tmp)
 

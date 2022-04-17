@@ -12,7 +12,7 @@ GEO = config.cols.rki_rvalue_daily["cols"]["geo"]
 
 
 def rki_daily(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
 
     tmp.rename(columns=RKI_DAILY_TRANSLATION, inplace=True)

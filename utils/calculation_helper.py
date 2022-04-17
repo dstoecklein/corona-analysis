@@ -157,7 +157,7 @@ def rki_calc_7d_incidence(df: pd.DataFrame, level: int, reference_year: str) -> 
     tmp = df.copy()
 
     # create db connection
-    db = database.ProjDB()
+    db = database.DB()
 
     if level == 3:
         df_population = db.get_population(country='DE', country_code=ISO_3166_1_ALPHA2, level=3, year=reference_year)

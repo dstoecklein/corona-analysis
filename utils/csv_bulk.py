@@ -16,7 +16,7 @@ MORTALITIES_PATH = core.FILES_PATH / 'mortalities'
 HOSPITALS_PATH = core.FILES_PATH / 'hospitals'
 
 def rki_bulk(filetype: str):
-    db = database.ProjDB()
+    db = database.DB()
 
     for filename in os.listdir(COVID_FILES_PATH):
         extract = re.search(r'\d{4}-\d{2}-\d{2}', filename)
@@ -41,7 +41,7 @@ def rki_bulk(filetype: str):
 
 
 def divi_bulk(filetype: str):
-    db = database.ProjDB()
+    db = database.DB()
 
     for filename in os.listdir(ITCU_FILES_PATH):
         if filetype == 'csv':

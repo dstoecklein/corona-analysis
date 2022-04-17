@@ -15,7 +15,7 @@ GEO = config.cols.rki_tests_weekly["cols"]["geo"]
 
 
 def rki_weekly(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
 
     tmp.rename(columns=RKI_WEEKLY_TRANSLATION, inplace=True)

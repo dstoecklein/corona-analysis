@@ -7,7 +7,7 @@ import pandas as pd
 from utils import db_helper as database
 
 # create db connection
-db = database.ProjDB()
+db = database.DB()
 
 df = pd.read_csv("nuts.csv", engine='python', sep=';', encoding='utf8')
 

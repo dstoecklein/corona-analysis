@@ -61,7 +61,7 @@ def _convert_date(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
 
 
 def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
 
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
@@ -78,7 +78,7 @@ def rki_daily(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
 
 
 def rki_daily_states(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
 
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
@@ -97,7 +97,7 @@ def rki_daily_states(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
 
 
 def rki_daily_counties(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
 
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
@@ -119,7 +119,7 @@ def rki_daily_counties(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
 
 
 def rki_daily_agegroups(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
 
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
@@ -141,7 +141,7 @@ def rki_daily_agegroups(df: pd.DataFrame, date: dt.datetime = TODAY) -> None:
 
 
 def rki_weekly_cumulative(df: pd.DataFrame) -> None:
-    db = database.ProjDB()
+    db = database.DB()
     tmp = df.copy()
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     tmp = calculation_helper.rki_calc_numbers(df=tmp, date=tmp[REPORTING_DATE])
