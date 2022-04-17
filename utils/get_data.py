@@ -56,8 +56,8 @@ def rki(url: str, purpose: str, save_file: bool, path: Path = None, is_excel: bo
         )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
-
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.xz')
+        
         df.to_csv(
             path / filename,
             sep=',',
@@ -90,7 +90,7 @@ def estat(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.Dat
     )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.xz')
 
         df.to_csv(
             path / filename,
@@ -125,7 +125,7 @@ def divi(url: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataF
     )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.xz')
 
         df.to_csv(
             path / filename,
@@ -163,7 +163,7 @@ def genesis(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.D
     df = client.read(code)
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.csv')
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.xz')
 
         df.to_csv(
             path / filename,
