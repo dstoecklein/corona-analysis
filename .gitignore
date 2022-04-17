@@ -14,6 +14,7 @@
 *.mov
 *.wmv
 *.csv
+*.ftr
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
