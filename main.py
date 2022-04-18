@@ -27,38 +27,44 @@ def daily():
         url=config.data.urls['rki_covid_daily'],
         purpose='RKI_COVID19_DAILY',
         save_file=True,
-        path=COVID_FILES_PATH
+        path=COVID_FILES_PATH,
+        data_type='ftr'
     )
     df_rki_rvalue_daily = rki(
         url=config.data.urls['rki_rvalue_daily'],
         purpose='RKI_RVALUE_DAILY',
         save_file=True,
-        path=COVID_RVALUE_FILES_PATH
+        path=COVID_RVALUE_FILES_PATH,
+        data_type='ftr'
     )
     df_rki_vacc_daily_cumulative = rki(
         url=config.data.urls['rki_vaccinations_daily_cumulative'],
         purpose='RKI_VACC_DAILY_CUMULATIVE',
         save_file=True,
-        path=COVID_VACC_FILES_PATH
+        path=COVID_VACC_FILES_PATH,
+        data_type='ftr'
     )
     df_rki_vacc_daily_states = rki(
         url=config.data.urls['rki_vaccination_states'],
         purpose='RKI_VACC_DAILY_STATES',
         save_file=True,
-        path=COVID_VACC_FILES_PATH
+        path=COVID_VACC_FILES_PATH,
+        data_type='ftr'
     )
     df_divi_itcu_daily_counties = divi(
         url=config.data.urls['divi_itcu_daily_counties'],
         purpose='DIVI_ITCU_DAILY_COUNTIES',
         save_file=True,
-        path=ITCU_FILES_PATH
+        path=ITCU_FILES_PATH,
+        data_type='ftr'
     )
     
     df_divi_itcu_daily_states = divi(
         url=config.data.urls['divi_itcu_daily_states'],
         purpose='DIVI_ITCU_DAILY_STATES',
         save_file=True,
-        path=ITCU_FILES_PATH
+        path=ITCU_FILES_PATH,
+        data_type='ftr'
     ) 
  
     covid.rki_daily(df=df_rki_covid_daily)
@@ -79,13 +85,15 @@ def weekly():
         save_file=True,
         path=COVID_TEST_FILES_PATH,
         is_excel=True,
-        sheet_name='1_Testzahlerfassung'
+        sheet_name='1_Testzahlerfassung',
+        data_type='xlsx'
     )
     df_estat_deaths_weekly_agegroups = estat(
         code=config.data.estat_tables['estsat_weekly_deaths_agegroups'],
         purpose='ESTAT_DEATHS_WEEKLY_AGEGROUPS',
         save_file=True,
-        path=MORTALITIES_PATH
+        path=MORTALITIES_PATH,
+        data_type='ftr'
     )
 
     covid_tests.rki_weekly(df=df_rki_tests_weekly)
@@ -132,13 +140,15 @@ def annual():
         code=config.data.genesis_tables['hospitals_annual'],
         purpose='HOSP_ANNUAL',
         save_file=True,
-        path=HOSPITALS_PATH
+        path=HOSPITALS_PATH,
+        data_type='ftr'
     )
     df_genesis_hospital_staff_annual = genesis(
         code=config.data.genesis_tables['hospital_staff_annual'],
         purpose='HOSP_STAFF_ANNUAL',
         save_file=True,
-        path=HOSPITALS_PATH
+        path=HOSPITALS_PATH,
+        data_type='ftr'
     )
     df_genesis_population_subdiv3 = genesis(
         code=config.data.genesis_tables['population_subdivision_3'],

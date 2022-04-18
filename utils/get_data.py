@@ -20,7 +20,7 @@ def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
         return response.content
 
 
-def rki(url: str, purpose: str, save_file: bool, path: Path = None, is_excel: bool = False, sheet_name: str = '') -> pd.DataFrame:
+def rki(url: str, purpose: str, save_file: bool, data_type: str, path: Path = None, is_excel: bool = False, sheet_name: str = '') -> pd.DataFrame:
     """
     Reads a given URL from RKI and returns it as a Pandas Dataframe
 
@@ -56,18 +56,25 @@ def rki(url: str, purpose: str, save_file: bool, path: Path = None, is_excel: bo
         )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.ftr')
-        
-        df.to_feather(
-            path / filename,
-            compression='zstd', 
-            compression_level=9
-        )
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
+        if data_type == 'ftr':
+            df.to_feather(
+                path / filename,
+                compression='zstd', 
+                compression_level=9
+            )
+        elif data_type == 'csv':
+            df.to_csv(
+                path / filename,
+                sep=",",
+                index=False,
+                encoding='utf8'
+            )
 
     return df
 
 
-def estat(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataFrame:
+def estat(code: str, purpose: str, save_file: bool, data_type: str, path: Path = None) -> pd.DataFrame:
     """
     Reads a given Table from Eurostat using eurostat package and returns it as a Pandas Dataframe
 
@@ -89,18 +96,24 @@ def estat(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.Dat
     )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.ftr')
-
-        df.to_feather(
-            path / filename,
-            compression='zstd', 
-            compression_level=9
-        )
-
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
+        if data_type == 'ftr':
+            df.to_feather(
+                path / filename,
+                compression='zstd', 
+                compression_level=9
+            )
+        elif data_type == 'csv':
+            df.to_csv(
+                path / filename,
+                sep=",",
+                index=False,
+                encoding='utf8'
+            )
     return df
 
 
-def divi(url: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataFrame:
+def divi(url: str, purpose: str, save_file: bool, data_type: str, path: Path = None) -> pd.DataFrame:
     """
     Reads a given URL from DIVI and returns it as a Pandas Dataframe
 
@@ -123,18 +136,25 @@ def divi(url: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataF
     )
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.ftr')
-
-        df.to_feather(
-            path / filename,
-            compression='zstd', 
-            compression_level=9
-        )
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
+        if data_type == 'ftr':
+            df.to_feather(
+                path / filename,
+                compression='zstd', 
+                compression_level=9
+            )
+        elif data_type == 'csv':
+            df.to_csv(
+                path / filename,
+                sep=",",
+                index=False,
+                encoding='utf8'
+            )
 
     return df
 
 
-def genesis(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.DataFrame:
+def genesis(code: str, purpose: str, save_file: bool, data_type: str, path: Path = None) -> pd.DataFrame:
     """
     Reads a given URL from DeStatis and returns it as a Pandas Dataframe
 
@@ -160,12 +180,19 @@ def genesis(code: str, purpose: str, save_file: bool, path: Path = None) -> pd.D
     df = client.read(code)
 
     if save_file:
-        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.ftr')
-
-        df.to_feather(
-            path / filename,
-            compression='zstd', 
-            compression_level=9
-        )
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
+        if data_type == 'ftr':
+            df.to_feather(
+                path / filename,
+                compression='zstd', 
+                compression_level=9
+            )
+        elif data_type == 'csv':
+            df.to_csv(
+                path / filename,
+                sep=",",
+                index=False,
+                encoding='utf8'
+            )
 
     return df

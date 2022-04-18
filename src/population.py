@@ -175,8 +175,8 @@ def estat_life_exp_at_birth(df: pd.DataFrame) -> None:
         value_name="life_expectancy",
     )
     tmp['year'] = tmp['year'].astype(int)
-    tmp = tmp[tmp["year"] >= 2015]
-
+    tmp = tmp[tmp["year"] >= 1990]
+    tmp.rename(columns={'life_expectancy': 'life_expectancy_at_birth'}, inplace=True)
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_countries_fk(tmp, left_on="geo", country_code="iso_3166_1_alpha2")
     db.insert_or_update(df=tmp, table=ESTAT_LIFE_EXP_TABLE)
@@ -200,7 +200,7 @@ def estat_median_age(df: pd.DataFrame) -> None:
         id_vars=["indic_de", "geo"], var_name="year", value_name="median_age"
     )
     tmp['year'] = tmp['year'].astype(int)
-    tmp = tmp[tmp["year"] >= 2015]
+    tmp = tmp[tmp["year"] >= 1990]
 
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_countries_fk(tmp, left_on="geo", country_code="iso_3166_1_alpha2")
