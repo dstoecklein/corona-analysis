@@ -11,8 +11,8 @@ tox -e weekly
 ECHO ============================
 ECHO Moving files to archive...
 ECHO ============================
-move ..\files\covid_tests\*.csv ..\files\covid_tests\archive
-move ..\files\mortalities\*.csv ..\files\mortalities\archive
+move ..\files\covid_tests\*.ftr ..\files\covid_tests\archive
+move ..\files\mortalities\*.ftr ..\files\mortalities\archive
 ECHO End
 ECHO ============================
 CALL conda deactivate

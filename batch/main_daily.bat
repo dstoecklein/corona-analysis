@@ -10,10 +10,10 @@ tox -e daily
 ECHO ============================
 ECHO Moving files to archive...
 ECHO ============================
-move ..\files\covid\*.csv ..\files\covid\archive
-move ..\files\covid_vaccinations\*.csv ..\files\covid_vaccinations\archive
-move ..\files\itcus\*.csv ..\files\itcus\archive
-move ..\files\covid_rvalue\*.csv ..\files\covid_rvalue\archive
+move ..\files\covid\*.ftr ..\files\covid\archive
+move ..\files\covid_vaccinations\*.ftr ..\files\covid_vaccinations\archive
+move ..\files\itcus\*.ftr ..\files\itcus\archive
+move ..\files\covid_rvalue\*.ftr ..\files\covid_rvalue\archive
 ECHO ============================
 ECHO End
 ECHO ============================
