@@ -58,13 +58,9 @@ def _estat_pp_population_states(df: pd.DataFrame) -> pd.DataFrame:
     tmp = df.copy()
 
     # only need totals
-    tmp.query(
-        """
-        age == 'TOTAL' \
-        & sex == 'T'
-        """,
-        inplace=True,
-    )
+    tmp = tmp[tmp["age"] == 'TOTAL']
+    tmp = tmp[tmp["sex"] == 'T']
+
     # new column 'level' to indicate NUTS-level
     tmp = tmp.assign(level=tmp["geo"].str.len() - 2)
     # filter to NUTS-3
@@ -122,13 +118,10 @@ def estat_population_agegroups(df: pd.DataFrame) -> None:
     db = database.DB()
     tmp = df.copy()
     tmp = _estat_pp_cols(df=tmp)
-    tmp = tmp.query(
-        """
-        geo.str.len() == 2 \
-        & age != 'TOTAL' & age !='Y_GE75' & age != 'Y80-84' & age != 'Y_GE85' \
-        & sex == 'T'
-        """
-    )
+
+    tmp = tmp[tmp["geo"].str.len() == 2]
+    tmp = tmp[(tmp["age"] != 'TOTAL') & (tmp["age"] != 'Y_GE75') & (tmp["age"] != 'Y80-84') & (tmp["age"] != 'Y_GE85')]
+    tmp = tmp[tmp["sex"] == 'T']
 
     # melting to years
     tmp = tmp.melt(
@@ -160,14 +153,9 @@ def estat_life_exp_at_birth(df: pd.DataFrame) -> None:
     tmp = df.copy()
     tmp = _estat_pp_cols_float(df=tmp)
 
-    tmp.query(
-        """
-        geo.str.len() == 2 \
-        & age =='Y_LT1' \
-        & sex == 'T'
-        """,
-        inplace=True,
-    )
+    tmp = tmp[tmp["geo"].str.len() == 2]
+    tmp = tmp[tmp["age"] == 'Y_LT1']
+    tmp = tmp[tmp["sex"] == 'T']
 
     tmp = tmp.melt(
         id_vars=["age", "sex", "unit", "geo"],
@@ -188,13 +176,8 @@ def estat_median_age(df: pd.DataFrame) -> None:
     tmp = df.copy()
     tmp = _estat_pp_cols_float(df=tmp)
 
-    tmp.query(
-        """
-        indic_de == 'MEDAGEPOP' \
-        & geo.str.len() == 2
-        """,
-        inplace=True,
-    )
+    tmp = tmp[tmp["indic_de"] == 'MEDAGEPOP']
+    tmp = tmp[tmp["geo"].str.len() == 2]
 
     tmp = tmp.melt(
         id_vars=["indic_de", "geo"], var_name="year", value_name="median_age"

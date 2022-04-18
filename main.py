@@ -104,37 +104,44 @@ def annual():
     df_estat_death_causes_annual_agegroups = estat(
         code=config.data.estat_tables['estsat_death_causes_annual_agegroups'],
         purpose='ESTAT_DEATH_CAUSES_ANNUAL_AGEGROUPS',
-        save_file=False
+        save_file=False,
+        data_type='ftr'
     )
     df_estat_population_countries = estat(
         code=config.data.estat_tables['estat_population_nuts_2'],
         purpose="POP_COUNTRIES",
-        save_file=False
+        save_file=False,
+        data_type='ftr'
     )
     df_estat_population_subdiv1 = estat(
         code=config.data.estat_tables['estat_population_nuts_2'],
         purpose="POP_SUBDIV1",
-        save_file=False
+        save_file=False,
+        data_type='ftr'
     )
     df_estat_population_subdiv2 = estat(
         code=config.data.estat_tables['estat_population_nuts_2'],
         purpose="POP_SUBDIV2",
-        save_file=False
+        save_file=False,
+        data_type='ftr'
     )
     df_estat_population_agegroups = estat(
         code=config.data.estat_tables['estat_population_agegroups'],
         purpose="POP_AGEGROUPS",
-        save_file=False
+        save_file=False,
+        data_type='ftr'
     )
     df_estat_life_exp = estat(
         code=config.data.estat_tables['estat_life_expectancy'],
         purpose="LIFE_EXP",
-        save_file=False
+        save_file=False,
+        data_type='ftr'
     )
     df_estat_median_age = estat(
         code=config.data.estat_tables['estat_population_structure_indicators'],
         purpose="POP_STRUCT_IND",
-        save_file=False
+        save_file=False,
+        data_type='ftr'
     )
     df_genesis_hospitals_annual = genesis(
         code=config.data.genesis_tables['hospitals_annual'],
@@ -153,15 +160,16 @@ def annual():
     df_genesis_population_subdiv3 = genesis(
         code=config.data.genesis_tables['population_subdivision_3'],
         purpose='POP_SUBDIV3',
-        save_file=False
+        save_file=False,
+        data_type='ftr'
     )
     mortalities.estat_death_causes_annual_agegroups(df=df_estat_death_causes_annual_agegroups)
     population.estat_population_countries(df=df_estat_population_countries)
     population.estat_population_subdivision_1(df=df_estat_population_subdiv1)
     population.estat_population_subdivision_2(df=df_estat_population_subdiv2)
-    #population.estat_population_agegroups(df=df_estat_population_agegroups)
-    #population.estat_life_exp_at_birth(df=df_estat_life_exp)
-    #population.estat_median_age(df=df_estat_median_age)
+    population.estat_population_agegroups(df=df_estat_population_agegroups)
+    population.estat_life_exp_at_birth(df=df_estat_life_exp)
+    population.estat_median_age(df=df_estat_median_age)
     hospital.genesis_hospitals_annual(df=df_genesis_hospitals_annual)
     hospital.genesis_hospital_staff_annual(df=df_genesis_hospital_staff_annual)
     population.genesis_population_subdivision_3(df=df_genesis_population_subdiv3)
