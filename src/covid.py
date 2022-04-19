@@ -16,7 +16,7 @@ RKI_DAILY_STATES_TABLE = config_db.tables["covid_daily_states"]
 RKI_DAILY_COUNTIES_TABLE = config_db.tables["covid_daily_counties"]
 RKI_DAILY_AGEGROUPS_TABLE = config_db.tables["covid_daily_agegroups"]
 RKI_WEEKLY_CUMULATIVE_TABLE = config_db.tables["covid_weekly_cumulative"]
-RKI_YEARLY_TABLE = config_db.tables["covid_yearly"]
+RKI_ANNUAL_TABLE = config_db.tables["covid_annual"]
 SUBDIVISION_2_ID = config.cols.rki_covid_daily["cols"]["subdivision_2_id"]
 REPORTING_DATE = config.cols.rki_covid_daily["cols"]["reporting_date"]
 BUNDESLAND_ID = config.cols.rki_covid_daily["cols"]["bundesland_id"]
@@ -146,7 +146,7 @@ def rki_weekly_cumulative(df: pd.DataFrame) -> None:
     db.db_close()
 
 
-def rki_yearly() -> None:
+def rki_annual() -> None:
     db = database.DB()
     df = db.get_table("covid_daily")
     df_calendar_days = db.get_table("_calendar_days")
@@ -169,5 +169,5 @@ def rki_yearly() -> None:
 
     tmp = db.merge_calendar_years_fk(df=tmp, left_on='iso_year')
     tmp = db.merge_countries_fk(df=tmp, left_on=GEO, country_code=NUTS_0)
-    db.insert_into(df=tmp, table=RKI_YEARLY_TABLE, replace=False, add_meta_columns=False)
+    db.insert_into(df=tmp, table=RKI_ANNUAL_TABLE, replace=False, add_meta_columns=False)
     db.db_close()
