@@ -34,6 +34,24 @@ CREATE TABLE covid_daily (
         ON UPDATE CASCADE
 ) AUTO_INCREMENT = 1;
 
+CREATE TABLE covid_yearly (
+	covid_yearly_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	countries_fk int NOT NULL,
+    calendar_years_fk int NOT NULL,
+    cases int,
+    deaths int,
+    recovered int,
+    active_cases int,
+    last_update DATETIME,
+    unique_key VARCHAR(255) NOT NULL UNIQUE,
+    FOREIGN KEY (countries_fk) REFERENCES _countries (countries_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (calendar_years_fk) REFERENCES _calendar_years (calendar_years_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) AUTO_INCREMENT = 1;
+
 CREATE TABLE covid_weekly_cumulative (
 	covid_weekly_cumulative_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	countries_fk int NOT NULL,
