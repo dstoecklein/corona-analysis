@@ -72,6 +72,7 @@ def daily():
     covid.rki_daily_counties(df=df_rki_covid_daily)
     covid.rki_daily_agegroups(df=df_rki_covid_daily)
     covid.rki_weekly_cumulative(df=df_rki_covid_daily)
+    covid.rki_yearly()
     covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
     covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
     covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
