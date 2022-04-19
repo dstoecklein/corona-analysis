@@ -160,11 +160,14 @@ def rki_yearly() -> None:
     tmp = pd.concat([df_2020, df_2021, df_2022])
     tmp.set_index(tmp['iso_day'].dt.year, inplace=True)
     tmp = tmp._get_numeric_data()
-
+    tmp.loc[2021] = tmp.loc[2021] - tmp.loc[2020]
+    tmp.loc[2022] = tmp.loc[2022] - (tmp.loc[2021] + tmp.loc[2020])
     tmp.reset_index(inplace=True)
     tmp.rename(columns={'iso_day': 'iso_year'}, inplace=True)
+    tmp.drop('countries_fk', axis=1, inplace=True)
     tmp[GEO] = GERMANY
 
     tmp = db.merge_calendar_years_fk(df=tmp, left_on='iso_year')
+    tmp = db.merge_countries_fk(df=tmp, left_on=GEO, country_code=NUTS_0)
     db.insert_into(df=tmp, table=RKI_YEARLY_TABLE, replace=False, add_meta_columns=False)
     db.db_close()
