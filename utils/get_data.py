@@ -22,6 +22,9 @@ def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
 
 def _handle_german_umlauts_in_columns(df: pd.DataFrame) -> pd.DataFrame:
     tmp = df.copy()
+    tmp.columns = tmp.columns.str.replace("Ä", "Ae")
+    tmp.columns = tmp.columns.str.replace("Ü", "Ue")
+    tmp.columns = tmp.columns.str.replace("Ö", "Oe")
     tmp.columns = tmp.columns.str.replace("ä", "ae")
     tmp.columns = tmp.columns.str.replace("ü", "ue")
     tmp.columns = tmp.columns.str.replace("ö", "oe")
