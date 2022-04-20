@@ -149,20 +149,20 @@ def annual():
         purpose='HOSP_ANNUAL',
         save_file=True,
         path=HOSPITALS_PATH,
-        data_type='ftr'
+        data_type='csv'
     )
     df_genesis_hospital_staff_annual = genesis(
         code=config.data.genesis_tables['hospital_staff_annual'],
         purpose='HOSP_STAFF_ANNUAL',
         save_file=True,
         path=HOSPITALS_PATH,
-        data_type='ftr'
+        data_type='csv'
     )
     df_genesis_population_subdiv3 = genesis(
         code=config.data.genesis_tables['population_subdivision_3'],
         purpose='POP_SUBDIV3',
         save_file=False,
-        data_type='ftr'
+        data_type='csv'
     )
     mortalities.estat_death_causes_annual_agegroups(df=df_estat_death_causes_annual_agegroups)
     population.estat_population_countries(df=df_estat_population_countries)

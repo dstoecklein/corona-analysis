@@ -20,6 +20,14 @@ def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
         return response.content
 
 
+def _handle_german_umlauts_in_columns(df: pd.DataFrame) -> pd.DataFrame:
+    tmp = df.copy()
+    tmp.columns = tmp.columns.str.replace("ä", "ae")
+    tmp.columns = tmp.columns.str.replace("ü", "ue")
+    tmp.columns = tmp.columns.str.replace("ö", "oe")
+    return tmp
+
+
 def rki(url: str, purpose: str, save_file: bool, data_type: str, path: Path = None, is_excel: bool = False, sheet_name: str = '') -> pd.DataFrame:
     """
     Reads a given URL from RKI and returns it as a Pandas Dataframe
@@ -47,6 +55,7 @@ def rki(url: str, purpose: str, save_file: bool, data_type: str, path: Path = No
             http_request(url, decode=False),
             sheet_name=sheet_name
         )
+        df = _handle_german_umlauts_in_columns(df=df)
         df = df[df.filter(regex='^(?!Unnamed)').columns]
     else:
         df = pd.read_csv(
@@ -54,6 +63,7 @@ def rki(url: str, purpose: str, save_file: bool, data_type: str, path: Path = No
             engine='python',
             sep=','
         )
+        df = _handle_german_umlauts_in_columns(df=df)
 
     if save_file:
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
@@ -94,6 +104,7 @@ def estat(code: str, purpose: str, save_file: bool, data_type: str, path: Path =
         code=code,
         flags=False
     )
+    df = _handle_german_umlauts_in_columns(df=df)
 
     if save_file:
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
@@ -134,6 +145,7 @@ def divi(url: str, purpose: str, save_file: bool, data_type: str, path: Path = N
         engine='python',
         sep=','
     )
+    df = _handle_german_umlauts_in_columns(df=df)
 
     if save_file:
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
@@ -177,8 +189,9 @@ def genesis(code: str, purpose: str, save_file: bool, data_type: str, path: Path
         password=config_db.genesis_login['password']
     )
 
-    df = client.read(code)
-
+    df = client.read(code, start_year=1990)
+    df = _handle_german_umlauts_in_columns(df=df)
+    
     if save_file:
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
         if data_type == 'ftr':

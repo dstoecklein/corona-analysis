@@ -91,7 +91,7 @@ rki_tests_weekly:
     Anzahl Testungen: 'amount'
     Positiv getestet: 'positive'
     Positivenanteil (%): 'positive_percentage'
-    Anzahl übermittelnder Labore: 'amount_transferring_laboratories'
+    Anzahl uebermittelnder Labore: 'amount_transferring_laboratories'
   cols:
     calendar_week: 'calendar_week'
     amount: 'amount'
@@ -285,7 +285,7 @@ estat_population_agegroups:
 genesis_hospitals_annual:
   translation:
     index.0: 'iso_year'
-    Krankenhäuser.Anzahl: 'amount_hospitals'
+    Krankenhaeuser.Anzahl: 'amount_hospitals'
     Betten.Anzahl: 'amount_beds'
     Betten je 100.000 Einwohner.Anzahl: 'amount_beds_per_100000_population'
     Patienten.Anzahl: 'amount_patients'
@@ -307,9 +307,9 @@ genesis_hospitals_staff_annual:
   translation:
     index.0: 'iso_year'
     Personal.Anzahl: 'total_staff'
-    Hauptamtliche Ärzte.Anzahl: 'full_time_doctors'
-    Nichtärztliches Personal.Anzahl: 'non_medical_staff'
-    Nichtärztliches Personal im Pflegedienst.Anzahl: 'non_medical_staff_in_nursing_service'  
+    Hauptamtliche Aerzte.Anzahl: 'full_time_doctors'
+    Nichtaerztliches Personal.Anzahl: 'non_medical_staff'
+    Nichtaerztliches Personal im Pflegedienst.Anzahl: 'non_medical_staff_in_nursing_service'  
   cols:
     iso_year: 'iso_year'
     total_staff: 'total_staff'
