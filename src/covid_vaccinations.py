@@ -1,11 +1,11 @@
 import pandas as pd
-
 from config.core import config, config_db
 from utils import db_helper as database
 
-RKI_DAILY_CUMULATIVE_TRANSLATION = config.cols.rki_vaccinations_daily_cumulative[
-    "translation"
-]
+OWID_DAILY_TRANSLATION = config.cols.owid_vaccinations_daily["translation"]
+#RKI_DAILY_CUMULATIVE_TRANSLATION = config.cols.rki_vaccinations_daily_cumulative[
+#    "translation"
+#]
 RKI_DAILY_STATES_TRANSLATION = config.cols.rki_vaccinations_daily_states["translation"]
 REPORTING_DATE = config.cols.rki_vaccinations_daily_cumulative["cols"]["reporting_date"]
 BUNDESLAND_ID = config.cols.rki_vaccinations_daily_cumulative["cols"]["bundesland_id"]
@@ -37,6 +37,17 @@ def _convert_date(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
     return tmp
 
 
+def owid_vaccinations_daily(df: pd.DataFrame) -> None:
+    db = database.DB()
+    tmp = df.copy()
+
+    tmp.rename(columns=OWID_DAILY_TRANSLATION, inplace=True)
+    tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
+    tmp.to_csv("test.csv", sep=";")
+    db.db_close()
+
+
+"""
 def rki_vaccinations_daily_cumulative(df: pd.DataFrame) -> None:
     db = database.DB()
     tmp = df.copy()
@@ -51,6 +62,7 @@ def rki_vaccinations_daily_cumulative(df: pd.DataFrame) -> None:
     tmp = db.merge_countries_fk(df=tmp, left_on=GEO, country_code=NUTS_0)
     db.insert_or_update(df=tmp, table=RKI_DAILY_CUMULATIVE_TABLE)
     db.db_close()
+"""
 
 
 def rki_vaccinations_daily_states(df: pd.DataFrame) -> None:

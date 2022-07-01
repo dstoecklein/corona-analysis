@@ -209,3 +209,44 @@ def genesis(code: str, purpose: str, save_file: bool, data_type: str, path: Path
             )
 
     return df
+
+
+def owid(url: str, purpose: str, save_file: bool, data_type: str, path: Path = None) -> pd.DataFrame:
+    """
+    Reads a given URL from Our World in Data and returns it as a Pandas Dataframe
+
+    :param url: URL from the Our World in Data
+    :param purpose: Indicate which purpose the data fullfills (e.g. Tests, R-Value, etc.)
+    :param save_file: Determines if the file should be saved as .csv
+    :param path: Path in which the file should be saved
+    :return: pd.Dataframe
+    """
+
+    if save_file and path is None:
+        raise RuntimeError('save_file is true but no path given')
+    if not save_file and path is not None:
+        raise RuntimeError('Path was given but save_file is false')
+
+    df = pd.read_csv(
+        http_request(url),
+        engine='python',
+        sep=','
+    )
+
+    if save_file:
+        filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
+        if data_type == 'ftr':
+            df.to_feather(
+                path / filename,
+                compression='zstd', 
+                compression_level=9
+            )
+        elif data_type == 'csv':
+            df.to_csv(
+                path / filename,
+                sep=",",
+                index=False,
+                encoding='utf8'
+            )
+
+    return df

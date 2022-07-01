@@ -22,6 +22,7 @@ class ColConfig(BaseModel):
     rki_covid_daily: dict
     rki_tests_weekly: dict
     rki_rvalue_daily: dict
+    owid_vaccinations_daily: dict
     rki_vaccinations_daily_cumulative: dict
     rki_vaccinations_daily_states: dict
     divi_itcu_daily_counties: dict

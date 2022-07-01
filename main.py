@@ -2,7 +2,7 @@ import argparse
 import datetime as dt
 from config import core
 from config.core import config
-from utils.get_data import rki, estat, divi, genesis
+from utils.get_data import rki, estat, divi, genesis, owid
 from utils.csv_bulk import rki_bulk, divi_bulk
 from src import (
     covid, covid_rvalue, covid_tests, covid_vaccinations, 
@@ -37,12 +37,21 @@ def daily():
         path=COVID_RVALUE_FILES_PATH,
         data_type='ftr'
     )
+    """
     df_rki_vacc_daily_cumulative = rki(
         url=config.data.urls['rki_vaccinations_daily_cumulative'],
         purpose='RKI_VACC_DAILY_CUMULATIVE',
         save_file=True,
         path=COVID_VACC_FILES_PATH,
         data_type='ftr'
+    )
+    """
+    df_owid_vacc_daily_cumulative = owid(
+        url=config.data.urls['owid_vaccinations_daily_cumulative'],
+        purpose="OWID_VACC_DAILY_CUMULATIVE",
+        save_file=True,
+        path=core.FILES_PATH / 'covid_vaccinations',
+        data_type="ftr"
     )
     df_rki_vacc_daily_states = rki(
         url=config.data.urls['rki_vaccination_states'],
@@ -67,17 +76,20 @@ def daily():
         data_type='ftr'
     ) 
  
-    covid.rki_daily(df=df_rki_covid_daily)
-    covid.rki_daily_states(df=df_rki_covid_daily)
-    covid.rki_daily_counties(df=df_rki_covid_daily)
-    covid.rki_daily_agegroups(df=df_rki_covid_daily)
-    covid.rki_weekly_cumulative(df=df_rki_covid_daily)
-    covid.rki_annual()
-    covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
-    covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
-    covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
-    intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
-    intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
+    #covid.rki_daily(df=df_rki_covid_daily)
+    #covid.rki_daily_states(df=df_rki_covid_daily)
+    #covid.rki_daily_counties(df=df_rki_covid_daily)
+    #covid.rki_daily_agegroups(df=df_rki_covid_daily)
+    #covid.rki_weekly_cumulative(df=df_rki_covid_daily)
+    #covid.rki_annual()
+    #covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
+    
+    covid_vaccinations.owid_vaccinations_daily(df=df_owid_vacc_daily_cumulative)
+    #covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
+    
+    #covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
+    #intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
+    #intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
 
 def weekly():
     df_rki_tests_weekly = rki(
