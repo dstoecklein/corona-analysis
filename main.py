@@ -91,7 +91,7 @@ def daily():
     covid.rki_annual()
     covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
     """
-    covid_vaccinations.owid_vaccinations_daily(df=df_owid_vacc_daily)
+    #covid_vaccinations.owid_vaccinations_daily(df=df_owid_vacc_daily)
     covid_vaccinations.owid_vaccinations_daily_manufacturer(df=df_owid_vacc_daily_manufacturer)
     #covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
     """

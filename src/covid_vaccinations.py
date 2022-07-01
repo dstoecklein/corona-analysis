@@ -28,7 +28,7 @@ VACCINE = config.cols.rki_vaccinations_daily_states["cols"]["vaccine"]
 VACC_DATE = config.cols.rki_vaccinations_daily_states["cols"]["vacc_date"]
 VACCINE_SERIES = config.cols.rki_vaccinations_daily_states["cols"]["vaccine_series"]
 SUBDIVISION_1_ID = config.cols.rki_vaccinations_daily_states["cols"]["subdivision_1_id"]
-
+BRAND_NAME_1 = config.cols.owid_vaccinations_daily_manufacturer["cols"]["brand_name_1"]
 
 def _convert_date(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
     tmp = df.copy()
@@ -68,7 +68,7 @@ def owid_vaccinations_daily_manufacturer(df: pd.DataFrame):
     tmp.rename(columns=OWID_DAILY_MANUFACTURER_TRANSLATION, inplace=True)
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
 
-    tmp["vaccine"] = tmp["vaccine"].str.lower()
+    tmp[BRAND_NAME_1] = tmp[BRAND_NAME_1].str.lower()
 
     # map manufacturer to brand name
     manufacturer_to_brand_map = {
