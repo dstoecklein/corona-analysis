@@ -284,6 +284,8 @@ class DB: # MySQL DB
 
         if country_code == 'nuts_0':
             df[left_on] = df[left_on].str.upper()
+        elif country_code == 'country_en':
+            df_countries['country_en'].str.lower()
         else:
             df[left_on] = df[left_on].str.lower()
 
