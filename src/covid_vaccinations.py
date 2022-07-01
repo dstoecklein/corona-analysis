@@ -14,8 +14,10 @@ GERMANY = config_db.cols["_countries"]["countries"]["germany"]  # 'DE'
 NUTS_0 = config_db.cols["_countries"]["nuts_0"]
 AGEGROUP_INTERVAL_RKI = config_db.agegroup_intervals["rki"]
 GEO = config.cols.rki_covid_daily["cols"]["geo"]
+ISO_3166_1_ALPHA3 = config.cols.owid_vaccinations_daily["cols"]["iso_3166_1_alpha3"]
 RKI_DAILY_CUMULATIVE_TABLE = config_db.tables["vaccinations_daily_cumulative"]
 RKI_DAILY_STATES_TABLE = config_db.tables["vaccinations_daily_states"]
+OWID_DAILY_TABLE = config_db.tables["vaccinations_daily"]
 VACCINE = config.cols.rki_vaccinations_daily_states["cols"]["vaccine"]
 VACC_DATE = config.cols.rki_vaccinations_daily_states["cols"]["vacc_date"]
 VACCINE_SERIES = config.cols.rki_vaccinations_daily_states["cols"]["vaccine_series"]
@@ -43,7 +45,10 @@ def owid_vaccinations_daily(df: pd.DataFrame) -> None:
 
     tmp.rename(columns=OWID_DAILY_TRANSLATION, inplace=True)
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
+    tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
+    tmp = db.merge_countries_fk(df=tmp, left_on=ISO_3166_1_ALPHA3, country_code=ISO_3166_1_ALPHA3)
     tmp.to_csv("test.csv", sep=";")
+    #db.insert_or_update(df=tmp, table=OWID_DAILY_TABLE)
     db.db_close()
 
 
