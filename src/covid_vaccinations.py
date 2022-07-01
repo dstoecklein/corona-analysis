@@ -95,8 +95,7 @@ def owid_vaccinations_daily_manufacturer(df: pd.DataFrame):
         df=tmp, left_on=LOCATION, country_code='country_en'
     )
     tmp = db.merge_vaccines_fk(df=tmp, left_on=BRAND_NAME_1)
-    tmp.to_csv("test.csv", sep=";")
-    #db.insert_or_update(df=tmp, table=OWID_DAILY_MANUFACTURER_TABLE)
+    db.insert_or_update(df=tmp, table=OWID_DAILY_MANUFACTURER_TABLE)
     db.db_close()
 
 """
@@ -124,6 +123,26 @@ def rki_vaccinations_daily_states(df: pd.DataFrame) -> None:
     tmp.rename(columns=RKI_DAILY_STATES_TRANSLATION, inplace=True)
 
     tmp = _convert_date(df=tmp, date_col=VACC_DATE)
+
+    tmp[VACCINE] = tmp[VACCINE].str.lower()
+
+    # map manufacturer to brand name
+    manufacturer_to_brand_map = {
+        'comirnaty': ['pfizer', 'biontech', 'pfizer-biontech', 'pfizer/biontech'],
+        'janssen': ['johnson', 'johnson & johnson', 'johnson&johnson'], 
+        'spikevax': ['moderna'],
+        'vaxzevria': ['astrazeneca', 'astra', 'oxford/astrazeneca'],
+        'sputnik v': ['gamaleya research institute of epidemiology', 'gamaleya', 'spuntik', 'sputnikv'],
+        'sinopharm': ['beijing institute of biological products', 'sinopharm/beijing', 'sinopharm beijing', 'sinopharm_beijing'],
+        'convidecia': ['cansino biologics', 'cansino'],
+        'covaxin': ['bharat biotech', 'bharat'],
+        'coronavac': ['sinovac'],
+        'nuvaxovid': ['novavax', 'covovax'],
+        'vidprevtyn': ['sanofi'],
+    }
+
+    for k, v in manufacturer_to_brand_map.items():
+        tmp.replace(v, k, inplace=True)
 
     tmp = db.merge_vaccines_fk(df=tmp, left_on=VACCINE)
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=VACC_DATE)

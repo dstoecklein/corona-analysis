@@ -94,8 +94,8 @@ def daily():
     #covid_vaccinations.owid_vaccinations_daily(df=df_owid_vacc_daily)
     covid_vaccinations.owid_vaccinations_daily_manufacturer(df=df_owid_vacc_daily_manufacturer)
     #covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
-    """
     covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
+    """
     intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
     intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
     """
