@@ -18,9 +18,6 @@ GENESIS_HOSP_STAFF_ANNUAL_TABLE = config_db.tables["hospitals_staff_annual"]
 def genesis_hospitals_annual(df: pd.DataFrame) -> None:
     db = database.DB()
     tmp = df.copy()
-    tmp.columns = tmp.columns.str.replace("ä", "ae")
-    tmp.columns = tmp.columns.str.replace("ü", "ue")
-    tmp.columns = tmp.columns.str.replace("ö", "oe")
     tmp.rename(columns=GENESIS_HOSP_ANNUAL_TRANSLATION, inplace=True)
     tmp[ISO_YEAR] = pd.to_datetime(tmp[ISO_YEAR], infer_datetime_format=True).dt.year.astype(int)
     tmp = db.merge_calendar_years_fk(df=tmp, left_on=ISO_YEAR)
@@ -33,7 +30,9 @@ def genesis_hospitals_annual(df: pd.DataFrame) -> None:
 def genesis_hospital_staff_annual(df: pd.DataFrame) -> None:
     db = database.DB()
     tmp = df.copy()
+    tmp.to_csv("test.csv", sep=";")
     tmp.rename(columns=GENESIS_HOSP_STAFF_ANNUAL_TRANSLATION, inplace=True)
+    tmp.to_csv("test2.csv", sep=";")
     tmp[ISO_YEAR] = pd.to_datetime(tmp[ISO_YEAR], infer_datetime_format=True).dt.year.astype(int)
     tmp = db.merge_calendar_years_fk(df=tmp, left_on=ISO_YEAR)
     tmp[GEO] = GERMANY
