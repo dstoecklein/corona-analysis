@@ -51,7 +51,7 @@ def daily():
         purpose="OWID_VACC_DAILY_CUMULATIVE",
         save_file=True,
         path=core.FILES_PATH / 'covid_vaccinations',
-        data_type="ftr"
+        data_type="csv"
     )
     df_rki_vacc_daily_states = rki(
         url=config.data.urls['rki_vaccination_states'],
