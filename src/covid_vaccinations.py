@@ -1,12 +1,14 @@
-import pandas as pd
-from config.core import config, config_db
-from utils import db_helper as database
 import datetime as dt
 
+import pandas as pd
+
+from config.core import config, config_db
+from utils import db_helper as database
+
 OWID_DAILY_TRANSLATION = config.cols.owid_vaccinations_daily["translation"]
-#RKI_DAILY_CUMULATIVE_TRANSLATION = config.cols.rki_vaccinations_daily_cumulative[
+# RKI_DAILY_CUMULATIVE_TRANSLATION = config.cols.rki_vaccinations_daily_cumulative[
 #    "translation"
-#]
+# ]
 RKI_DAILY_STATES_TRANSLATION = config.cols.rki_vaccinations_daily_states["translation"]
 REPORTING_DATE = config.cols.rki_vaccinations_daily_cumulative["cols"]["reporting_date"]
 BUNDESLAND_ID = config.cols.rki_vaccinations_daily_cumulative["cols"]["bundesland_id"]
@@ -47,11 +49,11 @@ def owid_vaccinations_daily(df: pd.DataFrame) -> None:
     tmp.rename(columns=OWID_DAILY_TRANSLATION, inplace=True)
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     # only last 90days
-    tmp = tmp[
-        tmp[REPORTING_DATE] > dt.datetime.now() - pd.to_timedelta("90day")
-    ] 
+    tmp = tmp[tmp[REPORTING_DATE] > dt.datetime.now() - pd.to_timedelta("90day")]
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
-    tmp = db.merge_countries_fk(df=tmp, left_on=ISO_3166_1_ALPHA3, country_code=ISO_3166_1_ALPHA3)
+    tmp = db.merge_countries_fk(
+        df=tmp, left_on=ISO_3166_1_ALPHA3, country_code=ISO_3166_1_ALPHA3
+    )
     db.insert_or_update(df=tmp, table=OWID_DAILY_TABLE)
     db.db_close()
 

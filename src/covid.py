@@ -40,12 +40,8 @@ def _convert_date(df: pd.DataFrame, dates: list) -> pd.DataFrame:
     for d in dates:
         if d in tmp.columns:
             try:
-                tmp[d] = pd.to_datetime(
-                    tmp[d], infer_datetime_format=True
-                ).dt.date
-                tmp[d] = pd.to_datetime(
-                    tmp[d], infer_datetime_format=True
-                )
+                tmp[d] = pd.to_datetime(tmp[d], infer_datetime_format=True).dt.date
+                tmp[d] = pd.to_datetime(tmp[d], infer_datetime_format=True)
             except (KeyError, TypeError):
                 print("Error trying to convert Date columns")
     return tmp
@@ -150,24 +146,34 @@ def rki_annual() -> None:
     db = database.DB()
     df = db.get_table("covid_daily")
     df_calendar_days = db.get_table("_calendar_days")
-    tmp = df.merge(df_calendar_days, left_on="calendar_days_fk", right_on="calendar_days_id", how="left")
-    tmp = _convert_date(df=tmp, dates=['iso_day'])
+    tmp = df.merge(
+        df_calendar_days,
+        left_on="calendar_days_fk",
+        right_on="calendar_days_id",
+        how="left",
+    )
+    tmp = _convert_date(df=tmp, dates=["iso_day"])
 
-    df_2020 = tmp[tmp['iso_day']==dt.datetime(2020,12,31)]
-    df_2021 = tmp[tmp['iso_day']==dt.datetime(2021,12,31)]
-    df_2022 = tmp[tmp['iso_day']==dt.datetime(dt.date.today().year,dt.date.today().month,dt.date.today().day)]
+    df_2020 = tmp[tmp["iso_day"] == dt.datetime(2020, 12, 31)]
+    df_2021 = tmp[tmp["iso_day"] == dt.datetime(2021, 12, 31)]
+    df_2022 = tmp[
+        tmp["iso_day"]
+        == dt.datetime(dt.date.today().year, dt.date.today().month, dt.date.today().day)
+    ]
 
     tmp = pd.concat([df_2020, df_2021, df_2022])
-    tmp.set_index(tmp['iso_day'].dt.year, inplace=True)
+    tmp.set_index(tmp["iso_day"].dt.year, inplace=True)
     tmp = tmp._get_numeric_data()
     tmp.loc[2021] = tmp.loc[2021] - tmp.loc[2020]
     tmp.loc[2022] = tmp.loc[2022] - (tmp.loc[2021] + tmp.loc[2020])
     tmp.reset_index(inplace=True)
-    tmp.rename(columns={'iso_day': 'iso_year'}, inplace=True)
-    tmp.drop('countries_fk', axis=1, inplace=True)
+    tmp.rename(columns={"iso_day": "iso_year"}, inplace=True)
+    tmp.drop("countries_fk", axis=1, inplace=True)
     tmp[GEO] = GERMANY
 
-    tmp = db.merge_calendar_years_fk(df=tmp, left_on='iso_year')
+    tmp = db.merge_calendar_years_fk(df=tmp, left_on="iso_year")
     tmp = db.merge_countries_fk(df=tmp, left_on=GEO, country_code=NUTS_0)
-    db.insert_into(df=tmp, table=RKI_ANNUAL_TABLE, replace=False, add_meta_columns=False)
+    db.insert_into(
+        df=tmp, table=RKI_ANNUAL_TABLE, replace=False, add_meta_columns=False
+    )
     db.db_close()
