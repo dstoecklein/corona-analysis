@@ -47,8 +47,7 @@ def owid_vaccinations_daily(df: pd.DataFrame) -> None:
     tmp = _convert_date(df=tmp, date_col=REPORTING_DATE)
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
     tmp = db.merge_countries_fk(df=tmp, left_on=ISO_3166_1_ALPHA3, country_code=ISO_3166_1_ALPHA3)
-    tmp.to_csv("test.csv", sep=";")
-    #db.insert_or_update(df=tmp, table=OWID_DAILY_TABLE)
+    db.insert_or_update(df=tmp, table=OWID_DAILY_TABLE)
     db.db_close()
 
 
