@@ -144,6 +144,8 @@ def rki_vaccinations_daily_states(df: pd.DataFrame) -> None:
     for k, v in manufacturer_to_brand_map.items():
         tmp.replace(v, k, inplace=True)
 
+    # only last 90days
+    tmp = tmp[tmp[VACC_DATE] > dt.datetime.now() - pd.to_timedelta("90day")]
     tmp = db.merge_vaccines_fk(df=tmp, left_on=VACCINE)
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=VACC_DATE)
     tmp = db.merge_subdivisions_fk(
