@@ -32,9 +32,7 @@ def genesis_hospitals_annual(df: pd.DataFrame) -> None:
 def genesis_hospital_staff_annual(df: pd.DataFrame) -> None:
     db = database.DB()
     tmp = df.copy()
-    tmp.to_csv("test.csv", sep=";")
     tmp.rename(columns=GENESIS_HOSP_STAFF_ANNUAL_TRANSLATION, inplace=True)
-    tmp.to_csv("test2.csv", sep=";")
     tmp[ISO_YEAR] = pd.to_datetime(
         tmp[ISO_YEAR], infer_datetime_format=True
     ).dt.year.astype(int)

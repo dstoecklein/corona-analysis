@@ -12,8 +12,10 @@ ESTAT_POPULATION_SUBDIVS2_TABLE = config_db.tables["population_subdivs_2"]
 ESTAT_POPULATION_AGEGROUPS_TABLE = config_db.tables["population_countries_agegroups"]
 ESTAT_LIFE_EXP_TABLE = config_db.tables["life_expectancy"]
 ESTAT_MEDIAN_AGE_TABLE = config_db.tables["median_age"]
-GENESIS_POPULATION_SUBDIVS3_TRANSLATION = config.cols.genesis_population_subdivision_3['translation']
-GENESIS_POPULATION_SUBDIVS3_TABLE = config_db.tables['population_subdivs_3']
+GENESIS_POPULATION_SUBDIVS3_TRANSLATION = config.cols.genesis_population_subdivision_3[
+    "translation"
+]
+GENESIS_POPULATION_SUBDIVS3_TABLE = config_db.tables["population_subdivs_3"]
 
 
 def _estat_pp_cols(df: pd.DataFrame) -> pd.DataFrame:
@@ -58,8 +60,8 @@ def _estat_pp_population_states(df: pd.DataFrame) -> pd.DataFrame:
     tmp = df.copy()
 
     # only need totals
-    tmp = tmp[tmp["age"] == 'TOTAL']
-    tmp = tmp[tmp["sex"] == 'T']
+    tmp = tmp[tmp["age"] == "TOTAL"]
+    tmp = tmp[tmp["sex"] == "T"]
 
     # new column 'level' to indicate NUTS-level
     tmp = tmp.assign(level=tmp["geo"].str.len() - 2)
@@ -76,7 +78,7 @@ def estat_population_countries(df: pd.DataFrame) -> None:
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
     tmp = tmp[tmp["level"] == 0]
-    tmp['year'] = tmp['year'].fillna(0).astype(int)
+    tmp["year"] = tmp["year"].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 2015]
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_countries_fk(tmp, left_on="geo", country_code="nuts_0")
@@ -90,11 +92,13 @@ def estat_population_subdivision_1(df: pd.DataFrame) -> None:
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
     tmp = tmp[tmp["level"] == 1]
-    tmp['year'] = tmp['year'].fillna(0).astype(int)
+    tmp["year"] = tmp["year"].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 2015]
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_subdivisions_fk(tmp, left_on="geo", subdiv_code="nuts_1", level=1)
-    tmp = tmp[tmp["country_subdivs_1_fk"].notna()]  # if no foreign key merged, then region is probably not available
+    tmp = tmp[
+        tmp["country_subdivs_1_fk"].notna()
+    ]  # if no foreign key merged, then region is probably not available
     db.insert_or_update(df=tmp, table=ESTAT_POPULATION_SUBDIVS1_TABLE)
     db.db_close()
 
@@ -105,11 +109,13 @@ def estat_population_subdivision_2(df: pd.DataFrame) -> None:
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
     tmp = tmp[tmp["level"] == 2]
-    tmp['year'] = tmp['year'].fillna(0).astype(int)
+    tmp["year"] = tmp["year"].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 2015]
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_subdivisions_fk(tmp, left_on="geo", subdiv_code="nuts_2", level=2)
-    tmp = tmp[tmp["country_subdivs_2_fk"].notna()]  # if no foreign key merged, then region is probably not available
+    tmp = tmp[
+        tmp["country_subdivs_2_fk"].notna()
+    ]  # if no foreign key merged, then region is probably not available
     db.insert_or_update(df=tmp, table=ESTAT_POPULATION_SUBDIVS2_TABLE)
     db.db_close()
 
@@ -120,8 +126,13 @@ def estat_population_agegroups(df: pd.DataFrame) -> None:
     tmp = _estat_pp_cols(df=tmp)
 
     tmp = tmp[tmp["geo"].str.len() == 2]
-    tmp = tmp[(tmp["age"] != 'TOTAL') & (tmp["age"] != 'Y_GE75') & (tmp["age"] != 'Y80-84') & (tmp["age"] != 'Y_GE85')]
-    tmp = tmp[tmp["sex"] == 'T']
+    tmp = tmp[
+        (tmp["age"] != "TOTAL")
+        & (tmp["age"] != "Y_GE75")
+        & (tmp["age"] != "Y80-84")
+        & (tmp["age"] != "Y_GE85")
+    ]
+    tmp = tmp[tmp["sex"] == "T"]
 
     # melting to years
     tmp = tmp.melt(
@@ -154,17 +165,17 @@ def estat_life_exp_at_birth(df: pd.DataFrame) -> None:
     tmp = _estat_pp_cols_float(df=tmp)
 
     tmp = tmp[tmp["geo"].str.len() == 2]
-    tmp = tmp[tmp["age"] == 'Y_LT1']
-    tmp = tmp[tmp["sex"] == 'T']
+    tmp = tmp[tmp["age"] == "Y_LT1"]
+    tmp = tmp[tmp["sex"] == "T"]
 
     tmp = tmp.melt(
         id_vars=["age", "sex", "unit", "geo"],
         var_name="year",
         value_name="life_expectancy",
     )
-    tmp['year'] = tmp['year'].fillna(0).astype(int)
+    tmp["year"] = tmp["year"].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 1990]
-    tmp.rename(columns={'life_expectancy': 'life_expectancy_at_birth'}, inplace=True)
+    tmp.rename(columns={"life_expectancy": "life_expectancy_at_birth"}, inplace=True)
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_countries_fk(tmp, left_on="geo", country_code="iso_3166_1_alpha2")
     db.insert_or_update(df=tmp, table=ESTAT_LIFE_EXP_TABLE)
@@ -176,13 +187,13 @@ def estat_median_age(df: pd.DataFrame) -> None:
     tmp = df.copy()
     tmp = _estat_pp_cols_float(df=tmp)
 
-    tmp = tmp[tmp["indic_de"] == 'MEDAGEPOP']
+    tmp = tmp[tmp["indic_de"] == "MEDAGEPOP"]
     tmp = tmp[tmp["geo"].str.len() == 2]
 
     tmp = tmp.melt(
         id_vars=["indic_de", "geo"], var_name="year", value_name="median_age"
     )
-    tmp['year'] = tmp['year'].fillna(0).astype(int)
+    tmp["year"] = tmp["year"].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 1990]
 
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
@@ -195,15 +206,19 @@ def genesis_population_subdivision_3(df: pd.DataFrame) -> None:
     db = database.DB()
     tmp = df.copy()
     tmp = tmp.melt(
-        id_vars=['index.0', 'index.1'], var_name='year', value_name='population'
+        id_vars=["index.0", "index.1"], var_name="year", value_name="population"
     )
     tmp.rename(columns=GENESIS_POPULATION_SUBDIVS3_TRANSLATION, inplace=True)
-    tmp['ags'] = tmp['ags'].astype(int)
-    tmp = tmp.assign(year=tmp['year'].str.replace('Stichtag.', '', regex=True))
-    tmp['year'] = pd.to_datetime(tmp['year'], errors='coerce', infer_datetime_format=True).dt.year.astype(int)
-    tmp = db.merge_calendar_years_fk(tmp, left_on='year')
+    tmp["ags"] = tmp["ags"].astype(int)
+    tmp = tmp.assign(year=tmp["year"].str.replace("Stichtag.", "", regex=True))
+    tmp["year"] = pd.to_datetime(
+        tmp["year"], errors="coerce", infer_datetime_format=True
+    ).dt.year.astype(int)
+    tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_subdivisions_fk(tmp, left_on="ags", subdiv_code="ags", level=3)
-    tmp = tmp[tmp["country_subdivs_3_fk"].notna()]  # if no foreign key merged, then region is probably not available
+    tmp = tmp[
+        tmp["country_subdivs_3_fk"].notna()
+    ]  # if no foreign key merged, then region is probably not available
     tmp = tmp.fillna(0)
     tmp = tmp[tmp["year"] >= 2015]
     db.insert_or_update(df=tmp, table=GENESIS_POPULATION_SUBDIVS3_TABLE)
