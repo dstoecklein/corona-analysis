@@ -94,7 +94,7 @@ def owid_vaccinations_daily_manufacturer(df: pd.DataFrame):
     tmp = db.merge_countries_fk(
         df=tmp, left_on=LOCATION, country_code=ISO_3166_1_ALPHA3
     )
-    tmp = db.merge_vaccines_fk(df=tmp, left_on=VACCINE)
+    tmp = db.merge_vaccines_fk(df=tmp, left_on=BRAND_NAME_1)
     tmp.to_csv("test.csv", sep=";")
     #db.insert_or_update(df=tmp, table=OWID_DAILY_MANUFACTURER_TABLE)
     db.db_close()
