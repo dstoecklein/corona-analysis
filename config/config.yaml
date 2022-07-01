@@ -6,7 +6,8 @@ urls:
   rki_vaccination_states: 'https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/master/Aktuell_Deutschland_Bundeslaender_COVID-19-Impfungen.csv'
   rki_vaccination_rates: 'https://raw.githubusercontent.com/robert-koch-institut/COVID-19-Impfungen_in_Deutschland/master/Aktuell_Deutschland_Impfquoten_COVID-19.csv'
   rki_vaccinations_daily_cumulative: 'https://raw.githubusercontent.com/micb25/RKI_COVID19_DATA/master/Impfquotenmonitoring/RKI_COVID19_Impfquotenmonitoring.csv'
-  owid_vaccinations_daily_cumulative: 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv'
+  owid_vaccinations_daily: 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv'
+  owid_vaccinations_daily_manufacturer: 'https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations-by-manufacturer.csv'
   divi_itcu_daily_counties: 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-tagesdaten.csv'
   divi_itcu_daily_states: 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-bundeslaender.csv'
   owid_covid: 'https://covid.ourworldindata.org/data/owid-covid-data.csv'
@@ -192,6 +193,18 @@ owid_vaccinations_daily:
     daily_vaccinations_per_million: 'daily_vaccinations_per_million'
     daily_vaccinated_first_shot: 'daily_vaccinated_first_shot'
     daily_vaccinated_first_shot_rate: 'daily_vaccinated_first_shot_rate'
+
+owid_vaccinations_daily_manufacturer:
+  translation:
+    location: 'location'
+    date: 'reporting_date'
+    vaccine: 'brand_name_1'
+    total_vaccinations: 'total_vaccinations'
+  cols:
+    location: 'location'
+    reporting_date: 'reporting_date'
+    brand_name_1: 'brand_name_1'
+    total_vaccinations: 'total_vaccinations'
 
 rki_vaccinations_daily_states:
   translation:

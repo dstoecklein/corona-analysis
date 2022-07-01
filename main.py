@@ -46,12 +46,19 @@ def daily():
         data_type='ftr'
     )
     """
-    df_owid_vacc_daily_cumulative = owid(
-        url=config.data.urls['owid_vaccinations_daily_cumulative'],
-        purpose="OWID_VACC_DAILY_CUMULATIVE",
+    df_owid_vacc_daily = owid(
+        url=config.data.urls['owid_vaccinations_daily'],
+        purpose="OWID_VACC_DAILY",
         save_file=True,
         path=core.FILES_PATH / 'covid_vaccinations',
-        data_type="csv"
+        data_type="ftr"
+    )
+    df_owid_vacc_daily_manufacturer = owid(
+        url=config.data.urls['owid_vaccinations_daily_manufacturer'],
+        purpose="OWID_VACC_DAILY_MANUFACTURER",
+        save_file=True,
+        path=core.FILES_PATH / 'covid_vaccinations',
+        data_type="ftr"
     )
     df_rki_vacc_daily_states = rki(
         url=config.data.urls['rki_vaccination_states'],
@@ -75,7 +82,7 @@ def daily():
         path=ITCU_FILES_PATH,
         data_type='ftr'
     ) 
- 
+    """
     covid.rki_daily(df=df_rki_covid_daily)
     covid.rki_daily_states(df=df_rki_covid_daily)
     covid.rki_daily_counties(df=df_rki_covid_daily)
@@ -83,12 +90,15 @@ def daily():
     covid.rki_weekly_cumulative(df=df_rki_covid_daily)
     covid.rki_annual()
     covid_rvalue.rki_daily(df=df_rki_rvalue_daily)
-    covid_vaccinations.owid_vaccinations_daily(df=df_owid_vacc_daily_cumulative)
+    """
+    covid_vaccinations.owid_vaccinations_daily(df=df_owid_vacc_daily)
+    covid_vaccinations.owid_vaccinations_daily_manufacturer(df=df_owid_vacc_daily_manufacturer)
     #covid_vaccinations.rki_vaccinations_daily_cumulative(df=df_rki_vacc_daily_cumulative)
+    """
     covid_vaccinations.rki_vaccinations_daily_states(df=df_rki_vacc_daily_states)
     intensive_care_units.divi_daily_counties(df=df_divi_itcu_daily_counties)
     intensive_care_units.divi_daily_states(df=df_divi_itcu_daily_states)
-
+    """
 def weekly():
     df_rki_tests_weekly = rki(
         url=config.data.urls['rki_tests_weekly'],

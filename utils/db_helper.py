@@ -273,7 +273,7 @@ class DB: # MySQL DB
 
     def merge_countries_fk(self, df: pd.DataFrame, left_on: str, country_code: str):
 
-        country_codes = ['iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
+        country_codes = ['country_en', 'iso_3166_1_alpha2', 'iso_3166_1_alpha3', 'iso_3166_1_numeric', 'nuts_0']
 
         if country_code not in country_codes:
             raise ValueError("Invalid country code standard. Expected one of: {0} ".format(country_codes))
@@ -368,6 +368,7 @@ class DB: # MySQL DB
 
         tmp[left_on] = tmp[left_on].str.lower()
 
+        """
         tmp[left_on].replace(
             ['pfizer', 'biontech', 'pfizer-biontech', 'pfizer/biontech'], 'Comirnaty',
             inplace=True
@@ -388,8 +389,7 @@ class DB: # MySQL DB
             ['novavax', 'covovax'], 'Nuvaxovid',
             inplace=True
         )
-
-        tmp[left_on] = tmp[left_on].str.lower()
+        """
 
         tmp = tmp.merge(df_vaccines,
                         left_on=left_on,
