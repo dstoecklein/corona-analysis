@@ -92,7 +92,7 @@ def owid_vaccinations_daily_manufacturer(df: pd.DataFrame):
     #tmp = tmp[tmp[REPORTING_DATE] > dt.datetime.now() - pd.to_timedelta("90day")]
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
     tmp = db.merge_countries_fk(
-        df=tmp, left_on=LOCATION, country_code=ISO_3166_1_ALPHA3
+        df=tmp, left_on=LOCATION, country_code='country_en'
     )
     tmp = db.merge_vaccines_fk(df=tmp, left_on=BRAND_NAME_1)
     tmp.to_csv("test.csv", sep=";")
