@@ -89,7 +89,7 @@ def owid_vaccinations_daily_manufacturer(df: pd.DataFrame):
         tmp.replace(v, k, inplace=True)
 
     # only last 90days
-    #tmp = tmp[tmp[REPORTING_DATE] > dt.datetime.now() - pd.to_timedelta("90day")]
+    tmp = tmp[tmp[REPORTING_DATE] > dt.datetime.now() - pd.to_timedelta("90day")]
     tmp = db.merge_calendar_days_fk(df=tmp, left_on=REPORTING_DATE)
     tmp = db.merge_countries_fk(
         df=tmp, left_on=LOCATION, country_code='country_en'
