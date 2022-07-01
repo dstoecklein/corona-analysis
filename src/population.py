@@ -76,7 +76,7 @@ def estat_population_countries(df: pd.DataFrame) -> None:
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
     tmp = tmp[tmp["level"] == 0]
-    tmp['year'] = tmp['year'].astype(int)
+    tmp['year'] = tmp['year'].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 2015]
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_countries_fk(tmp, left_on="geo", country_code="nuts_0")
@@ -90,7 +90,7 @@ def estat_population_subdivision_1(df: pd.DataFrame) -> None:
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
     tmp = tmp[tmp["level"] == 1]
-    tmp['year'] = tmp['year'].astype(int)
+    tmp['year'] = tmp['year'].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 2015]
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_subdivisions_fk(tmp, left_on="geo", subdiv_code="nuts_1", level=1)
@@ -105,7 +105,7 @@ def estat_population_subdivision_2(df: pd.DataFrame) -> None:
     tmp = _estat_pp_cols(df=tmp)
     tmp = _estat_pp_population_states(df=tmp)
     tmp = tmp[tmp["level"] == 2]
-    tmp['year'] = tmp['year'].astype(int)
+    tmp['year'] = tmp['year'].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 2015]
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
     tmp = db.merge_subdivisions_fk(tmp, left_on="geo", subdiv_code="nuts_2", level=2)
@@ -133,7 +133,7 @@ def estat_population_agegroups(df: pd.DataFrame) -> None:
         agegroup_10y=tmp["age"].map(ESTAT_POPULATION_AGEGROUP_10Y_MAP)
     ).fillna("UNK")
 
-    tmp["year"] = pd.to_numeric(tmp["year"], errors="coerce").astype(int)
+    tmp["year"] = pd.to_numeric(tmp["year"], errors="coerce").fillna(0).astype(int)
     # selection from year
     tmp = tmp[tmp["year"] >= 2015]
 
@@ -162,7 +162,7 @@ def estat_life_exp_at_birth(df: pd.DataFrame) -> None:
         var_name="year",
         value_name="life_expectancy",
     )
-    tmp['year'] = tmp['year'].astype(int)
+    tmp['year'] = tmp['year'].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 1990]
     tmp.rename(columns={'life_expectancy': 'life_expectancy_at_birth'}, inplace=True)
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
@@ -182,7 +182,7 @@ def estat_median_age(df: pd.DataFrame) -> None:
     tmp = tmp.melt(
         id_vars=["indic_de", "geo"], var_name="year", value_name="median_age"
     )
-    tmp['year'] = tmp['year'].astype(int)
+    tmp['year'] = tmp['year'].fillna(0).astype(int)
     tmp = tmp[tmp["year"] >= 1990]
 
     tmp = db.merge_calendar_years_fk(tmp, left_on="year")
