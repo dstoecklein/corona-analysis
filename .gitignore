@@ -25,3 +25,4 @@ config_db.yaml
 cfg_login.yaml
 *.pbix
 doc/
+*.db
