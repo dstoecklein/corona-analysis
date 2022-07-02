@@ -22,5 +22,6 @@ __pycache__/
 
 # db stuff
 config_db.yaml
+cfg_login.yaml
 *.pbix
 doc/
