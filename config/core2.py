@@ -59,5 +59,4 @@ def create_cfg(model: BaseModel, file_name: str = None) -> Union[CfgDatabase, Cf
 
 
 cfg_db = create_cfg(model=CfgDatabase, file_name=CFG_DATABASE)
-print(type(cfg_db))
 cfg_table_names = create_cfg(model=CfgTables, file_name=CFG_TABLE_NAMES)
