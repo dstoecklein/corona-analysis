@@ -4,6 +4,7 @@ from sqlalchemy import Table
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.engine.row import Row
 from sqlalchemy.orm import Session
+from create_calendar import create_calendar_days_df
 
 from db_helper2 import Database
 import create_tables as tbl
@@ -55,6 +56,16 @@ def get_table_name(table_name: str):
         return Table(table_name, DB.metadata, autoload=True)
     except NoSuchTableError:
         return None
+
+
+def truncate_table(session: Session, table_name: str):
+    session.execute(f"DELETE FROM {table_name};")
+    session.commit()
+
+
+def drop_table(session: Session, table_name: str):
+    session.execute(f"DROP TABLE IF EXISTS {table_name};")
+    session.commit()
 
 
 def upsert_df(session: Session, df: pd.DataFrame, table_name: str) -> None:
@@ -192,7 +203,7 @@ def get_calendar_year(session: Session, year: int) -> Row:
 
 def get_calendar_years(session: Session) -> list[tbl.CalendarYears]:
     """
-    Get all calendar year objects as list
+    Get all calendar years objects as list
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
@@ -203,6 +214,22 @@ def get_calendar_years(session: Session) -> list[tbl.CalendarYears]:
     return (
         session.query(tbl.CalendarYears)
         .order_by(tbl.CalendarYears.iso_year)
+    ).all()
+
+
+def get_calendar_weeks(session: Session) -> list[tbl.CalendarWeeks]:
+    """
+    Get all calendar weeks objects as list
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+        A `list` of `CalendarWeeks` objects.
+    """
+    return (
+        session.query(tbl.CalendarWeeks)
+        .order_by(tbl.CalendarWeeks.iso_key)
     ).all()
 
 
@@ -261,13 +288,13 @@ def add_new_agegroup_10y(session: Session, agegroups: list[str]) -> None:
         new_agegroups.append(new_agegroup)
 
     # add hardcoded special agegroups
-    EIGHTYPLUS = new_agegroup = tbl.Agegroups_10y(
+    _EIGHTYPLUS = new_agegroup = tbl.Agegroups_10y(
         agegroup="80+",
         number_observations=21,
         avg_age=90.0,
         unique_key="80+"
     )
-    UNK = new_agegroup = tbl.Agegroups_10y(
+    _UNK = new_agegroup = tbl.Agegroups_10y(
         agegroup="UNK",
         number_observations=0,
         avg_age=0,
@@ -275,9 +302,9 @@ def add_new_agegroup_10y(session: Session, agegroups: list[str]) -> None:
     )
     
     if get_agegroup_10y(session=session, agegroup="80+") is None:
-        new_agegroups.append(EIGHTYPLUS)
+        new_agegroups.append(_EIGHTYPLUS)
     if get_agegroup_10y(session=session, agegroup="UNK") is None:
-        new_agegroups.append(UNK)
+        new_agegroups.append(_UNK)
 
     # write to DB
     session.add_all(new_agegroups)
@@ -352,7 +379,7 @@ if __name__ == "__main__":
                 "70-79"
             ]
             add_new_agegroup_10y(session=session, agegroups=new_agegroups_10y)
-            """
+            
 
             import isoweek
             import numpy as np
@@ -385,3 +412,18 @@ if __name__ == "__main__":
             df["updated_on"] = dt.now()
 
             upsert_df(session, df, "_calendar_weeks")
+            """
+
+
+            from create_calendar import create_calendar_years_df, create_calendar_weeks_df
+
+            #start_date = date(1990, 1, 1)
+            #end_date = date(2050, 12, 31)
+            df = create_calendar_weeks_df(1990, 2050)
+            #print(df)
+            upsert_df(session=session, df=df, table_name="_calendar_weeks")
+            #add_new_calendar_years(session, years=df["iso_year"].to_list())
+            #upsert_df(session=session, df=df, table_name="_country_years")
+            #print(df)
+
+

@@ -95,4 +95,3 @@ class CalendarDays(Base):
 
 if __name__ == "__main__":
    Base.metadata.create_all(DB.engine, checkfirst=True)
-   Agegroups_05y.add_new_agegroup_05y(agegroup="test")
