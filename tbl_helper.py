@@ -1,5 +1,10 @@
+import uuid
+import pandas as pd
+from sqlalchemy import Table
+from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.engine.row import Row
 from sqlalchemy.orm import Session
+
 from db_helper2 import Database
 import create_tables as tbl
 
@@ -35,6 +40,71 @@ def _calc_avg_age(agegroup: str, n_observations: int = 10) -> float:
     max_age = _get_max_age(agegroup=agegroup)
     avg_age = _nth_triangle_number(min_n=min_age, max_n=max_age)
     return avg_age / n_observations
+
+
+def check_if_table_exists(table_name: str):
+    try:
+        Table(table_name, DB.metadata, autoload=True)
+        return True
+    except NoSuchTableError:
+        return False
+
+
+def get_table_name(table_name: str):
+    try:
+        return Table(table_name, DB.metadata, autoload=True)
+    except NoSuchTableError:
+        return None
+
+
+def upsert_df(session: Session, df: pd.DataFrame, table_name: str) -> None:
+    """
+    UPSERT (UPDATE if exist, INSERT if not exist) rows of a `pandas.DataFrame``to the local SQLite database.
+    Credit: https://stackoverflow.com/questions/61366664/how-to-upsert-pandas-dataframe-to-postgresql-table
+    
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+        df: `pandas.DataFrame` to be updated/inserted
+        table_name: Name of table where `df` should be updated/inserted
+    """
+
+    # df must contain a unique_key column
+    if "unique_key" not in df.columns:
+        raise RuntimeError("DataFrame must contain a 'unique_key' column")
+
+    # check if table exist. If not, create it using to_sql
+    table_exist = check_if_table_exists(table_name=table_name)
+    if not table_exist:
+        df.to_sql(table_name, DB.engine)
+        return     
+
+    # table exist, so use UPSERT logic...
+    
+    # 1. create temporary table with unique id
+    tmp_table = f"tmp_{uuid.uuid4().hex[:6]}"
+    df.to_sql(tmp_table, DB.engine, index=True)
+
+    # 2. create column name strings
+    columns = list(df.columns)
+    columns_str = ", ".join(col for col in columns)
+
+    # The "excluded." prefix causes the column to refer to the value that 
+    # would have been inserted if there been no conflict.
+    update_columns_str = ", ".join(
+        f'{col} = excluded.{col}' for col in columns
+    )
+
+    # 3. create sql query
+    query_upsert = f"""
+        INSERT INTO {table_name}({columns_str})
+        SELECT {columns_str} FROM {tmp_table} WHERE true
+        ON CONFLICT(unique_key) DO UPDATE SET
+        {update_columns_str};
+    """
+
+    # 4. execute upsert query & drop temporary table
+    session.execute(query_upsert)
+    session.execute(f"DROP TABLE {tmp_table}")
 
 
 def get_agegroup_05y(session: Session, agegroup: str) -> Row:
@@ -118,6 +188,22 @@ def get_calendar_year(session: Session, year: int) -> Row:
         session.query(tbl.CalendarYears.iso_year)
         .filter(tbl.CalendarYears.iso_year == year)
     ).one_or_none()
+
+
+def get_calendar_years(session: Session) -> list[tbl.CalendarYears]:
+    """
+    Get all calendar year objects as list
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+        A `list` of `CalendarYears` objects.
+    """
+    return (
+        session.query(tbl.CalendarYears)
+        .order_by(tbl.CalendarYears.iso_year)
+    ).all()
 
 
 def add_new_agegroups_05y(session: Session, agegroups: list[str]) -> None:
@@ -254,7 +340,7 @@ if __name__ == "__main__":
                 "UNK"
             ]
             add_new_agegroups_05y(session=session, agegroups=new_agegroups_05y)
-            """
+            
             new_agegroups_10y = [
                 "00-09",
                 "10-19",
@@ -266,3 +352,36 @@ if __name__ == "__main__":
                 "70-79"
             ]
             add_new_agegroup_10y(session=session, agegroups=new_agegroups_10y)
+            """
+
+            import isoweek
+            import numpy as np
+            from datetime import datetime as dt
+
+            # Map Years with its Foreign Keys
+            calendar_years = get_calendar_years(session=session)
+            calendar_years_dict = {}
+            calendar_years_dict_reverse = {}
+            for year in calendar_years:
+                calendar_years_dict[year.iso_year] = year.calendar_years_id
+            for year in calendar_years:
+                calendar_years_dict_reverse[year.calendar_years_id] = year.iso_year
+
+            calendar_weeks_dict = {}
+
+            for year, calendar_years_fk in calendar_years_dict.items():
+                weeks_list = []
+                weeks = isoweek.Week.last_week_of_year(year).week
+                for week in range(1, weeks+1):
+                    weeks_list.append(week)
+                calendar_weeks_dict[calendar_years_fk] = weeks_list
+
+            df = pd.DataFrame.from_dict(calendar_weeks_dict, orient="index")
+            df = df.T.unstack().to_frame().dropna().reset_index(level=0).applymap(np.int64)
+            df.columns = ["calendar_years_fk", "iso_week"]
+            df["iso_key"] = df["calendar_years_fk"].map(calendar_years_dict_reverse).astype(str) + df["iso_week"].astype(str).str.zfill(2)
+            df["unique_key"] = df["iso_key"]
+            df["created_on"] = dt.now()
+            df["updated_on"] = dt.now()
+
+            upsert_df(session, df, "_calendar_weeks")
