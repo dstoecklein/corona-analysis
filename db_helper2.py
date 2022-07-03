@@ -15,11 +15,23 @@ class Database:
         self.metadata = MetaData(bind=self.engine)
 
     def create_session(self) -> Session:
+        """
+        Creates and returns a new `Session` to communicate with the Database.
+
+        Returns:
+            SQLAlchemy `Session` object
+        """
         Session = sessionmaker()
         Session.configure(bind=self.engine)
         return Session()
 
     def get_pk_col_name(self, table: str) -> str:
+        """
+        Returns the column name of the primary key for a given `table`.
+
+        Returns:
+            Column name of the primary key as `str`
+        """
         tbl = Table(table, self.metadata, autoload=True, autoload_with=self.engine)
         pk = tbl.primary_key.columns.values[0].name
         return pk

@@ -19,36 +19,6 @@ class Agegroups_05y(Base):
    unique_key = Column(String, nullable=False, unique=True)
 
 
-   def add_new_agegroup_05y(agegroup: str):
-      """
-      Adds a new agegroup with a 5-year-interval
-      """
-      session = DB.create_session()
-      # check if agegroup already exist
-      new_agegroup = (
-          session.query(Agegroups_05y)
-          .filter(Agegroups_05y.agegroup == agegroup)
-      ).one_or_none()
-
-      if new_agegroup is not None:
-         return
-        
-      # create new agegroup
-      new_agegroup = Agegroups_05y(
-         agegroup=agegroup,
-         unique_key=agegroup
-      )
-        
-      # write to DB
-      try:
-         session.add(new_agegroup)
-         session.commit()
-      except:
-         session.rollback()
-         raise
-      finally:
-            session.close()
-
 class Agegroups_10y(Base):
    __tablename__ = cfg_table_names.agegroups_10y
 
