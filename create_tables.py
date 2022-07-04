@@ -94,4 +94,5 @@ class CalendarDays(Base):
 
 
 if __name__ == "__main__":
-   Base.metadata.create_all(DB.engine, checkfirst=True)
+   #Base.metadata.create_all(DB.engine, checkfirst=True)
+   print(Base.metadata.reflect(DB.engine))
