@@ -4,59 +4,37 @@ from pathlib import Path
 from pydantic import BaseModel
 from strictyaml import YAML, load
 
+# paths
 CWD = Path.cwd()
-CONFIG_PATH = CWD / "config"
+CFG_PATH = CWD / "config"
 FILES_PATH = CWD / "files"
-CONFIG_FILE = "config.yaml"
-CONFIG_FILE_DB = "config_db.yaml"
+
+# config files
+CFG_DATABASE = "cfg_database.yaml"
+CFG_TABLE_NAMES = "cfg_table_names.yaml"
 
 
-class DataConfig(BaseModel):
-    urls: dict
-    estat_tables: dict
-    genesis_tables: dict
-    incidence_reference_year: str
+class DatabaseCfg(BaseModel):
+    dialect: str
+    name: str
 
 
-class ColConfig(BaseModel):
-    rki_covid_daily: dict
-    rki_tests_weekly: dict
-    rki_rvalue_daily: dict
-    owid_vaccinations_daily: dict
-    owid_vaccinations_daily_manufacturer: dict
-    rki_vaccinations_daily_cumulative: dict
-    rki_vaccinations_daily_states: dict
-    divi_itcu_daily_counties: dict
-    divi_itcu_daily_states: dict
-    estat_deaths_weekly_agegroups: dict
-    estat_death_causes_annual_agegroups: dict
-    estat_population_agegroups: dict
-    genesis_hospitals_annual: dict
-    genesis_hospitals_staff_annual: dict
-    genesis_population_subdivision_3: dict
+class TablesCfg(BaseModel):
+    agegroups_05y: str
+    agegroups_10y: str
+    agegroups_rki: str
+    calendar_years: str
+    calendar_weeks: str
+    calendar_days: str
 
 
-class DBConfig(BaseModel):
-    db_name: str
-    login: dict
-    tables: dict
-    cols: dict
-    genesis_login: dict
-    agegroup_intervals: dict
+def get_cfg_path() -> Path:
+    return CFG_PATH
 
 
-class MasterConfig(BaseModel):
-    data: DataConfig
-    cols: ColConfig
-
-
-def get_config_path() -> Path:
-    return CONFIG_PATH
-
-
-def read_config_file(file_name: str, file_path: Path = None) -> YAML:
+def read_cfg(file_name: str, file_path: Path = None) -> YAML:
     if not file_path:
-        file_path = get_config_path()
+        file_path = get_cfg_path()
 
     if file_path:
         try:
@@ -70,28 +48,25 @@ def read_config_file(file_name: str, file_path: Path = None) -> YAML:
         raise Exception(f"Config file {file_name} not found at {file_path}")
 
 
-def create_and_validate_config(file_name: str = None) -> MasterConfig:
+def create_db_cfg(file_name: str = None) -> DatabaseCfg:
     if file_name is None:
         raise Exception("File name must be specified")
 
-    config_file = read_config_file(file_name=file_name)
+    config_file = read_cfg(file_name=file_name)
 
-    _config = MasterConfig(
-        data=DataConfig(**config_file.data), cols=ColConfig(**config_file.data)
-    )
+    _config = DatabaseCfg(**config_file.data)
     return _config
 
 
-# Handle DB config seperately because of sensitive information
-def create_and_validate_config_db(file_name: str = None) -> DBConfig:
+def create_table_names_cfg(file_name: str = None) -> TablesCfg:
     if file_name is None:
         raise Exception("File name must be specified")
 
-    config_file = read_config_file(file_name=file_name)
+    config_file = read_cfg(file_name=file_name)
 
-    _config = DBConfig(**config_file.data)
+    _config = TablesCfg(**config_file.data)
     return _config
 
 
-config = create_and_validate_config(file_name=CONFIG_FILE)
-config_db = create_and_validate_config_db(file_name=CONFIG_FILE_DB)
+cfg_db = create_db_cfg(file_name=CFG_DATABASE)
+cfg_table_names = create_table_names_cfg(file_name=CFG_TABLE_NAMES)

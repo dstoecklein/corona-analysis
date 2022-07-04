@@ -4,10 +4,8 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, MetaData, String
 from sqlalchemy import create_engine
 
-from db_helper2 import Database
+from database.db_helper import Database
 
-import agegroups_helper
-import calendar_helper
 
 DB = Database()
 
@@ -20,4 +18,10 @@ session = DB.create_session()
 #l = ["00-09", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79"]
 #agegroups_helper.add_new_agegroup_10y(session, l)
 
-calendar_helper.add_new_calendar_years(session, [2051])
+pk = DB.get_pk_col_name("_calendar_years")
+
+
+print(type(pk))
+print(pk)
+
+DB.truncate_table("_calendar_years")

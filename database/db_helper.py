@@ -1,26 +1,20 @@
 import uuid
+from typing import Optional
+
 import pandas as pd
-from sqlalchemy.engine import Engine
-from sqlalchemy.engine.row import Row
-from sqlalchemy import Table, MetaData, create_engine, ForeignKey, Column, Integer, String, Float, DateTime
-from sqlalchemy.orm import relationship, sessionmaker, Session
-from datetime import datetime as dt
-from sqlalchemy.sql import func
+from sqlalchemy import MetaData, Table, create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.sql import text
 
-from config.core2 import cfg_db
-
+from config.core import cfg_db
 
 
 class Database:
     def __init__(self):
-        self.engine = create_engine(
-            f'{cfg_db.dialect}{cfg_db.name}.db',
-            echo=True
-        )
+        self.engine = create_engine(f"{cfg_db.dialect}{cfg_db.name}.db", echo=True)
         metadata = MetaData()
         metadata.reflect(bind=self.engine)
         self.metadata = metadata
-
 
     def create_session(self) -> Session:
         """
@@ -34,7 +28,6 @@ class Database:
         session = Session()
         return session
 
-
     def get_table_names(self) -> list[str]:
         """
         Returns a list of available tables
@@ -44,7 +37,6 @@ class Database:
         """
         table_names = list(self.metadata.tables.keys())
         return table_names
-
 
     def table_exists(self, table_name: str) -> bool:
         """
@@ -61,8 +53,7 @@ class Database:
             return False
         return True
 
-
-    def get_table_obj(self, table_name: str) -> Table:
+    def get_table_obj(self, table_name: str) -> Optional[Table]:
         """
         Returns a table object
 
@@ -74,11 +65,12 @@ class Database:
         """
         if self.table_exists(table_name):
             table = self.metadata.tables[table_name]
+
+        if table is not None:
             return table
         return None
 
-
-    def get_pk_col_name(self, table_name: str) -> str:
+    def get_pk_col_name(self, table_name: str) -> Optional[str]:
         """
         Returns the primary key of a table as `str`.
 
@@ -90,11 +82,15 @@ class Database:
         """
         if self.table_exists(table_name):
             table = self.get_table_obj(table_name)
-            primary_key = table.primary_key.columns[0].name
-            return primary_key
+        else:
+            table = None
+
+        if table is not None:
+            primary_key = table.primary_key.columns.keys()
+            if primary_key:  # if PK actually exists in the table
+                return primary_key[0]
         return None
 
-    
     def truncate_table(self, table_name: str) -> None:
         """
         Truncates (empties) a table.
@@ -104,10 +100,9 @@ class Database:
         """
         session = self.create_session()
         with session.begin():
-            session.execute(f"DELETE FROM {table_name};")
+            session.execute(text(f"""DELETE FROM {table_name};"""))
             session.commit()
 
-  
     def drop_table(self, table_name: str) -> None:
         """
         Drops (deletes) a table.
@@ -115,17 +110,15 @@ class Database:
         Args:
             table_name: Name of table
         """
-        session = self.create_session()
-        with session.begin():
-            session.execute(f"DROP TABLE IF EXISTS {table_name};")
-            session.commit()
-
+        table = self.metadata.tables.get(table_name)
+        if table is not None:
+            self.metadata.drop_all(self.engine, [table], checkfirst=True)
 
     def upsert_df(self, df: pd.DataFrame, table_name: str) -> None:
         """
         UPSERT (UPDATE if exist, INSERT if not exist) rows of a `pandas.DataFrame``to the local SQLite database.
         Credit: https://stackoverflow.com/questions/61366664/how-to-upsert-pandas-dataframe-to-postgresql-table
-        
+
         Args:
             df: `pandas.DataFrame` to be updated/inserted
             table_name: Name of table where `df` should be updated/inserted
@@ -138,10 +131,10 @@ class Database:
         # check if table exist. If not, create it using to_sql
         if not self.table_exists(table_name):
             df.to_sql(table_name, self.engine)
-            return     
+            return
 
         # table exist, so use UPSERT logic...
-        
+
         # 1. create temporary table with unique id
         tmp_table = f"tmp_{uuid.uuid4().hex[:6]}"
         df.to_sql(tmp_table, self.engine, index=True)
@@ -150,11 +143,9 @@ class Database:
         columns = list(df.columns)
         columns_str = ", ".join(col for col in columns)
 
-        # The "excluded." prefix causes the column to refer to the value that 
+        # The "excluded." prefix causes the column to refer to the value that
         # would have been inserted if there been no conflict.
-        update_columns_str = ", ".join(
-            f'{col} = excluded.{col}' for col in columns
-        )
+        update_columns_str = ", ".join(f"{col} = excluded.{col}" for col in columns)
 
         # 3. create sql query
         query_upsert = f"""
@@ -167,7 +158,6 @@ class Database:
         # 4. execute upsert query & drop temporary table
         session = self.create_session()
         with session.begin():
-            session.execute(query_upsert)
-            session.execute(f"DROP TABLE {tmp_table}")
+            session.execute(text(query_upsert))
 
-
+        self.drop_table(tmp_table)
