@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 
-import database.create_tables as tbl
+import database.create_database as tbl
 
 
 def get_calendar_year(session: Session, year: int) -> Optional[Any]:

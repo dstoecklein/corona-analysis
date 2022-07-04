@@ -148,16 +148,18 @@ class Database:
         update_columns_str = ", ".join(f"{col} = excluded.{col}" for col in columns)
 
         # 3. create sql query
-        query_upsert = f"""
+        query_upsert = text(
+            f"""
             INSERT INTO {table_name}({columns_str})
             SELECT {columns_str} FROM {tmp_table} WHERE true
             ON CONFLICT(unique_key) DO UPDATE SET
             {update_columns_str};
         """
+        )
 
         # 4. execute upsert query & drop temporary table
         session = self.create_session()
         with session.begin():
-            session.execute(text(query_upsert))
+            session.execute(query_upsert)
 
         self.drop_table(tmp_table)

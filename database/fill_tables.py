@@ -7,7 +7,8 @@ from database.db_helper import Database
 
 DB = Database()
 
-
+# TODO: ADD FILL AGEGROUPS
+# TODO: ACTUALLY FILL TABLES
 def _create_base_calendar_df(start_year: int, end_year: int) -> pd.DataFrame:
     start_date = date(start_year, 1, 1)
     end_date = date(end_year, 12, 31)
@@ -112,7 +113,7 @@ def _create_calendar_days_df(start_year: int, end_year: int) -> pd.DataFrame:
     return df_day
 
 
-def fill_calendars(start_year: int, end_year: int) -> None:
+def fill_tables(start_year: int, end_year: int) -> None:
     df_years = _create_calendar_years_df(start_year, end_year)
     df_weeks = _create_calendar_weeks_df(start_year, end_year)
     df_days = _create_calendar_days_df(start_year, end_year)
