@@ -2,13 +2,12 @@ from sqlalchemy import ForeignKey, Column, Integer, String, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from db_helper2 import Database
 from config.core2 import cfg_table_names
 
-DB = Database()
+
 Base = declarative_base()
 
-class Agegroups_05y(Base):
+class Agegroups05y(Base):
    __tablename__ = cfg_table_names.agegroups_05y
 
    agegroups_05y_id = Column(Integer, primary_key = True)
@@ -19,10 +18,23 @@ class Agegroups_05y(Base):
    unique_key = Column(String, nullable=False, unique=True)
 
 
-class Agegroups_10y(Base):
+class Agegroups10y(Base):
    __tablename__ = cfg_table_names.agegroups_10y
 
    agegroups_10y_id = Column(Integer, primary_key = True)
+   agegroup = Column(String, nullable=False, unique=True)
+   number_observations = Column(Integer)
+   avg_age = Column(Float)
+   # meta cols
+   created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
+   updated_on = Column(DateTime(timezone=True), default=func.now())
+   unique_key = Column(String, nullable=False, unique=True)
+
+
+class AgegroupsRki(Base):
+   __tablename__ = cfg_table_names.agegroups_rki
+
+   agegroups_rki_id = Column(Integer, primary_key = True)
    agegroup = Column(String, nullable=False, unique=True)
    number_observations = Column(Integer)
    avg_age = Column(Float)
@@ -94,5 +106,8 @@ class CalendarDays(Base):
 
 
 if __name__ == "__main__":
-   #Base.metadata.create_all(DB.engine, checkfirst=True)
-   print(Base.metadata.reflect(DB.engine))
+   from db_helper2 import Database
+   DB = Database()
+   Base.metadata.create_all(DB.engine, checkfirst=True)
+   #print(Base.metadata.reflect(DB.engine))
+

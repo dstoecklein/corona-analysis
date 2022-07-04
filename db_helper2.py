@@ -8,7 +8,7 @@ from datetime import datetime as dt
 from sqlalchemy.sql import func
 
 from config.core2 import cfg_db
-import create_tables as tbl
+
 
 
 class Database:

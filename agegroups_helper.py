@@ -1,7 +1,3 @@
-import uuid
-import pandas as pd
-from sqlalchemy import Table
-from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.engine.row import Row
 from sqlalchemy.orm import Session
 
@@ -52,13 +48,13 @@ def get_agegroup_05y(session: Session, agegroup: str) -> Row:
 
     with session.begin():
         agegroup_05y_row = (
-            session.query(tbl.Agegroups_05y.agegroup)
-            .filter(tbl.Agegroups_05y.agegroup == agegroup)
+            session.query(tbl.Agegroups05y.agegroup)
+            .filter(tbl.Agegroups05y.agegroup == agegroup)
         ).one_or_none()
     return agegroup_05y_row
 
 
-def get_agegroups_05y(self) -> list[tbl.Agegroups_05y]:
+def get_agegroups_05y(self) -> list[tbl.Agegroups05y]:
     """
     Get a list of agegroup objects with a 05-year interval
 
@@ -66,13 +62,13 @@ def get_agegroups_05y(self) -> list[tbl.Agegroups_05y]:
         session: `Session` object from `sqlalchemy.orm`
 
     Returns:
-        A `list` of `Agegroups_05y` objects
+        A `list` of `Agegroups05y` objects
     """
     session = self.create_session()
     with session.begin():
         agegroups_05_list = (
-            session.query(tbl.Agegroups_05y)
-            .order_by(tbl.Agegroups_05y.agegroup)
+            session.query(tbl.Agegroups05y)
+            .order_by(tbl.Agegroups05y.agegroup)
         ).all()
     return agegroups_05_list
 
@@ -90,13 +86,13 @@ def get_agegroup_10y(session: Session, agegroup: str) -> Row:
     """
     with session.begin():
         agegroup_10y_row = (
-            session.query(tbl.Agegroups_10y.agegroup)
-            .filter(tbl.Agegroups_10y.agegroup == agegroup)
+            session.query(tbl.Agegroups10y.agegroup)
+            .filter(tbl.Agegroups10y.agegroup == agegroup)
         ).one_or_none()
     return agegroup_10y_row
 
 
-def get_agegroups_10y(session: Session) -> list[tbl.Agegroups_10y]:
+def get_agegroups_10y(session: Session) -> list[tbl.Agegroups10y]:
     """
     Get a list of agegroup objects with a 10-year interval
 
@@ -104,70 +100,33 @@ def get_agegroups_10y(session: Session) -> list[tbl.Agegroups_10y]:
         session: `Session` object from `sqlalchemy.orm`
 
     Returns:
-        A `list` of `Agegroups_10y` objects
+        A `list` of `Agegroups10y` objects
     """
     with session.begin():
         agegroups_10y_list = (
-            session.query(tbl.Agegroups_10y)
-            .order_by(tbl.Agegroups_10y.agegroup)
+            session.query(tbl.Agegroups10y)
+            .order_by(tbl.Agegroups10y.agegroup)
         ).all()
     return agegroups_10y_list
 
 
-def get_calendar_year(session: Session, year: int) -> Row:
+def get_agegroup_rki(session: Session, agegroup: str) -> Row:
     """
-    Get a specific calendar year
+    Get a specific agegroup of RKI-year interval
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
-        calendar_year: Specific calendar year
+        agegroup: Specific agegroup of RKI-year interval
 
     Returns:
-        A `row` object for the provided calendar year or `None` 
-        if calendar year not found.
+        A `row` object for the provided agegroup or `None` if calendar year not found.
     """
     with session.begin():
-        calendar_year_row = (
-            session.query(tbl.CalendarYears.iso_year)
-            .filter(tbl.CalendarYears.iso_year == year)
+        agegroup_rki_row = (
+            session.query(tbl.AgegroupsRki.agegroup)
+            .filter(tbl.AgegroupsRki.agegroup == agegroup)
         ).one_or_none()
-    return calendar_year_row
-
-
-def get_calendar_years(session: Session) -> list[tbl.CalendarYears]:
-    """
-    Get all calendar years objects as list
-
-    Args:
-        session: `Session` object from `sqlalchemy.orm`
-
-    Returns:
-        A `list` of `CalendarYears` objects.
-    """
-    with session.begin():
-        calendar_years_list = (
-            session.query(tbl.CalendarYears)
-            .order_by(tbl.CalendarYears.iso_year)
-        ).all()
-    return calendar_years_list
-
-
-def get_calendar_weeks(session: Session) -> list[tbl.CalendarWeeks]:
-    """
-    Get all calendar weeks objects as list
-
-    Args:
-        session: `Session` object from `sqlalchemy.orm`
-
-    Returns:
-        A `list` of `CalendarWeeks` objects.
-    """
-    with session.begin():
-        calendar_weeks_list = (
-            session.query(tbl.CalendarWeeks)
-            .order_by(tbl.CalendarWeeks.iso_key)
-        ).all()
-    return calendar_weeks_list
+    return agegroup_rki_row
 
 
 def add_new_agegroups_05y(session: Session, agegroups: list[str]) -> None:
@@ -188,7 +147,7 @@ def add_new_agegroups_05y(session: Session, agegroups: list[str]) -> None:
             continue
         
         # create new agegroup
-        new_agegroup = tbl.Agegroups_05y(
+        new_agegroup = tbl.Agegroups05y(
             agegroup=agegroup,
             unique_key=agegroup
         )
@@ -215,24 +174,25 @@ def add_new_agegroup_10y(session: Session, agegroups: list[str]) -> None:
         agegroup_exists = get_agegroup_10y(session=session, agegroup=agegroup)
         if agegroup_exists is not None:
             continue
-    
+            
+        n_observations = (_get_max_age(agegroup) - _get_min_age(agegroup)) + 1
         # create new agegroup
-        new_agegroup = tbl.Agegroups_10y(
+        new_agegroup = tbl.Agegroups10y(
             agegroup=agegroup, 
-            number_observations=10, 
-            avg_age=_calc_avg_age(agegroup, n_observations=10),
+            number_observations=n_observations, 
+            avg_age=_calc_avg_age(agegroup, n_observations),
             unique_key=agegroup
         )
         new_agegroups.append(new_agegroup)
 
     # add hardcoded special agegroups
-    _EIGHTYPLUS = new_agegroup = tbl.Agegroups_10y(
+    _EIGHTYPLUS = tbl.Agegroups10y(
         agegroup="80+",
         number_observations=21,
         avg_age=90.0,
         unique_key="80+"
     )
-    _UNK = new_agegroup = tbl.Agegroups_10y(
+    _UNK = tbl.Agegroups10y(
         agegroup="UNK",
         number_observations=0,
         avg_age=0,
@@ -242,6 +202,57 @@ def add_new_agegroup_10y(session: Session, agegroups: list[str]) -> None:
     if get_agegroup_10y(session=session, agegroup="80+") is None:
         new_agegroups.append(_EIGHTYPLUS)
     if get_agegroup_10y(session=session, agegroup="UNK") is None:
+        new_agegroups.append(_UNK)
+
+    # write to DB
+    with session.begin():
+        session.add_all(new_agegroups)
+        session.commit()
+
+
+def add_new_agegroup_rki(session: Session, agegroups: list[str]) -> None:
+    """
+    Adds a new agegroup with a year-interval defined by RKI (Robert-Koch_Institut).
+    Calculates average age.
+    Args:
+        agegroup: Agegroup with the RKI-standard interval
+    """
+    
+    new_agegroups = list()
+
+    for agegroup in agegroups:
+        # check if agegroup already exist
+        agegroup_exists = get_agegroup_rki(session=session, agegroup=agegroup)
+        if agegroup_exists is not None:
+            continue
+        
+        n_observations = (_get_max_age(agegroup) - _get_min_age(agegroup)) + 1
+        # create new agegroup
+        new_agegroup = tbl.AgegroupsRki(
+            agegroup=agegroup, 
+            number_observations=n_observations, 
+            avg_age=_calc_avg_age(agegroup, n_observations),
+            unique_key=agegroup
+        )
+        new_agegroups.append(new_agegroup)
+
+    # add hardcoded special agegroups
+    _EIGHTYPLUS = tbl.AgegroupsRki(
+        agegroup="80+",
+        number_observations=21,
+        avg_age=90.0,
+        unique_key="80+"
+    )
+    _UNK = tbl.AgegroupsRki(
+        agegroup="UNK",
+        number_observations=0,
+        avg_age=0,
+        unique_key="UNK"
+    )
+    
+    if get_agegroup_rki(session=session, agegroup="80+") is None:
+        new_agegroups.append(_EIGHTYPLUS)
+    if get_agegroup_rki(session=session, agegroup="UNK") is None:
         new_agegroups.append(_UNK)
 
     # write to DB

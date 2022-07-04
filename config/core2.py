@@ -23,6 +23,7 @@ class CfgDatabase(BaseModel):
 class CfgTables(BaseModel):
     agegroups_05y: str
     agegroups_10y: str
+    agegroups_rki: str
     calendar_years: str
     calendar_weeks: str
     calendar_days: str
