@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Any, Optional
 
+import pandas as pd
 from sqlalchemy.orm import Session
 
 import database.create_database as tbl
@@ -14,8 +16,6 @@ def _get_min_age(agegroup: str) -> int:
 
 
 def _get_max_age(agegroup: str) -> int:
-    assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
-
     ages = agegroup.split("-")
     ages_int = [int(age) for age in ages]
     return max(ages_int)
@@ -34,7 +34,6 @@ def _calc_avg_age(agegroup: str, n_observations: int = 10) -> float:
     avg_age = _nth_triangle_number(min_n=min_age, max_n=max_age)
     return avg_age / n_observations
 
-
 def get_agegroup_05y(session: Session, agegroup: str) -> Optional[Any]:
     """
     Get a specific agegroup of 05-year interval
@@ -46,7 +45,6 @@ def get_agegroup_05y(session: Session, agegroup: str) -> Optional[Any]:
     Returns:
         A `row` object for the provided agegroup or `None` if calendar year not found.
     """
-
     with session.begin():
         agegroup_05y_row = (
             session.query(tbl.Agegroups05y.agegroup).filter(
@@ -143,6 +141,8 @@ def add_new_agegroups_05y(session: Session, agegroups: list[str]) -> None:
     new_agegroups = list()
 
     for agegroup in agegroups:
+        assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
+
         # check if agegroup already exist
         agegroup_exists = get_agegroup_05y(session=session, agegroup=agegroup)
         if agegroup_exists is not None:
@@ -158,7 +158,7 @@ def add_new_agegroups_05y(session: Session, agegroups: list[str]) -> None:
         session.commit()
 
 
-def add_new_agegroup_10y(session: Session, agegroups: list[str]) -> None:
+def add_new_agegroups_10y(session: Session, agegroups: list[str]) -> None:
     """
     Adds a new agegroup with a 10-year-interval to the local SQLite database.
     Calculates average age.
@@ -169,6 +169,8 @@ def add_new_agegroup_10y(session: Session, agegroups: list[str]) -> None:
     new_agegroups = list()
 
     for agegroup in agegroups:
+        assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
+
         # check if agegroup already exist
         agegroup_exists = get_agegroup_10y(session=session, agegroup=agegroup)
         if agegroup_exists is not None:
@@ -203,7 +205,7 @@ def add_new_agegroup_10y(session: Session, agegroups: list[str]) -> None:
         session.commit()
 
 
-def add_new_agegroup_rki(session: Session, agegroups: list[str]) -> None:
+def add_new_agegroups_rki(session: Session, agegroups: list[str]) -> None:
     """
     Adds a new agegroup with a year-interval defined by RKI (Robert-Koch_Institut).
     Calculates average age.
@@ -214,6 +216,8 @@ def add_new_agegroup_rki(session: Session, agegroups: list[str]) -> None:
     new_agegroups = list()
 
     for agegroup in agegroups:
+        assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
+        
         # check if agegroup already exist
         agegroup_exists = get_agegroup_rki(session=session, agegroup=agegroup)
         if agegroup_exists is not None:
