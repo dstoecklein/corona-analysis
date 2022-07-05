@@ -101,6 +101,11 @@ class CalendarDays(Base):
     unique_key = Column(String, nullable=False, unique=True)
 
 
+class ClassificationsICD10(Base):
+    __tablename__ = cfg_table_names.classifications_icd10
+    classifications_icd10_id = Column(Integer, primary_key=True)
+
+
 if __name__ == "__main__":
     from database.db_helper import Database
 

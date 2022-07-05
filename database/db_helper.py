@@ -2,7 +2,8 @@ import uuid
 from typing import Optional
 
 import pandas as pd
-from sqlalchemy import MetaData, Table, create_engine
+from sqlalchemy import MetaData, Table, create_engine, inspect
+from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.sql import text
 
@@ -70,26 +71,80 @@ class Database:
             return table
         return None
 
-    def get_pk_col_name(self, table_name: str) -> Optional[str]:
+    def get_primary_keys(self, table_name: str) -> list[str]:
         """
-        Returns the primary key of a table as `str`.
+        Returns a list of all primary keys in the table.
 
         Args:
             table_name: Name of table
 
         Returns:
-            Column name of the primary key as `str`
+            `list` column names with primary keys constraint
         """
         if self.table_exists(table_name):
             table = self.get_table_obj(table_name)
         else:
-            table = None
+            raise NoSuchTableError(f"Table '{table_name}' does not exist!")
+
+        primary_keys = list()
 
         if table is not None:
-            primary_key = table.primary_key.columns.keys()
-            if primary_key:  # if PK actually exists in the table
-                return primary_key[0]
-        return None
+            inspector = inspect(self.engine)
+            primary_keys = inspector.get_pk_constraint(table_name).get(
+                "constrained_columns"
+            )
+
+        return primary_keys
+
+    def get_foreign_keys(self, table_name: str) -> list[str]:
+        """
+        Returns a list of all foreign keys in the table.
+
+        Args:
+            table_name: Name of table
+
+        Returns:
+            `list` column names with foreign keys constraint
+        """
+        if self.table_exists(table_name):
+            table = self.get_table_obj(table_name)
+        else:
+            raise NoSuchTableError(f"Table '{table_name}' does not exist!")
+
+        foreign_keys = list()
+
+        if table is not None:
+            inspector = inspect(self.engine)
+            tmp = inspector.get_foreign_keys(table_name)
+            for fk in tmp:
+                foreign_keys.append(fk.get("constrained_columns")[0])
+
+        return foreign_keys
+
+    def get_unique_cols(self, table_name: str) -> list[str]:
+        """
+        Returns a list of all unique columns in the table.
+
+        Args:
+            table_name: Name of table
+
+        Returns:
+            `list` column names with unique constraint
+        """
+        if self.table_exists(table_name):
+            table = self.get_table_obj(table_name)
+        else:
+            raise NoSuchTableError(f"Table '{table_name}' does not exist!")
+
+        unique_cols = list()
+
+        if table is not None:
+            inspector = inspect(self.engine)
+            tmp = inspector.get_unique_constraints(table_name)
+            for unique in tmp:
+                unique_cols.append(unique.get("column_names")[0])
+
+        return unique_cols
 
     def truncate_table(self, table_name: str) -> None:
         """
@@ -130,9 +185,7 @@ class Database:
 
         # check if table exist. If not, raise error
         if not self.table_exists(table_name):
-            from sqlalchemy.exc import NoSuchTableError
-
-            raise NoSuchTableError(f"Table {table_name} does not exist!")
+            raise NoSuchTableError(f"Table '{table_name}' does not exist!")
 
         # table exist, so use UPSERT logic...
 
