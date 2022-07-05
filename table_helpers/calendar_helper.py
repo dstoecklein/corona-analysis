@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 import database.create_database as tbl
 
+
 # TODO: Refactor create_df functions to use SQLalchemy
 def _create_base_calendar_df(start_year: int, end_year: int) -> pd.DataFrame:
     start_date = date(start_year, 1, 1)

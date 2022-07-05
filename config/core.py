@@ -12,6 +12,7 @@ FILES_PATH = CWD / "files"
 # config files
 CFG_DATABASE = "cfg_database.yaml"
 CFG_TABLE_NAMES = "cfg_table_names.yaml"
+CFG_INIT_VALUES = "cfg_init_values.yaml"
 
 
 class DatabaseCfg(BaseModel):
@@ -20,12 +21,20 @@ class DatabaseCfg(BaseModel):
 
 
 class TablesCfg(BaseModel):
-    agegroups_05y: str
-    agegroups_10y: str
-    agegroups_rki: str
     calendar_years: str
     calendar_weeks: str
     calendar_days: str
+    agegroups_05y: str
+    agegroups_10y: str
+    agegroups_rki: str
+
+
+class InitValuesCfg(BaseModel):
+    calendar_start_year: int
+    calendar_end_year: int
+    agegroups_05y: list
+    agegroups_10y: list
+    agegroups_rki: list
 
 
 def get_cfg_path() -> Path:
@@ -68,5 +77,16 @@ def create_table_names_cfg(file_name: str = None) -> TablesCfg:
     return _config
 
 
+def create_init_values_cfg(file_name: str = None) -> InitValuesCfg:
+    if file_name is None:
+        raise Exception("File name must be specified")
+
+    config_file = read_cfg(file_name=file_name)
+
+    _config = InitValuesCfg(**config_file.data)
+    return _config
+
+
 cfg_db = create_db_cfg(file_name=CFG_DATABASE)
 cfg_table_names = create_table_names_cfg(file_name=CFG_TABLE_NAMES)
+cfg_init_values = create_init_values_cfg(file_name=CFG_INIT_VALUES)

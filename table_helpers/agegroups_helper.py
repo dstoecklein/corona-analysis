@@ -1,15 +1,11 @@
-from datetime import datetime
 from typing import Any, Optional
 
-import pandas as pd
 from sqlalchemy.orm import Session
 
 import database.create_database as tbl
 
 
 def _get_min_age(agegroup: str) -> int:
-    assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
-
     ages = agegroup.split("-")
     ages_int = [int(age) for age in ages]
     return min(ages_int)
@@ -33,6 +29,7 @@ def _calc_avg_age(agegroup: str, n_observations: int = 10) -> float:
     max_age = _get_max_age(agegroup=agegroup)
     avg_age = _nth_triangle_number(min_n=min_age, max_n=max_age)
     return avg_age / n_observations
+
 
 def get_agegroup_05y(session: Session, agegroup: str) -> Optional[Any]:
     """
@@ -217,7 +214,7 @@ def add_new_agegroups_rki(session: Session, agegroups: list[str]) -> None:
 
     for agegroup in agegroups:
         assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
-        
+
         # check if agegroup already exist
         agegroup_exists = get_agegroup_rki(session=session, agegroup=agegroup)
         if agegroup_exists is not None:
