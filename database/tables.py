@@ -1,11 +1,9 @@
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from config.core import cfg_table_names
-
-Base = declarative_base()
+from database.base_model import Base
 
 
 class Agegroups05y(Base):
@@ -16,7 +14,6 @@ class Agegroups05y(Base):
     # meta cols
     created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_on = Column(DateTime(timezone=True), default=func.now())
-    unique_key = Column(String, nullable=False, unique=True)
 
 
 class Agegroups10y(Base):
@@ -29,7 +26,6 @@ class Agegroups10y(Base):
     # meta cols
     created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_on = Column(DateTime(timezone=True), default=func.now())
-    unique_key = Column(String, nullable=False, unique=True)
 
 
 class AgegroupsRki(Base):
@@ -42,7 +38,6 @@ class AgegroupsRki(Base):
     # meta cols
     created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_on = Column(DateTime(timezone=True), default=func.now())
-    unique_key = Column(String, nullable=False, unique=True)
 
 
 class CalendarYears(Base):
@@ -53,7 +48,6 @@ class CalendarYears(Base):
     # meta cols
     created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_on = Column(DateTime(timezone=True), default=func.now())
-    unique_key = Column(String, nullable=False, unique=True)
     # relationships
     calendar_weeks: int = relationship(
         "CalendarWeeks", backref=cfg_table_names.calendar_years, cascade="all, delete"
@@ -76,7 +70,6 @@ class CalendarWeeks(Base):
     # meta cols
     created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_on = Column(DateTime(timezone=True), default=func.now())
-    unique_key = Column(String, nullable=False, unique=True)
     # relationships
     calendar_years: int = relationship(
         "CalendarDays", backref=cfg_table_names.calendar_weeks, cascade="all, delete"
@@ -98,16 +91,9 @@ class CalendarDays(Base):
     # meta cols
     created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_on = Column(DateTime(timezone=True), default=func.now())
-    unique_key = Column(String, nullable=False, unique=True)
 
 
-class ClassificationsICD10(Base):
-    __tablename__ = cfg_table_names.classifications_icd10
-    classifications_icd10_id = Column(Integer, primary_key=True)
-
-
-if __name__ == "__main__":
-    from database.db_helper import Database
-
-    DB = Database()
-    Base.metadata.create_all(DB.engine, checkfirst=True)
+# TODO:
+# class ClassificationsICD10(Base):
+#    __tablename__ = cfg_table_names.classifications_icd10
+#    classifications_icd10_id = Column(Integer, primary_key=True)

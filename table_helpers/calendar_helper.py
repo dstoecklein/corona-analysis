@@ -4,7 +4,7 @@ from typing import Any, Optional
 import pandas as pd
 from sqlalchemy.orm import Session
 
-import database.create_database as tbl
+import database.tables as tbl
 
 
 # TODO: Refactor create_df functions to use SQLalchemy
@@ -54,7 +54,6 @@ def create_calendar_years_df(start_year: int, end_year: int) -> pd.DataFrame:
     )
     df_years = df_years.iloc[:, :2]  # only first two cols
 
-    df_years["unique_key"] = df_years["iso_year"]
     df_years["created_on"] = datetime.now()
     df_years["updated_on"] = datetime.now()
 
@@ -84,7 +83,6 @@ def create_calendar_weeks_df(start_year: int, end_year: int) -> pd.DataFrame:
     df_weeks["iso_week"] = df_weeks["iso_week"].astype(int)
     df_weeks.drop(["iso_day", "iso_year"], axis=1, inplace=True)
 
-    df_weeks["unique_key"] = df_weeks["iso_key"]
     df_weeks["created_on"] = datetime.now()
     df_weeks["updated_on"] = datetime.now()
 
@@ -105,7 +103,6 @@ def create_calendar_days_df(start_year: int, end_year: int) -> pd.DataFrame:
     )
     df_day.rename(columns={"calendar_weeks_id": "calendar_weeks_fk"}, inplace=True)
 
-    df_day["unique_key"] = df_day["iso_day"]
     df_day["created_on"] = datetime.now()
     df_day["updated_on"] = datetime.now()
 
@@ -184,7 +181,7 @@ def add_new_calendar_years(session: Session, years: list[int]) -> None:
             continue
 
         # create new entry
-        new_calendar_year = tbl.CalendarYears(iso_year=year, unique_key=str(year))
+        new_calendar_year = tbl.CalendarYears(iso_year=year)
         new_years.append(new_calendar_year)
 
     # write to DB
