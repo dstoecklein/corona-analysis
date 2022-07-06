@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, null
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -100,6 +100,23 @@ class ClassificationsICD10(Base):
     icd10 = Column(String, nullable=False, unique=True)
     description_en = Column(String)
     description_de = Column(String)
+    # meta cols
+    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
+    updated_on = Column(DateTime(timezone=True), default=func.now())
+
+
+class Countries(Base):
+    __tablename__ = cfg_table_names.countries
+
+    countries_id = Column(Integer, primary_key=True)
+    country_en = Column(String, nullable=False)
+    country_de = Column(String, nullable=False)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    iso_3166_1_alpha2 = Column(String(2), nullable=False, unique=True)
+    iso_3166_1_alpha3 = Column(String(3), nullable=False, unique=True)
+    iso_3166_1_numeric = Column(Integer, nullable=False, unique=True)
+    nuts_0 = Column(String(2), nullable=False, unique=True)
     # meta cols
     created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_on = Column(DateTime(timezone=True), default=func.now())

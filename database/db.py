@@ -42,6 +42,7 @@ class Database:
             tbl.CalendarWeeks.__tablename__,
             tbl.CalendarDays.__tablename__,
             tbl.ClassificationsICD10.__tablename__,
+            tbl.Countries.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):

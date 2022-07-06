@@ -29,7 +29,8 @@ class TablesCfg(BaseModel):
     agegroups_10y: str
     agegroups_rki: str
     classifications_icd10: str
-
+    countries: str
+    
 
 class InitValuesCfg(BaseModel):
     calendar_start_year: int

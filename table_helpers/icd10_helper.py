@@ -14,7 +14,7 @@ def get_icd10(session: Session, icd10: str) -> Optional[Any]:
         agegroup: ICD10 code
 
     Returns:
-        A `row` object for the provided agegroup or `None` if calendar year not found.
+        A `row` object for the ICD10 or `None` if ICD10 not found.
     """
     icd10_row = (
         session.query(tbl.ClassificationsICD10.icd10).filter(
