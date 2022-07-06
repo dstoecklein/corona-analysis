@@ -93,7 +93,13 @@ class CalendarDays(Base):
     updated_on = Column(DateTime(timezone=True), default=func.now())
 
 
-# TODO:
-# class ClassificationsICD10(Base):
-#    __tablename__ = cfg_table_names.classifications_icd10
-#    classifications_icd10_id = Column(Integer, primary_key=True)
+class ClassificationsICD10(Base):
+    __tablename__ = cfg_table_names.classifications_icd10
+
+    classifications_icd10_id = Column(Integer, primary_key=True)
+    icd10 = Column(String, nullable=False, unique=True)
+    description_en = Column(String)
+    description_de = Column(String)
+    # meta cols
+    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
+    updated_on = Column(DateTime(timezone=True), default=func.now())
