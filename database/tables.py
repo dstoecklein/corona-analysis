@@ -2,12 +2,12 @@ from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, nul
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from config.core import cfg_table_names
+from config.core import cfg_db
 from database.base_model import Base
 
 
 class Agegroups05y(Base):
-    __tablename__ = cfg_table_names.agegroups_05y
+    __tablename__ = cfg_db.tables.agegroups_05y
 
     agegroups_05y_id = Column(Integer, primary_key=True)
     agegroup = Column(String, nullable=False, unique=True)
@@ -17,7 +17,7 @@ class Agegroups05y(Base):
 
 
 class Agegroups10y(Base):
-    __tablename__ = cfg_table_names.agegroups_10y
+    __tablename__ = cfg_db.tables.agegroups_10y
 
     agegroups_10y_id = Column(Integer, primary_key=True)
     agegroup = Column(String, nullable=False, unique=True)
@@ -29,7 +29,7 @@ class Agegroups10y(Base):
 
 
 class AgegroupsRki(Base):
-    __tablename__ = cfg_table_names.agegroups_rki
+    __tablename__ = cfg_db.tables.agegroups_rki
 
     agegroups_rki_id = Column(Integer, primary_key=True)
     agegroup = Column(String, nullable=False, unique=True)
@@ -41,7 +41,7 @@ class AgegroupsRki(Base):
 
 
 class CalendarYears(Base):
-    __tablename__ = cfg_table_names.calendar_years
+    __tablename__ = cfg_db.tables.calendar_years
 
     calendar_years_id = Column(Integer, primary_key=True)
     iso_year = Column(Integer, nullable=False, unique=True)
@@ -50,18 +50,19 @@ class CalendarYears(Base):
     updated_on = Column(DateTime(timezone=True), default=func.now())
     # relationships
     calendar_weeks: int = relationship(
-        "CalendarWeeks", backref=cfg_table_names.calendar_years, cascade="all, delete"
+        "CalendarWeeks", backref=cfg_db.tables.calendar_years, cascade="all, delete"
     )
 
 
 class CalendarWeeks(Base):
-    __tablename__ = cfg_table_names.calendar_weeks
+    __tablename__ = cfg_db.tables.calendar_weeks
+    _calendar_years = CalendarYears # parent
 
     calendar_weeks_id = Column(Integer, primary_key=True)
     calendar_years_fk = Column(
         Integer,
         ForeignKey(
-            "_calendar_years.calendar_years_id", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_calendar_years.__tablename__}.{_calendar_years.calendar_years_id.name}", ondelete="CASCADE", onupdate="CASCADE"
         ),
         nullable=False,
     )
@@ -72,18 +73,19 @@ class CalendarWeeks(Base):
     updated_on = Column(DateTime(timezone=True), default=func.now())
     # relationships
     calendar_years: int = relationship(
-        "CalendarDays", backref=cfg_table_names.calendar_weeks, cascade="all, delete"
+        "CalendarDays", backref=cfg_db.tables.calendar_weeks, cascade="all, delete"
     )
 
 
 class CalendarDays(Base):
-    __tablename__ = cfg_table_names.calendar_days
+    __tablename__ = cfg_db.tables.calendar_days
+    _calendar_weeks = CalendarWeeks # parent
 
     calendar_days_id = Column(Integer, primary_key=True)
     calendar_weeks_fk = Column(
         Integer,
         ForeignKey(
-            "_calendar_weeks.calendar_weeks_id", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_calendar_weeks.__tablename__}.{_calendar_weeks.calendar_weeks_id.name}", ondelete="CASCADE", onupdate="CASCADE"
         ),
         nullable=False,
     )
@@ -94,7 +96,7 @@ class CalendarDays(Base):
 
 
 class ClassificationsICD10(Base):
-    __tablename__ = cfg_table_names.classifications_icd10
+    __tablename__ = cfg_db.tables.classifications_icd10
 
     classifications_icd10_id = Column(Integer, primary_key=True)
     icd10 = Column(String, nullable=False, unique=True)
@@ -106,7 +108,7 @@ class ClassificationsICD10(Base):
 
 
 class Countries(Base):
-    __tablename__ = cfg_table_names.countries
+    __tablename__ = cfg_db.tables.countries
 
     countries_id = Column(Integer, primary_key=True)
     country_en = Column(String, nullable=False)
@@ -122,18 +124,19 @@ class Countries(Base):
     updated_on = Column(DateTime(timezone=True), default=func.now())
     # relationships
     country_subdivs_1: int = relationship(
-        "CountriesSubdivs1", backref=cfg_table_names.countries, cascade="all, delete"
+        "CountriesSubdivs1", backref=cfg_db.tables.countries, cascade="all, delete"
     )
 
 
 class CountriesSubdivs1(Base):
-    __tablename__ = cfg_table_names.country_subdivs1
+    __tablename__ = cfg_db.tables.country_subdivs1
+    _countries = Countries # parent
 
     country_subdivs_1_id = Column(Integer, primary_key=True)
     countries_fk = Column(
         Integer,
         ForeignKey(
-            "_countries.countries_id", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_countries.__tablename__}.{_countries.countries_id.name}", ondelete="CASCADE", onupdate="CASCADE"
         ),
         nullable=False,
     )
@@ -148,18 +151,19 @@ class CountriesSubdivs1(Base):
     updated_on = Column(DateTime(timezone=True), default=func.now())
     # relationships
     country_subdivs_2: int = relationship(
-        "CountriesSubdivs2", backref=cfg_table_names.country_subdivs1, cascade="all, delete"
+        "CountriesSubdivs2", backref=cfg_db.tables.country_subdivs1, cascade="all, delete"
     )
 
 
 class CountriesSubdivs2(Base):
-    __tablename__ = cfg_table_names.country_subdivs2
+    __tablename__ = cfg_db.tables.country_subdivs2
+    _country_subdivs_1 = CountriesSubdivs1 # parent
 
     country_subdivs_2_id = Column(Integer, primary_key=True)
     country_subdivs_1_fk = Column(
         Integer,
         ForeignKey(
-            "_country_subdivs_1.country_subdivs_1_id", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_country_subdivs_1.__tablename__}.{_country_subdivs_1.country_subdivs_1_id.name}", ondelete="CASCADE", onupdate="CASCADE"
         ),
         nullable=False,
     )
@@ -172,17 +176,18 @@ class CountriesSubdivs2(Base):
     updated_on = Column(DateTime(timezone=True), default=func.now())
     # relationships
     country_subdivs_3: int = relationship(
-        "CountriesSubdivs3", backref=cfg_table_names.country_subdivs2, cascade="all, delete"
+        "CountriesSubdivs3", backref=cfg_db.tables.country_subdivs2, cascade="all, delete"
     )
 
 class CountriesSubdivs3(Base):
-    __tablename__ = cfg_table_names.country_subdivs3
+    __tablename__ = cfg_db.tables.country_subdivs3
+    _country_subdivs_2 = CountriesSubdivs2 # parent
 
     country_subdivs_3_id = Column(Integer, primary_key=True)
     country_subdivs_2_fk = Column(
         Integer,
         ForeignKey(
-            "_country_subdivs_2.country_subdivs_2_id", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_country_subdivs_2.__tablename__}.{_country_subdivs_2.country_subdivs_2_id.name}", ondelete="CASCADE", onupdate="CASCADE"
         ),
         nullable=False,
     )

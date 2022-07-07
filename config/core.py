@@ -11,17 +11,36 @@ FILES_PATH = CWD / "files"
 
 # config files
 CFG_DATABASE = "cfg_database.yaml"
-CFG_TABLE_NAMES = "cfg_table_names.yaml"
-CFG_INIT_VALUES = "cfg_init_values.yaml"
+CFG_TABLES = "cfg_tables.yaml"
+CFG_INIT = "cfg_init.yaml"
 CFG_URLS = "cfg_urls.yaml"
 
+# CHILD CONFIGS
+class FileValues(BaseModel):
+    filename: str
+    index_col: str
 
-class DatabaseCfg(BaseModel):
+class Files(BaseModel):
+    icd10: FileValues
+    countries: FileValues
+    subdivs1: FileValues
+    subdivs2: FileValues
+    subdivs3: FileValues
+
+class Values(BaseModel):
+    calendar_start_year: int
+    calendar_end_year: int
+    agegroups_05y: list
+    agegroups_10y: list
+    agegroups_rki: list
+    incidence_reference_year: int
+    berlin_district_map: dict
+
+class Database(BaseModel):
     dialect: str
     name: str
 
-
-class TablesCfg(BaseModel):
+class Tables(BaseModel):
     calendar_years: str
     calendar_weeks: str
     calendar_days: str
@@ -34,14 +53,14 @@ class TablesCfg(BaseModel):
     country_subdivs2: str
     country_subdivs3: str
 
+# PARENT CONFIGS
+class InitCfg(BaseModel):
+    from_values: Values
+    from_files: Files
 
-class InitValuesCfg(BaseModel):
-    calendar_start_year: int
-    calendar_end_year: int
-    agegroups_05y: list
-    agegroups_10y: list
-    agegroups_rki: list
-
+class DatabaseCfg(BaseModel):
+    db: Database
+    tables: Tables
 
 class UrlsCfg(BaseModel):
     rki_covid_daily: str
@@ -71,6 +90,10 @@ def get_cfg_path() -> Path:
     return CFG_PATH
 
 
+def get_files_path() -> Path:
+    return FILES_PATH
+
+
 def read_cfg(file_name: str, file_path: Path = None) -> YAML:
     if not file_path:
         file_path = get_cfg_path()
@@ -96,24 +119,13 @@ def create_db_cfg(file_name: str = None) -> DatabaseCfg:
     _config = DatabaseCfg(**config_file.data)
     return _config
 
-
-def create_table_names_cfg(file_name: str = None) -> TablesCfg:
+def create_init_cfg(file_name: str = None) -> InitCfg:
     if file_name is None:
         raise Exception("File name must be specified")
 
     config_file = read_cfg(file_name=file_name)
 
-    _config = TablesCfg(**config_file.data)
-    return _config
-
-
-def create_init_values_cfg(file_name: str = None) -> InitValuesCfg:
-    if file_name is None:
-        raise Exception("File name must be specified")
-
-    config_file = read_cfg(file_name=file_name)
-
-    _config = InitValuesCfg(**config_file.data)
+    _config = InitCfg(**config_file.data)
     return _config
 
 
@@ -128,6 +140,5 @@ def create_urls_cfg(file_name: str = None) -> UrlsCfg:
 
 
 cfg_db = create_db_cfg(file_name=CFG_DATABASE)
-cfg_table_names = create_table_names_cfg(file_name=CFG_TABLE_NAMES)
-cfg_init_values = create_init_values_cfg(file_name=CFG_INIT_VALUES)
+cfg_init = create_init_cfg(file_name=CFG_INIT)
 cfg_urls = create_urls_cfg(file_name=CFG_URLS)

@@ -1,0 +1,65 @@
+from_files:
+  icd10:
+    filename: "icd10.ftr"
+    index_col: "icd10"
+  countries:
+    filename: "countries.ftr"
+    index_col: "country_en"
+  subdivs1:
+    filename: "subdivs1.ftr"
+    index_col: "nuts_1"
+  subdivs2:
+    filename: "subdivs2.ftr"
+    index_col: "nuts_2"
+  subdivs3:
+    filename: "subdivs3.ftr"
+    index_col: "nuts_3"
+from_values:
+  calendar_start_year: 1990
+  calendar_end_year: 2050
+  agegroups_05y:
+    - "00-04"
+    - "05-09"
+    - "10-14"
+    - "15-19"
+    - "20-24"
+    - "25-29"
+    - "30-34"
+    - "35-39"
+    - "40-44"
+    - "45-49"
+    - "50-54"
+    - "55-59"
+    - "60-64"
+    - "65-69"
+    - "70-74"
+    - "75-79"
+  agegroups_10y:
+    - "00-09"
+    - "10-19"
+    - "20-29"
+    - "30-39"
+    - "40-49"
+    - "50-59"
+    - "60-69"
+    - "70-79"
+  agegroups_rki:
+    - "00-04" 
+    - "05-14" 
+    - "15-34" 
+    - "35-59" 
+    - "60-79"
+  incidence_reference_year: 2020
+  berlin_district_map:
+    11001: 11000
+    11002: 11000
+    11003: 11000
+    11004: 11000
+    11005: 11000
+    11006: 11000
+    11007: 11000
+    11008: 11000
+    11009: 11000
+    11010: 11000
+    11011: 11000
+    11012: 11000

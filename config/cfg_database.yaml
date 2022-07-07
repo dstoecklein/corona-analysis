@@ -1,2 +1,15 @@
-dialect: 'sqlite:///'
-name: 'corona_analysis'
+db:
+  dialect: 'sqlite:///'
+  name: 'corona_analysis'
+tables:
+  calendar_years: "_calendar_years"
+  calendar_weeks: "_calendar_weeks"
+  calendar_days: "_calendar_days"
+  agegroups_05y: "_agegroups_05y"
+  agegroups_10y: "_agegroups_10y"
+  agegroups_rki: "_agegroups_rki"
+  classifications_icd10: "_classifications_icd10"
+  countries: "_countries"
+  country_subdivs1: "_country_subdivs_1"
+  country_subdivs2: "_country_subdivs_2"
+  country_subdivs3: "_country_subdivs_3"
