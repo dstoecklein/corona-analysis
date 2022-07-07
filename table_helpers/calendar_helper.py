@@ -2,6 +2,7 @@ from datetime import date, datetime
 from typing import Any, Optional
 
 import pandas as pd
+from sqlalchemy.engine.row import Row
 from sqlalchemy.orm import Session
 
 import database.tables as tbl
@@ -109,7 +110,7 @@ def create_calendar_days_df(start_year: int, end_year: int) -> pd.DataFrame:
     return df_day
 
 
-def get_calendar_year(session: Session, year: int) -> Optional[Any]:
+def get_calendar_year(session: Session, year: int) -> Optional[tbl.CalendarYears]:
     """
     Get a specific calendar year
 
@@ -121,12 +122,11 @@ def get_calendar_year(session: Session, year: int) -> Optional[Any]:
         A `row` object for the provided calendar year or `None`
         if calendar year not found.
     """
-    with session.begin():
-        calendar_year_row = (
-            session.query(tbl.CalendarYears.iso_year).filter(
-                tbl.CalendarYears.iso_year == year
-            )
-        ).one_or_none()
+    calendar_year_row = (
+        session.query(tbl.CalendarYears.iso_year).filter(
+            tbl.CalendarYears.iso_year == year
+        )
+    ).one_or_none()
     return calendar_year_row
 
 
@@ -140,28 +140,63 @@ def get_calendar_years(session: Session) -> list[tbl.CalendarYears]:
     Returns:
         A `list` of `CalendarYears` objects.
     """
-    with session.begin():
-        calendar_years_list = (
-            session.query(tbl.CalendarYears).order_by(tbl.CalendarYears.iso_year)
-        ).all()
+    calendar_years_list = (
+        session.query(tbl.CalendarYears).order_by(tbl.CalendarYears.iso_year)
+    ).all()
     return calendar_years_list
 
 
-def get_calendar_weeks(session: Session) -> list[tbl.CalendarWeeks]:
+def get_calendar_weeks(session: Session, iso_year: int) -> list[Row]:
     """
-    Get all calendar weeks objects as list
+    Get all calendar weeks for a given year (ISO)
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
+        iso_year: Year
 
     Returns:
-        A `list` of `CalendarWeeks` objects.
+        A `list` of `Row`'s.
     """
-    with session.begin():
-        calendar_weeks_list = (
-            session.query(tbl.CalendarWeeks).order_by(tbl.CalendarWeeks.iso_key)
-        ).all()
-    return calendar_weeks_list
+
+    # query
+    row = (
+        session.query(tbl.CalendarWeeks.iso_week, tbl.CalendarWeeks.iso_key)
+        .join(tbl.CalendarYears)
+        .filter(tbl.CalendarYears.iso_year == iso_year)
+    ).all()
+    return row
+
+
+def get_calendar_days(session: Session, iso_year: int) -> list[Row]:
+    """
+    Get all calendar days for a given year (ISO)
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+        iso_year: Year
+
+    Returns:
+        A `list` of `Row`'s.
+    """
+
+    # query
+    row = (
+        session.query(
+            tbl.CalendarDays.iso_day,
+            tbl.CalendarWeeks.iso_week,
+            tbl.CalendarWeeks.iso_key,
+        )
+        .join(
+            tbl.CalendarWeeks,
+            tbl.CalendarDays.calendar_weeks_fk == tbl.CalendarWeeks.calendar_weeks_id,
+        )
+        .join(
+            tbl.CalendarYears,
+            tbl.CalendarWeeks.calendar_years_fk == tbl.CalendarYears.calendar_years_id,
+        )
+        .filter(tbl.CalendarYears.iso_year == iso_year)
+    ).all()
+    return row
 
 
 def add_new_calendar_years(session: Session, years: list[int]) -> None:
@@ -185,6 +220,5 @@ def add_new_calendar_years(session: Session, years: list[int]) -> None:
         new_years.append(new_calendar_year)
 
     # write to DB
-    with session.begin():
-        session.add_all(new_years)
-        session.commit()
+    session.add_all(new_years)
+    session.commit()

@@ -180,8 +180,8 @@ def get_subdivision1(
                 tbl.Countries.iso_3166_1_numeric,
                 tbl.Countries.nuts_0,
             )
-            .filter(col == col_value)
             .join(tbl.Countries)
+            .filter(col == col_value)
         )
         .one_or_none()
         ._mapping

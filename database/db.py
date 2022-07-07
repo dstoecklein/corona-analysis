@@ -250,6 +250,5 @@ class Database:
 
         # 4. execute upsert query & drop temporary table
         with self.ManagedSessionMaker() as session:
-            with session.begin():
-                session.execute(query_upsert)
-                session.execute(query_drop_tmp)
+            session.execute(query_upsert)
+            session.execute(query_drop_tmp)
