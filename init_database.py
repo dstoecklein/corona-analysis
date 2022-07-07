@@ -35,12 +35,31 @@ def init_icd10(db: Database):
             ich.add_new_icd10(session=session, icd10_dict=icd10_dict)
 
 def init_countries(db: Database):
-    df = pd.read_feather("files/countries.ftr") # TODO: add to config
-    df.set_index("country_en", inplace=True)
-    countries_dict = df.to_dict(orient="index")
+    # Countries
+    df_countries = pd.read_feather("files/countries.ftr") # TODO: add to config
+    df_countries.set_index("country_en", inplace=True)
+    countries_dict = df_countries.to_dict(orient="index")
+
+    # Subdivisions Level 1
+    df_subdivs1 = pd.read_feather("files/subdivs1.ftr") # TODO: add to config
+    df_subdivs1.set_index("nuts_1", inplace=True)
+    subdivs1_dict = df_subdivs1.to_dict(orient="index")
+
+    # Subdivisions Level 2
+    df_subdivs2 = pd.read_feather("files/subdivs2.ftr") # TODO: add to config
+    df_subdivs2.set_index("nuts_2", inplace=True)
+    subdivs2_dict = df_subdivs2.to_dict(orient="index")
+
+    # Subdivisions Level 3
+    df_subdivs3 = pd.read_feather("files/subdivs3.ftr") # TODO: add to config
+    df_subdivs3.set_index("nuts_3", inplace=True)
+    subdivs3_dict = df_subdivs3.to_dict(orient="index")
     with db.ManagedSessionMaker() as session:
         with session.begin():
             coh.add_new_country(session=session, countries_dict=countries_dict)
+            coh.add_new_subdivision1(session=session, subdivs1_dict=subdivs1_dict)
+            coh.add_new_subdivision2(session=session, subdivs2_dict=subdivs2_dict)
+            coh.add_new_subdivision3(session=session, subdivs3_dict=subdivs3_dict)
 
 def main(db: Database):
     init_calendars(db=db)
