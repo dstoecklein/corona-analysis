@@ -26,7 +26,7 @@ def init_agegroups(database: Database) -> None:
             agh.add_new_agegroups_10y(session=session, agegroups=init.from_values.agegroups_10y)
             agh.add_new_agegroups_rki(session=session, agegroups=init.from_values.agegroups_rki)
 
-def init_icd10(database: Database):
+def init_icd10(database: Database) -> None:
     df = pd.read_feather(cfg.get_files_path() / init.from_files.icd10.filename)
     df.set_index(init.from_files.icd10.index_col, inplace=True)
     icd10_dict = df.to_dict(orient="index")
@@ -34,7 +34,7 @@ def init_icd10(database: Database):
         with session.begin():
             ich.add_new_icd10(session=session, icd10_dict=icd10_dict)
 
-def init_countries(database: Database):
+def init_countries(database: Database) -> None:
     # Countries
     df_countries = pd.read_feather(cfg.get_files_path() / init.from_files.countries.filename)
     df_countries.set_index(init.from_files.countries.index_col, inplace=True)
@@ -54,6 +54,7 @@ def init_countries(database: Database):
     df_subdivs3 = pd.read_feather(cfg.get_files_path() / init.from_files.subdivs3.filename)
     df_subdivs3.set_index(init.from_files.subdivs3.index_col, inplace=True)
     subdivs3_dict = df_subdivs3.to_dict(orient="index")
+
     with database.ManagedSessionMaker() as session:
         with session.begin():
             coh.add_new_country(session=session, countries_dict=countries_dict)
@@ -61,7 +62,7 @@ def init_countries(database: Database):
             coh.add_new_subdivision2(session=session, subdivs2_dict=subdivs2_dict)
             coh.add_new_subdivision3(session=session, subdivs3_dict=subdivs3_dict)
 
-def main(database: Database):
+def main(database: Database) -> None:
     init_calendars(database=database)
     init_agegroups(database=database)
     init_icd10(database=database)

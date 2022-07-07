@@ -25,7 +25,15 @@ def get_country(session: Session, country_en: str) -> Optional[Any]:
     return country_row
 
 
-def add_new_country(session: Session, countries_dict: dict[str, dict[str, str]]) -> None:
+# TODO: dict.get() return Optional[str], thus causing mypy error
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+# mypy: ignore-errors
+
+
+def add_new_country(
+    session: Session, countries_dict: dict[str, dict[str, str]]
+) -> None:
     """
     Adds a new Country entry to the local SQLite database.
 
@@ -52,7 +60,7 @@ def add_new_country(session: Session, countries_dict: dict[str, dict[str, str]])
             iso_3166_1_alpha2=value_dict.get("iso_3166_1_alpha2"),
             iso_3166_1_alpha3=value_dict.get("iso_3166_1_alpha3"),
             iso_3166_1_numeric=value_dict.get("iso_3166_1_numeric"),
-            nuts_0=value_dict.get("nuts_0")
+            nuts_0=value_dict.get("nuts_0"),
         )
         new_countries.append(new_country)
 
@@ -80,7 +88,9 @@ def get_subdivision1(session: Session, nuts_1: str) -> Optional[Any]:
     return subdiv1_row
 
 
-def add_new_subdivision1(session: Session, subdivs1_dict: dict[str, dict[str, str]]) -> None:
+def add_new_subdivision1(
+    session: Session, subdivs1_dict: dict[str, dict[str, str]]
+) -> None:
     # TODO: change from nuts_1 to iso_3166_1 as key
     # TODO: Get rid of FK in dict, better read it via SQLAlchemy
     """
@@ -110,7 +120,7 @@ def add_new_subdivision1(session: Session, subdivs1_dict: dict[str, dict[str, st
             longitude=value_dict.get("longitude"),
             iso_3166_2=value_dict.get("iso_3166_2"),
             nuts_1=nuts_1,
-            bundesland_id=value_dict.get("bundesland_id")
+            bundesland_id=value_dict.get("bundesland_id"),
         )
         new_subdivs1.append(new_subdiv1)
 
@@ -137,7 +147,9 @@ def get_subdivision2(session: Session, nuts_2: str) -> Optional[Any]:
     return subdiv2_row
 
 
-def add_new_subdivision2(session: Session, subdivs2_dict: dict[str, dict[str, str]]) -> None:
+def add_new_subdivision2(
+    session: Session, subdivs2_dict: dict[str, dict[str, str]]
+) -> None:
     # TODO: change from nuts_1 to iso_3166_1 as key
     # TODO: Get rid of FK in dict, better read it via SQLAlchemy
     """
@@ -191,7 +203,9 @@ def get_subdivision3(session: Session, nuts_3: str) -> Optional[Any]:
     return subdiv3_row
 
 
-def add_new_subdivision3(session: Session, subdivs3_dict: dict[str, dict[str, str]]) -> None:
+def add_new_subdivision3(
+    session: Session, subdivs3_dict: dict[str, dict[str, str]]
+) -> None:
     # TODO: change from nuts_1 to iso_3166_1 as key
     # TODO: Get rid of FK in dict, better read it via SQLAlchemy
     """
@@ -219,7 +233,7 @@ def add_new_subdivision3(session: Session, subdivs3_dict: dict[str, dict[str, st
             latitude=value_dict.get("latitude"),
             longitude=value_dict.get("longitude"),
             nuts_3=nuts_3,
-            ags=value_dict.get("ags")
+            ags=value_dict.get("ags"),
         )
         new_subdivs3.append(new_subdiv3)
 

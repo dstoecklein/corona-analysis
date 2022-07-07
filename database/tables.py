@@ -1,9 +1,17 @@
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, null
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from config.core import cfg_db
 from database.base_model import Base
+
+
+def _get_created_on_col() -> Column:
+    return Column(DateTime(timezone=True), nullable=False, default=func.now())
+
+
+def _get_updated_on_col() -> Column:
+    return Column(DateTime(timezone=True), default=func.now())
 
 
 class Agegroups05y(Base):
@@ -12,8 +20,8 @@ class Agegroups05y(Base):
     agegroups_05y_id = Column(Integer, primary_key=True)
     agegroup = Column(String, nullable=False, unique=True)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
 
 
 class Agegroups10y(Base):
@@ -24,8 +32,8 @@ class Agegroups10y(Base):
     number_observations = Column(Integer)
     avg_age = Column(Float)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
 
 
 class AgegroupsRki(Base):
@@ -36,8 +44,8 @@ class AgegroupsRki(Base):
     number_observations = Column(Integer)
     avg_age = Column(Float)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
 
 
 class CalendarYears(Base):
@@ -46,8 +54,8 @@ class CalendarYears(Base):
     calendar_years_id = Column(Integer, primary_key=True)
     iso_year = Column(Integer, nullable=False, unique=True)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
     # relationships
     calendar_weeks: int = relationship(
         "CalendarWeeks", backref=cfg_db.tables.calendar_years, cascade="all, delete"
@@ -56,21 +64,23 @@ class CalendarYears(Base):
 
 class CalendarWeeks(Base):
     __tablename__ = cfg_db.tables.calendar_weeks
-    _calendar_years = CalendarYears # parent
+    _calendar_years = CalendarYears  # parent
 
     calendar_weeks_id = Column(Integer, primary_key=True)
     calendar_years_fk = Column(
         Integer,
         ForeignKey(
-            f"{_calendar_years.__tablename__}.{_calendar_years.calendar_years_id.name}", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_calendar_years.__tablename__}.{_calendar_years.calendar_years_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
         ),
         nullable=False,
     )
     iso_week = Column(Integer, nullable=False)
     iso_key = Column(Integer, nullable=False, unique=True)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
     # relationships
     calendar_years: int = relationship(
         "CalendarDays", backref=cfg_db.tables.calendar_weeks, cascade="all, delete"
@@ -79,20 +89,22 @@ class CalendarWeeks(Base):
 
 class CalendarDays(Base):
     __tablename__ = cfg_db.tables.calendar_days
-    _calendar_weeks = CalendarWeeks # parent
+    _calendar_weeks = CalendarWeeks  # parent
 
     calendar_days_id = Column(Integer, primary_key=True)
     calendar_weeks_fk = Column(
         Integer,
         ForeignKey(
-            f"{_calendar_weeks.__tablename__}.{_calendar_weeks.calendar_weeks_id.name}", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_calendar_weeks.__tablename__}.{_calendar_weeks.calendar_weeks_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
         ),
         nullable=False,
     )
     iso_day = Column(String, nullable=False, unique=True)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
 
 
 class ClassificationsICD10(Base):
@@ -103,8 +115,8 @@ class ClassificationsICD10(Base):
     description_en = Column(String)
     description_de = Column(String)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
 
 
 class Countries(Base):
@@ -120,8 +132,8 @@ class Countries(Base):
     iso_3166_1_numeric = Column(Integer, nullable=False, unique=True)
     nuts_0 = Column(String(2), nullable=False, unique=True)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
     # relationships
     country_subdivs_1: int = relationship(
         "CountriesSubdivs1", backref=cfg_db.tables.countries, cascade="all, delete"
@@ -130,13 +142,15 @@ class Countries(Base):
 
 class CountriesSubdivs1(Base):
     __tablename__ = cfg_db.tables.country_subdivs1
-    _countries = Countries # parent
+    _countries = Countries  # parent
 
     country_subdivs_1_id = Column(Integer, primary_key=True)
     countries_fk = Column(
         Integer,
         ForeignKey(
-            f"{_countries.__tablename__}.{_countries.countries_id.name}", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_countries.__tablename__}.{_countries.countries_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
         ),
         nullable=False,
     )
@@ -147,23 +161,27 @@ class CountriesSubdivs1(Base):
     nuts_1 = Column(String(3), unique=True)
     bundesland_id = Column(Integer)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
     # relationships
     country_subdivs_2: int = relationship(
-        "CountriesSubdivs2", backref=cfg_db.tables.country_subdivs1, cascade="all, delete"
+        "CountriesSubdivs2",
+        backref=cfg_db.tables.country_subdivs1,
+        cascade="all, delete",
     )
 
 
 class CountriesSubdivs2(Base):
     __tablename__ = cfg_db.tables.country_subdivs2
-    _country_subdivs_1 = CountriesSubdivs1 # parent
+    _country_subdivs_1 = CountriesSubdivs1  # parent
 
     country_subdivs_2_id = Column(Integer, primary_key=True)
     country_subdivs_1_fk = Column(
         Integer,
         ForeignKey(
-            f"{_country_subdivs_1.__tablename__}.{_country_subdivs_1.country_subdivs_1_id.name}", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_country_subdivs_1.__tablename__}.{_country_subdivs_1.country_subdivs_1_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
         ),
         nullable=False,
     )
@@ -172,22 +190,27 @@ class CountriesSubdivs2(Base):
     longitude = Column(Float)
     nuts_2 = Column(String(4), unique=True)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
     # relationships
     country_subdivs_3: int = relationship(
-        "CountriesSubdivs3", backref=cfg_db.tables.country_subdivs2, cascade="all, delete"
+        "CountriesSubdivs3",
+        backref=cfg_db.tables.country_subdivs2,
+        cascade="all, delete",
     )
+
 
 class CountriesSubdivs3(Base):
     __tablename__ = cfg_db.tables.country_subdivs3
-    _country_subdivs_2 = CountriesSubdivs2 # parent
+    _country_subdivs_2 = CountriesSubdivs2  # parent
 
     country_subdivs_3_id = Column(Integer, primary_key=True)
     country_subdivs_2_fk = Column(
         Integer,
         ForeignKey(
-            f"{_country_subdivs_2.__tablename__}.{_country_subdivs_2.country_subdivs_2_id.name}", ondelete="CASCADE", onupdate="CASCADE"
+            f"{_country_subdivs_2.__tablename__}.{_country_subdivs_2.country_subdivs_2_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
         ),
         nullable=False,
     )
@@ -197,5 +220,5 @@ class CountriesSubdivs3(Base):
     nuts_3 = Column(String(4), unique=True)
     ags = Column(Integer)
     # meta cols
-    created_on = Column(DateTime(timezone=True), nullable=False, default=func.now())
-    updated_on = Column(DateTime(timezone=True), default=func.now())
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()

@@ -15,10 +15,12 @@ CFG_TABLES = "cfg_tables.yaml"
 CFG_INIT = "cfg_init.yaml"
 CFG_URLS = "cfg_urls.yaml"
 
+
 # CHILD CONFIGS
 class FileValues(BaseModel):
     filename: str
     index_col: str
+
 
 class Files(BaseModel):
     icd10: FileValues
@@ -26,6 +28,7 @@ class Files(BaseModel):
     subdivs1: FileValues
     subdivs2: FileValues
     subdivs3: FileValues
+
 
 class Values(BaseModel):
     calendar_start_year: int
@@ -36,9 +39,11 @@ class Values(BaseModel):
     incidence_reference_year: int
     berlin_district_map: dict
 
+
 class Database(BaseModel):
     dialect: str
     name: str
+
 
 class Tables(BaseModel):
     calendar_years: str
@@ -53,14 +58,17 @@ class Tables(BaseModel):
     country_subdivs2: str
     country_subdivs3: str
 
+
 # PARENT CONFIGS
 class InitCfg(BaseModel):
     from_values: Values
     from_files: Files
 
+
 class DatabaseCfg(BaseModel):
     db: Database
     tables: Tables
+
 
 class UrlsCfg(BaseModel):
     rki_covid_daily: str
@@ -118,6 +126,7 @@ def create_db_cfg(file_name: str = None) -> DatabaseCfg:
 
     _config = DatabaseCfg(**config_file.data)
     return _config
+
 
 def create_init_cfg(file_name: str = None) -> InitCfg:
     if file_name is None:
