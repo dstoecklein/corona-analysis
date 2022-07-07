@@ -1,28 +1,74 @@
-from typing import Any, Optional
+from typing import Optional
 
+from sqlalchemy.engine.row import RowMapping
 from sqlalchemy.orm import Session
 
 import database.tables as tbl
 
 
-# TODO provide option to search for country_de, nuts_0, etc.
-def get_country(session: Session, country_en: str) -> Optional[Any]:
+def get_country(
+    session: Session,
+    country_en: str = None,
+    country_de: str = None,
+    iso_3166_1_alpha2: str = None,
+    iso_3166_1_alpha3: str = None,
+    iso_3166_1_numeric: int = None,
+    nuts_0: str = None,
+) -> Optional[tbl.Countries]:
     """
     Get a specific country
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
         country_en: Country name in english
+        country_de: Country name in german
+        iso_3166_1_alpha2: ISO 3166 code alphanumeric 2 digits
+        iso_3166_1_alpha3: ISO 3166 code alphanumeric 3 digits
+        iso_3166_numeric: ISO 3166 numeric
+        nuts_0: NUTS level 0 code
 
     Returns:
-        A `row` object for the country or `None` if country not found.
+        A `row` object of the country or `None` if country not found.
     """
-    country_row = (
-        session.query(tbl.Countries.country_en).filter(
-            tbl.Countries.country_en == country_en
+
+    # check if all parameters are None
+    if all(
+        v is None
+        for v in [
+            country_en,
+            country_de,
+            iso_3166_1_alpha2,
+            iso_3166_1_alpha3,
+            iso_3166_1_numeric,
+            nuts_0,
+        ]
+    ):
+        raise RuntimeError(
+            "Please provide either the country name, iso_3166 code or NUTS code"
         )
-    ).one_or_none()
-    return country_row
+
+    if country_en is not None:
+        col = tbl.Countries.country_en
+        col_value = country_en
+    if country_de is not None:
+        col = tbl.Countries.country_de
+        col_value = country_de
+    if iso_3166_1_alpha2 is not None:
+        col = tbl.Countries.iso_3166_1_alpha2
+        col_value = iso_3166_1_alpha2
+    if iso_3166_1_alpha3 is not None:
+        col = tbl.Countries.iso_3166_1_alpha3
+        col_value = iso_3166_1_alpha3
+    if iso_3166_1_numeric is not None:
+        col = tbl.Countries.iso_3166_1_numeric
+        col_value = iso_3166_1_numeric
+    if nuts_0 is not None:
+        col = tbl.Countries.nuts_0
+        col_value = nuts_0
+
+    # query
+    row = (session.query(tbl.Countries).filter(col == col_value)).one_or_none()
+    return row
 
 
 # TODO: dict.get() return Optional[str], thus causing mypy error
@@ -67,25 +113,81 @@ def add_new_country(
     session.add_all(new_countries)
 
 
-# TODO provide option to search for country_de, nuts_0, etc.
-def get_subdivision1(session: Session, nuts_1: str) -> Optional[Any]:
+def get_subdivision1(
+    session: Session,
+    subdivision_1: str = None,
+    iso_3166_2: str = None,
+    nuts_1: str = None,
+    bundesland_id: int = None,
+) -> RowMapping:
     """
     Get a specific Subdivision Level 1
     https://en.wikipedia.org/wiki/First-level_NUTS_of_the_European_Union
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
-        nuts_1: NUTS 1 code
+        subdivision_1: Name of the subdivision in the countries language
+        iso_3166_2: ISO 3166 code alphanumeric
+        nuts_1: NUTS Level 1 code
+        bundesland_id: ID of German Bundesland
 
     Returns:
-        A `row` object for the Subdivision or `None` if not found.
+        A `row` object of the Subdivision or `None` if not found.
     """
-    subdiv1_row = (
-        session.query(tbl.CountriesSubdivs1.nuts_1).filter(
-            tbl.CountriesSubdivs1.nuts_1 == nuts_1
+
+    # check if all parameters are None
+    if all(
+        v is None
+        for v in [
+            subdivision_1,
+            iso_3166_2,
+            nuts_1,
+            bundesland_id,
+        ]
+    ):
+        raise RuntimeError(
+            "Please provide either the subdiv. name, iso_3166, NUTS code or Bundesland ID"
         )
-    ).one_or_none()
-    return subdiv1_row
+
+    if subdivision_1 is not None:
+        col = tbl.CountriesSubdivs1.subdivision_1
+        col_value = subdivision_1
+    if iso_3166_2 is not None:
+        col = tbl.CountriesSubdivs1.iso_3166_2
+        col_value = iso_3166_2
+    if nuts_1 is not None:
+        col = tbl.CountriesSubdivs1.nuts_1
+        col_value = nuts_1
+    if bundesland_id is not None:
+        col = tbl.CountriesSubdivs1.bundesland_id
+        col_value = bundesland_id
+
+    # query
+    row = (
+        (
+            session.query(
+                tbl.CountriesSubdivs1.subdivision_1,
+                tbl.CountriesSubdivs1.latitude.label("subdiv1_latitude"),
+                tbl.CountriesSubdivs1.longitude.label("subdiv1_longitude"),
+                tbl.CountriesSubdivs1.iso_3166_2,
+                tbl.CountriesSubdivs1.nuts_1,
+                tbl.Countries.country_en,
+                tbl.Countries.country_de,
+                tbl.Countries.latitude.label("country_latitude"),
+                tbl.Countries.longitude.label("country_longitude"),
+                tbl.Countries.iso_3166_1_alpha2,
+                tbl.Countries.iso_3166_1_alpha3,
+                tbl.Countries.iso_3166_1_numeric,
+                tbl.Countries.nuts_0,
+            )
+            .filter(col == col_value)
+            .join(tbl.Countries)
+        )
+        .one_or_none()
+        ._mapping
+    )
+
+    return row
 
 
 def add_new_subdivision1(
@@ -127,24 +229,71 @@ def add_new_subdivision1(
     session.add_all(new_subdivs1)
 
 
-# TODO provide option to search for country_de, nuts_0, etc.
-def get_subdivision2(session: Session, nuts_2: str) -> Optional[Any]:
+def get_subdivision2(
+    session: Session, subdivision_2: str = None, nuts_2: str = None
+) -> RowMapping:
     """
     Get a specific Subdivision Level 2
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
-        nuts_2: NUTS 2 code
+        subdivision_2: Name of the subdivision in the countries language
+        nuts_2: NUTS Level 2 code
 
     Returns:
-        A `row` object for the Subdivision or `None` if not found.
+        A `row` object of the Subdivision or `None` if not found.
     """
-    subdiv2_row = (
-        session.query(tbl.CountriesSubdivs2.nuts_2).filter(
-            tbl.CountriesSubdivs2.nuts_2 == nuts_2
+
+    # check if all parameters are None
+    if all(v is None for v in [subdivision_2, nuts_2]):
+        raise RuntimeError(
+            "Please provide either the subdiv. name, iso_3166, NUTS code or Bundesland ID"
         )
-    ).one_or_none()
-    return subdiv2_row
+
+    if subdivision_2 is not None:
+        col = tbl.CountriesSubdivs2.subdivision_2
+        col_value = subdivision_2
+    if nuts_2 is not None:
+        col = tbl.CountriesSubdivs2.nuts_2
+        col_value = nuts_2
+
+    # query
+    row = (
+        (
+            session.query(
+                tbl.CountriesSubdivs2.subdivision_2,
+                tbl.CountriesSubdivs2.latitude.label("subdiv2_latitude"),
+                tbl.CountriesSubdivs2.longitude.label("subdiv2_longitude"),
+                tbl.CountriesSubdivs2.nuts_2,
+                tbl.CountriesSubdivs1.subdivision_1,
+                tbl.CountriesSubdivs1.latitude.label("subdiv1_latitude"),
+                tbl.CountriesSubdivs1.longitude.label("subdiv1_longitude"),
+                tbl.CountriesSubdivs1.iso_3166_2,
+                tbl.CountriesSubdivs1.nuts_1,
+                tbl.Countries.country_en,
+                tbl.Countries.country_de,
+                tbl.Countries.latitude.label("country_latitude"),
+                tbl.Countries.longitude.label("country_longitude"),
+                tbl.Countries.iso_3166_1_alpha2,
+                tbl.Countries.iso_3166_1_alpha3,
+                tbl.Countries.iso_3166_1_numeric,
+                tbl.Countries.nuts_0,
+            )
+            .join(
+                tbl.CountriesSubdivs1,
+                tbl.CountriesSubdivs2.country_subdivs_1_fk
+                == tbl.CountriesSubdivs1.country_subdivs_1_id,
+            )
+            .join(
+                tbl.Countries,
+                tbl.CountriesSubdivs1.countries_fk == tbl.Countries.countries_id,
+            )
+            .filter(col == col_value)
+        )
+        .one_or_none()
+        ._mapping
+    )
+    return row
 
 
 def add_new_subdivision2(
@@ -183,24 +332,86 @@ def add_new_subdivision2(
     session.add_all(new_subdivs2)
 
 
-# TODO provide option to search for country_de, nuts_0, etc.
-def get_subdivision3(session: Session, nuts_3: str) -> Optional[Any]:
+def get_subdivision3(
+    session: Session, subdivision_3: str = None, nuts_3: str = None, ags: int = None
+) -> RowMapping:
     """
     Get a specific Subdivision Level 3
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
-        nuts_3: NUTS 3 code
+        subdivision_3: Name of the subdivision in the countries language
+        nuts_3: NUTS Level 3 code
+        ags: !Germany only! Amtlicher Gemeindeschluessel
 
     Returns:
         A `row` object for the Subdivision or `None` if not found.
     """
-    subdiv3_row = (
-        session.query(tbl.CountriesSubdivs3.nuts_3).filter(
-            tbl.CountriesSubdivs3.nuts_3 == nuts_3
+
+    # check if all parameters are None
+    if all(v is None for v in [subdivision_3, nuts_3, ags]):
+        raise RuntimeError(
+            "Please provide either the subdiv. name, iso_3166, NUTS code or Bundesland ID"
         )
-    ).one_or_none()
-    return subdiv3_row
+
+    if subdivision_3 is not None:
+        col = tbl.CountriesSubdivs3.subdivision_3
+        col_value = subdivision_3
+    if nuts_3 is not None:
+        col = tbl.CountriesSubdivs3.nuts_3
+        col_value = nuts_3
+    if ags is not None:
+        col = tbl.CountriesSubdivs3.ags
+        col_value = ags
+
+    # query
+    row = (
+        (
+            session.query(
+                tbl.CountriesSubdivs3.subdivision_3,
+                tbl.CountriesSubdivs3.latitude.label("subdiv3_latitude"),
+                tbl.CountriesSubdivs3.longitude.label("subdiv3_longitude"),
+                tbl.CountriesSubdivs3.nuts_3,
+                tbl.CountriesSubdivs3.ags,
+                tbl.CountriesSubdivs2.subdivision_2,
+                tbl.CountriesSubdivs2.latitude.label("subdiv2_latitude"),
+                tbl.CountriesSubdivs2.longitude.label("subdiv2_longitude"),
+                tbl.CountriesSubdivs2.nuts_2,
+                tbl.CountriesSubdivs1.subdivision_1,
+                tbl.CountriesSubdivs1.latitude.label("subdiv1_latitude"),
+                tbl.CountriesSubdivs1.longitude.label("subdiv1_longitude"),
+                tbl.CountriesSubdivs1.iso_3166_2,
+                tbl.CountriesSubdivs1.nuts_1,
+                tbl.Countries.country_en,
+                tbl.Countries.country_de,
+                tbl.Countries.latitude.label("country_latitude"),
+                tbl.Countries.longitude.label("country_longitude"),
+                tbl.Countries.iso_3166_1_alpha2,
+                tbl.Countries.iso_3166_1_alpha3,
+                tbl.Countries.iso_3166_1_numeric,
+                tbl.Countries.nuts_0,
+            )
+            .join(
+                tbl.CountriesSubdivs2,
+                tbl.CountriesSubdivs3.country_subdivs_2_fk
+                == tbl.CountriesSubdivs2.country_subdivs_2_id,
+            )
+            .join(
+                tbl.CountriesSubdivs1,
+                tbl.CountriesSubdivs2.country_subdivs_1_fk
+                == tbl.CountriesSubdivs1.country_subdivs_1_id,
+            )
+            .join(
+                tbl.Countries,
+                tbl.CountriesSubdivs1.countries_fk == tbl.Countries.countries_id,
+            )
+            .filter(col == col_value)
+        )
+        .one_or_none()
+        ._mapping
+    )
+
+    return row
 
 
 def add_new_subdivision3(
