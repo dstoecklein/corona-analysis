@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 import database.tables as tbl
 
 
-# TODO: Refactor create_df functions to use SQLalchemy
 def _create_base_calendar_df(start_year: int, end_year: int) -> pd.DataFrame:
     start_date = date(start_year, 1, 1)
     end_date = date(end_year, 12, 31)
@@ -123,7 +122,7 @@ def get_calendar_year(session: Session, year: int) -> Optional[tbl.CalendarYears
         if calendar year not found.
     """
     calendar_year_row = (
-        session.query(tbl.CalendarYears.iso_year).filter(
+        session.query(tbl.CalendarYears).filter(
             tbl.CalendarYears.iso_year == year
         )
     ).one_or_none()
@@ -165,6 +164,22 @@ def get_calendar_weeks(session: Session, iso_year: int) -> list[Row]:
         .filter(tbl.CalendarYears.iso_year == iso_year)
     ).all()
     return row
+
+
+def iso_key_exist(session: Session, iso_key: int):
+    # query
+    row = (
+        session.query(
+            tbl.CalendarWeeks.iso_key
+        )
+        .filter(
+            tbl.CalendarWeeks.iso_key == iso_key
+        )
+    ).one_or_none()
+
+    if row is None:
+        return False
+    return True
 
 
 def get_calendar_days(session: Session, iso_year: int) -> list[Row]:
@@ -222,3 +237,58 @@ def add_new_calendar_years(session: Session, years: list[int]) -> None:
     # write to DB
     session.add_all(new_years)
     session.commit()
+
+# TODO: When new year is added, autofill weeks and days
+def add_new_calendar_years2(session: Session, years: list[int]) -> None:
+    """
+    Adds a list of new calendar years to the local SQLite database.
+
+    Args:
+        calendar_year: A list of calendar year
+    """
+
+    new_years = list()
+
+    for year in years:
+        # check if calendar year already exist
+        year_exists = get_calendar_year(session=session, year=year)
+        if year_exists is not None:
+            continue
+
+        # create new entry
+        new_calendar_year = tbl.CalendarYears(iso_year=year)
+
+        new_years.append(new_calendar_year)
+
+    # write years to DB
+    session.add_all(new_years)
+    session.commit()
+        
+    for n in new_years:
+        daterange = pd.date_range(date(n.iso_year, 1, 1), date(n.iso_year, 12, 31))
+        new_calendar_weeks = list()
+
+        for single_date in daterange:
+            calendar_year = get_calendar_year(session, single_date.isocalendar().year)
+            if calendar_year is None:
+                continue
+
+            # create and check iso_key
+            iso_key = str(single_date.isocalendar().year) + str(single_date.isocalendar().week).zfill(2)
+            if iso_key_exist(session, int(iso_key)):
+                continue
+
+            # new entry
+            new_calendar_week = tbl.CalendarWeeks(
+                calendar_years_fk=calendar_year.calendar_years_id,
+                iso_week=single_date.isocalendar().week,
+                iso_key=iso_key,
+            )
+
+            new_calendar_weeks.append(new_calendar_week)
+            
+            # write weeks to DB
+            session.add_all(new_calendar_weeks)
+            session.commit()
+
+    # TODO: Auto-add calendar days
