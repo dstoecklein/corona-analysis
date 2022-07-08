@@ -11,6 +11,7 @@ from database.db import Database
 import pandas as pd
 
 def init_calendars(database: Database) -> None:
+    """
     df_years = clh.create_calendar_years_df(init.from_values.calendar_start_year, init.from_values.calendar_end_year)
     df_weeks = clh.create_calendar_weeks_df(init.from_values.calendar_start_year, init.from_values.calendar_end_year)
     df_days = clh.create_calendar_days_df(init.from_values.calendar_start_year, init.from_values.calendar_end_year)
@@ -18,6 +19,13 @@ def init_calendars(database: Database) -> None:
     database.upsert_df(df=df_years, table_name=cfg_db.tables.calendar_years)
     database.upsert_df(df=df_weeks, table_name=cfg_db.tables.calendar_weeks)
     database.upsert_df(df=df_days, table_name=cfg_db.tables.calendar_days)
+    """
+    with database.ManagedSessionMaker() as session:
+        clh.add_new_calendar_years(
+            session=session, 
+            start_year=init.from_values.calendar_start_year,
+            end_year=init.from_values.calendar_end_year
+        )
 
 def init_agegroups(database: Database) -> None:
     with database.ManagedSessionMaker() as session:

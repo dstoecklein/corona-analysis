@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy.engine.row import RowMapping
+from sqlalchemy.engine.row import Row
 from sqlalchemy.orm import Session
 
 import database.tables as tbl
@@ -111,6 +111,7 @@ def add_new_country(
         new_countries.append(new_country)
 
     session.add_all(new_countries)
+    session.flush()
 
 
 def get_subdivision1(
@@ -119,7 +120,7 @@ def get_subdivision1(
     iso_3166_2: str = None,
     nuts_1: str = None,
     bundesland_id: int = None,
-) -> RowMapping:
+) -> Row:
     """
     Get a specific Subdivision Level 1
     https://en.wikipedia.org/wiki/First-level_NUTS_of_the_European_Union
@@ -184,7 +185,7 @@ def get_subdivision1(
             .filter(col == col_value)
         )
         .one_or_none()
-        ._mapping
+        #._mapping
     )
 
     return row
@@ -211,6 +212,7 @@ def add_new_subdivision1(
 
         # check if entry already exist
         subdiv1_exist = get_subdivision1(session=session, nuts_1=nuts_1)
+        
         if subdiv1_exist is not None:
             continue
 
@@ -227,11 +229,11 @@ def add_new_subdivision1(
         new_subdivs1.append(new_subdiv1)
 
     session.add_all(new_subdivs1)
-
+    session.flush()
 
 def get_subdivision2(
     session: Session, subdivision_2: str = None, nuts_2: str = None
-) -> RowMapping:
+) -> Row:
     """
     Get a specific Subdivision Level 2
 
@@ -291,7 +293,7 @@ def get_subdivision2(
             .filter(col == col_value)
         )
         .one_or_none()
-        ._mapping
+        #._mapping
     )
     return row
 
@@ -330,11 +332,11 @@ def add_new_subdivision2(
         new_subdivs2.append(new_subdiv2)
 
     session.add_all(new_subdivs2)
-
+    session.flush()
 
 def get_subdivision3(
     session: Session, subdivision_3: str = None, nuts_3: str = None, ags: int = None
-) -> RowMapping:
+) -> Row:
     """
     Get a specific Subdivision Level 3
 
@@ -408,7 +410,7 @@ def get_subdivision3(
             .filter(col == col_value)
         )
         .one_or_none()
-        ._mapping
+        #._mapping
     )
 
     return row
@@ -449,3 +451,4 @@ def add_new_subdivision3(
         new_subdivs3.append(new_subdiv3)
 
     session.add_all(new_subdivs3)
+    session.flush()

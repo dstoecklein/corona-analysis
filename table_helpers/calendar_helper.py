@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Any, Optional
+from typing import Optional
 
 import pandas as pd
 from sqlalchemy.engine.row import Row
@@ -109,7 +109,7 @@ def create_calendar_days_df(start_year: int, end_year: int) -> pd.DataFrame:
     return df_day
 
 
-def get_calendar_year(session: Session, year: int) -> Optional[tbl.CalendarYears]:
+def get_calendar_year(session: Session, iso_year: int) -> Optional[tbl.CalendarYears]:
     """
     Get a specific calendar year
 
@@ -122,9 +122,7 @@ def get_calendar_year(session: Session, year: int) -> Optional[tbl.CalendarYears
         if calendar year not found.
     """
     calendar_year_row = (
-        session.query(tbl.CalendarYears).filter(
-            tbl.CalendarYears.iso_year == year
-        )
+        session.query(tbl.CalendarYears).filter(tbl.CalendarYears.iso_year == iso_year)
     ).one_or_none()
     return calendar_year_row
 
@@ -169,10 +167,7 @@ def get_calendar_weeks(session: Session, iso_year: int) -> list[Row]:
 def iso_key_exist(session: Session, iso_key: int):
     # query
     row = (
-        session.query(
-            tbl.CalendarWeeks.iso_key
-        )
-        .filter(
+        session.query(tbl.CalendarWeeks.iso_key).filter(
             tbl.CalendarWeeks.iso_key == iso_key
         )
     ).one_or_none()
@@ -214,81 +209,84 @@ def get_calendar_days(session: Session, iso_year: int) -> list[Row]:
     return row
 
 
-def add_new_calendar_years(session: Session, years: list[int]) -> None:
+def add_new_calendar_years(session: Session, start_year: int, end_year: int) -> None:
     """
-    Adds a list of new calendar years to the local SQLite database.
+    Inserts Calendar Years, ISO-weeks and ISO-days to the local SQLite database.
 
     Args:
-        calendar_year: A list of calendar year
+        years: A list of years as `int`
     """
+    assert start_year < end_year, "`start_year` can not be greater than `end_year`!"
+    assert start_year >= 0, "`start_year can not be negative!"
+    assert end_year >= 0, "`end_year can not be negative!"
 
-    new_years = list()
+    YEAR_RANGE = [year for year in range(start_year, end_year+1)]
 
-    for year in years:
-        # check if calendar year already exist
-        year_exists = get_calendar_year(session=session, year=year)
-        if year_exists is not None:
-            continue
+    def _add_calendar_weeks_n_days_to_session(year_obj: tbl.CalendarYears) -> None:
+        """
+        Helper function to create and add iso weeks and days to the session.
+        """
+        # create a date-range to figure out iso weeks and years
+        date_range = pd.date_range(
+            date(year_obj.iso_year, 1, 1), date(year_obj.iso_year, 12, 31)  # type: ignore
+        )
 
-        # create new entry
-        new_calendar_year = tbl.CalendarYears(iso_year=year)
-        new_years.append(new_calendar_year)
-
-    # write to DB
-    session.add_all(new_years)
-    session.commit()
-
-# TODO: When new year is added, autofill weeks and days
-def add_new_calendar_years2(session: Session, years: list[int]) -> None:
-    """
-    Adds a list of new calendar years to the local SQLite database.
-
-    Args:
-        calendar_year: A list of calendar year
-    """
-
-    new_years = list()
-
-    for year in years:
-        # check if calendar year already exist
-        year_exists = get_calendar_year(session=session, year=year)
-        if year_exists is not None:
-            continue
-
-        # create new entry
-        new_calendar_year = tbl.CalendarYears(iso_year=year)
-
-        new_years.append(new_calendar_year)
-
-    # write years to DB
-    session.add_all(new_years)
-    session.commit()
-        
-    for n in new_years:
-        daterange = pd.date_range(date(n.iso_year, 1, 1), date(n.iso_year, 12, 31))
-        new_calendar_weeks = list()
-
-        for single_date in daterange:
-            calendar_year = get_calendar_year(session, single_date.isocalendar().year)
+        # loop the date-range
+        for single_date in date_range:
+            # avoid inserting iso years that don't exist in DB
+            calendar_year = get_calendar_year(
+                session=session, iso_year=single_date.isocalendar().year
+            )
             if calendar_year is None:
                 continue
 
-            # create and check iso_key
-            iso_key = str(single_date.isocalendar().year) + str(single_date.isocalendar().week).zfill(2)
-            if iso_key_exist(session, int(iso_key)):
+            # create and check iso_key (year+week)
+            # iso_key is a unique constraint, so continue if exist
+            iso_key_str = str(single_date.isocalendar().year) + str(
+                single_date.isocalendar().week
+            ).zfill(2)
+            iso_key = int(iso_key_str)  # cast back to int
+            if iso_key_exist(session, iso_key):
                 continue
 
-            # new entry
+            # create new week obj
             new_calendar_week = tbl.CalendarWeeks(
-                calendar_years_fk=calendar_year.calendar_years_id,
+                calendar_years_fk=year_obj.calendar_years_id,
                 iso_week=single_date.isocalendar().week,
                 iso_key=iso_key,
             )
+            session.add(new_calendar_week)
+            session.flush()
 
-            new_calendar_weeks.append(new_calendar_week)
-            
-            # write weeks to DB
-            session.add_all(new_calendar_weeks)
-            session.commit()
+            # now add days of this week for this year
+            new_calendar_day = tbl.CalendarDays(
+                calendar_weeks_fk=new_calendar_week.calendar_weeks_id,
+                iso_day=single_date.date(),
+            )
+            session.add(new_calendar_day)
+            session.flush()
 
-    # TODO: Auto-add calendar days
+    # loop all the provided years
+    for iso_year in YEAR_RANGE:
+        # check if calendar year already exist
+        year_obj = get_calendar_year(session=session, iso_year=iso_year)
+        if year_obj is not None:  # year exists
+            # check if calendar weeks already exist
+            # function returns a list or Rows, so check if list is empty
+            weeks_exists = get_calendar_weeks(session=session, iso_year=iso_year)
+            if weeks_exists:
+                continue
+            else:
+                # create weeks
+                _add_calendar_weeks_n_days_to_session(year_obj=year_obj)
+                continue
+
+        # add years
+        new_calendar_year = tbl.CalendarYears(iso_year=iso_year)
+        session.add(new_calendar_year)
+        session.flush()
+
+        # create weeks
+        _add_calendar_weeks_n_days_to_session(year_obj=new_calendar_year)
+
+    session.commit()
