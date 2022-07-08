@@ -1,20 +1,20 @@
-from_files:
-  icd10:
-    filename: "icd10.ftr"
+from_file:
+  classifications_icd10:
+    filename: "classifications_icd10.ftr"
     index_col: "icd10"
   countries:
     filename: "countries.ftr"
     index_col: "country_en"
-  subdivs1:
-    filename: "subdivs1.ftr"
+  countries_subdivision1:
+    filename: "countries_subdivision1.ftr"
     index_col: "nuts_1"
-  subdivs2:
-    filename: "subdivs2.ftr"
+  countries_subdivision2:
+    filename: "countries_subdivision2.ftr"
     index_col: "nuts_2"
-  subdivs3:
-    filename: "subdivs3.ftr"
+  countries_subdivision3:
+    filename: "countries_subdivision3.ftr"
     index_col: "nuts_3"
-from_values:
+from_config:
   calendar_start_year: 1990
   calendar_end_year: 2050
   agegroups_05y:
@@ -50,7 +50,7 @@ from_values:
     - "35-59" 
     - "60-79"
   incidence_reference_year: 2020
-  berlin_district_map:
+  berlin_districts:
     11001: 11000
     11002: 11000
     11003: 11000

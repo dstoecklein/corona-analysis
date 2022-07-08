@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 
 import pandas as pd
@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 import database.tables as tbl
 
-
+"""
 def _create_base_calendar_df(start_year: int, end_year: int) -> pd.DataFrame:
     start_date = date(start_year, 1, 1)
     end_date = date(end_year, 12, 31)
@@ -79,7 +79,7 @@ def create_calendar_weeks_df(start_year: int, end_year: int) -> pd.DataFrame:
     df_weeks = df_weeks.reset_index().rename(
         columns={df_weeks.index.name: "calendar_weeks_id"}
     )
-    df_weeks.rename(columns={"calendar_years_id": "calendar_years_fk"}, inplace=True)
+    df_weeks.rename(columns={"calendar_years_id": "calendar_year_fk"}, inplace=True)
     df_weeks["iso_week"] = df_weeks["iso_week"].astype(int)
     df_weeks.drop(["iso_day", "iso_year"], axis=1, inplace=True)
 
@@ -99,17 +99,18 @@ def create_calendar_days_df(start_year: int, end_year: int) -> pd.DataFrame:
     )
     df_day.drop(df_day.filter(regex="_y$").columns, axis=1, inplace=True)
     df_day.drop(
-        ["iso_year", "iso_week", "iso_key", "calendar_years_fk"], axis=1, inplace=True
+        ["iso_year", "iso_week", "iso_key", "calendar_year_fk"], axis=1, inplace=True
     )
-    df_day.rename(columns={"calendar_weeks_id": "calendar_weeks_fk"}, inplace=True)
+    df_day.rename(columns={"calendar_weeks_id": "calendar_week_fk"}, inplace=True)
 
     df_day["created_on"] = datetime.now()
     df_day["updated_on"] = datetime.now()
 
     return df_day
+"""
 
 
-def get_calendar_year(session: Session, iso_year: int) -> Optional[tbl.CalendarYears]:
+def get_calendar_year(session: Session, iso_year: int) -> Optional[tbl.CalendarYear]:
     """
     Get a specific calendar year
 
@@ -121,13 +122,13 @@ def get_calendar_year(session: Session, iso_year: int) -> Optional[tbl.CalendarY
         A `row` object for the provided calendar year or `None`
         if calendar year not found.
     """
-    calendar_year_row = (
-        session.query(tbl.CalendarYears).filter(tbl.CalendarYears.iso_year == iso_year)
+    row = (
+        session.query(tbl.CalendarYear).filter(tbl.CalendarYear.iso_year == iso_year)
     ).one_or_none()
-    return calendar_year_row
+    return row
 
 
-def get_calendar_years(session: Session) -> list[tbl.CalendarYears]:
+def get_calendar_years(session: Session) -> list[tbl.CalendarYear]:
     """
     Get all calendar years objects as list
 
@@ -135,12 +136,12 @@ def get_calendar_years(session: Session) -> list[tbl.CalendarYears]:
         session: `Session` object from `sqlalchemy.orm`
 
     Returns:
-        A `list` of `CalendarYears` objects.
+        A `list` of `CalendarYear` objects.
     """
-    calendar_years_list = (
-        session.query(tbl.CalendarYears).order_by(tbl.CalendarYears.iso_year)
+    calendar_years = (
+        session.query(tbl.CalendarYear).order_by(tbl.CalendarYear.iso_year)
     ).all()
-    return calendar_years_list
+    return calendar_years
 
 
 def get_calendar_weeks(session: Session, iso_year: int) -> list[Row]:
@@ -156,19 +157,19 @@ def get_calendar_weeks(session: Session, iso_year: int) -> list[Row]:
     """
 
     # query
-    row = (
-        session.query(tbl.CalendarWeeks.iso_week, tbl.CalendarWeeks.iso_key)
-        .join(tbl.CalendarYears)
-        .filter(tbl.CalendarYears.iso_year == iso_year)
+    rows = (
+        session.query(tbl.CalendarWeek.iso_week, tbl.CalendarWeek.iso_key)
+        .join(tbl.CalendarYear)
+        .filter(tbl.CalendarYear.iso_year == iso_year)
     ).all()
-    return row
+    return rows
 
 
-def iso_key_exist(session: Session, iso_key: int):
+def iso_key_exist(session: Session, iso_key: int) -> bool:
     # query
     row = (
-        session.query(tbl.CalendarWeeks.iso_key).filter(
-            tbl.CalendarWeeks.iso_key == iso_key
+        session.query(tbl.CalendarWeek.iso_key).filter(
+            tbl.CalendarWeek.iso_key == iso_key
         )
     ).one_or_none()
 
@@ -190,26 +191,26 @@ def get_calendar_days(session: Session, iso_year: int) -> list[Row]:
     """
 
     # query
-    row = (
+    rows = (
         session.query(
-            tbl.CalendarDays.iso_day,
-            tbl.CalendarWeeks.iso_week,
-            tbl.CalendarWeeks.iso_key,
+            tbl.CalendarDay.iso_day,
+            tbl.CalendarWeek.iso_week,
+            tbl.CalendarWeek.iso_key,
         )
         .join(
-            tbl.CalendarWeeks,
-            tbl.CalendarDays.calendar_weeks_fk == tbl.CalendarWeeks.calendar_weeks_id,
+            tbl.CalendarWeek,
+            tbl.CalendarDay.calendar_week_fk == tbl.CalendarWeek.calendar_week_id,
         )
         .join(
-            tbl.CalendarYears,
-            tbl.CalendarWeeks.calendar_years_fk == tbl.CalendarYears.calendar_years_id,
+            tbl.CalendarYear,
+            tbl.CalendarWeek.calendar_year_fk == tbl.CalendarYear.calendar_year_id,
         )
-        .filter(tbl.CalendarYears.iso_year == iso_year)
+        .filter(tbl.CalendarYear.iso_year == iso_year)
     ).all()
-    return row
+    return rows
 
 
-def add_new_calendar_years(session: Session, start_year: int, end_year: int) -> None:
+def insert_calendar_years(session: Session, start_year: int, end_year: int) -> None:
     """
     Inserts Calendar Years, ISO-weeks and ISO-days to the local SQLite database.
 
@@ -222,7 +223,7 @@ def add_new_calendar_years(session: Session, start_year: int, end_year: int) -> 
 
     YEAR_RANGE = [year for year in range(start_year, end_year + 1)]
 
-    def _add_calendar_weeks_n_days_to_session(year_obj: tbl.CalendarYears) -> None:
+    def _add_calendar_weeks_n_days_to_session(year_obj: tbl.CalendarYear) -> None:
         """
         Helper function to create and add iso weeks and days to the session.
         """
@@ -250,8 +251,8 @@ def add_new_calendar_years(session: Session, start_year: int, end_year: int) -> 
                 continue
 
             # create new week obj
-            new_calendar_week = tbl.CalendarWeeks(
-                calendar_years_fk=year_obj.calendar_years_id,
+            new_calendar_week = tbl.CalendarWeek(
+                calendar_year_fk=year_obj.calendar_year_id,
                 iso_week=single_date.isocalendar().week,
                 iso_key=iso_key,
             )
@@ -259,8 +260,8 @@ def add_new_calendar_years(session: Session, start_year: int, end_year: int) -> 
             session.flush()
 
             # now add days of this week for this year
-            new_calendar_day = tbl.CalendarDays(
-                calendar_weeks_fk=new_calendar_week.calendar_weeks_id,
+            new_calendar_day = tbl.CalendarDay(
+                calendar_week_fk=new_calendar_week.calendar_week_id,
                 iso_day=single_date.date(),
             )
             session.add(new_calendar_day)
@@ -282,7 +283,7 @@ def add_new_calendar_years(session: Session, start_year: int, end_year: int) -> 
                 continue
 
         # add years
-        new_calendar_year = tbl.CalendarYears(iso_year=iso_year)
+        new_calendar_year = tbl.CalendarYear(iso_year=iso_year)
         session.add(new_calendar_year)
         session.flush()
 

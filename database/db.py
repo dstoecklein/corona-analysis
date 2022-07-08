@@ -35,17 +35,19 @@ class Database:
         # in the list of `expected_tables`
         # TODO: This will always re-create droped tables on object creation
         expected_tables = [
-            tbl.Agegroups05y.__tablename__,
-            tbl.Agegroups10y.__tablename__,
-            tbl.AgegroupsRki.__tablename__,
-            tbl.CalendarYears.__tablename__,
-            tbl.CalendarWeeks.__tablename__,
-            tbl.CalendarDays.__tablename__,
-            tbl.ClassificationsICD10.__tablename__,
-            tbl.Countries.__tablename__,
-            tbl.CountriesSubdivs1.__tablename__,
-            tbl.CountriesSubdivs2.__tablename__,
-            tbl.CountriesSubdivs3.__tablename__,
+            tbl.Agegroup05y.__tablename__,
+            tbl.Agegroup10y.__tablename__,
+            tbl.AgegroupRki.__tablename__,
+            tbl.CalendarYear.__tablename__,
+            tbl.CalendarWeek.__tablename__,
+            tbl.CalendarDay.__tablename__,
+            tbl.ClassificationICD10.__tablename__,
+            tbl.Country.__tablename__,
+            tbl.CountrySubdivision1.__tablename__,
+            tbl.CountrySubdivision2.__tablename__,
+            tbl.CountrySubdivision3.__tablename__,
+            tbl.PopulationCountry.__tablename__,
+            tbl.PopulationSubdivision1.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):

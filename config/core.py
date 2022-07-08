@@ -17,27 +17,27 @@ CFG_URLS = "cfg_urls.yaml"
 
 
 # CHILD CONFIGS
-class FileValues(BaseModel):
+class FileValue(BaseModel):
     filename: str
     index_col: str
 
 
-class Files(BaseModel):
-    icd10: FileValues
-    countries: FileValues
-    subdivs1: FileValues
-    subdivs2: FileValues
-    subdivs3: FileValues
+class File(BaseModel):
+    classifications_icd10: FileValue
+    countries: FileValue
+    countries_subdivision1: FileValue
+    countries_subdivision2: FileValue
+    countries_subdivision3: FileValue
 
 
-class Values(BaseModel):
+class Value(BaseModel):
     calendar_start_year: int
     calendar_end_year: int
     agegroups_05y: list
     agegroups_10y: list
     agegroups_rki: list
     incidence_reference_year: int
-    berlin_district_map: dict
+    berlin_districts: dict
 
 
 class Database(BaseModel):
@@ -45,53 +45,58 @@ class Database(BaseModel):
     name: str
 
 
-class Tables(BaseModel):
-    calendar_years: str
-    calendar_weeks: str
-    calendar_days: str
-    agegroups_05y: str
-    agegroups_10y: str
-    agegroups_rki: str
-    classifications_icd10: str
-    countries: str
-    country_subdivs1: str
-    country_subdivs2: str
-    country_subdivs3: str
+class Table(BaseModel):
+    calendar_year: str
+    calendar_week: str
+    calendar_day: str
+    agegroup_05y: str
+    agegroup_10y: str
+    agegroup_rki: str
+    classification_icd10: str
+    country: str
+    country_subdivision1: str
+    country_subdivision2: str
+    country_subdivision3: str
+    population_country: str
+    population_country_agegroup: str
+    population_subdivision1: str
+    population_subdivision2: str
+    population_subdivision3: str
 
 
 # PARENT CONFIGS
 class InitCfg(BaseModel):
-    from_values: Values
-    from_files: Files
+    from_file: File
+    from_config: Value
 
 
 class DatabaseCfg(BaseModel):
     db: Database
-    tables: Tables
+    tables: Table
 
 
-class UrlsCfg(BaseModel):
+class UrlCfg(BaseModel):
     rki_covid_daily: str
-    rki_tests_weekly: str
-    rki_tests_weekly_states: str
+    rki_test_weekly: str
+    rki_test_weekly_state: str
     rki_rvalue_daily: str
-    rki_vaccination_states: str
-    rki_vaccination_rates: str
-    rki_vaccinations_daily_cumulative: str
-    owid_vaccinations_daily: str
-    owid_vaccinations_daily_manufacturer: str
-    divi_itcu_daily_counties: str
-    divi_itcu_daily_states: str
-    owid_covid: str
-    estsat_weekly_deaths_agegroups: str
-    estsat_death_causes_annual_agegroups: str
-    estat_population_agegroups: str
-    estat_population_nuts_2: str
-    estat_life_expectancy: str
-    estat_population_structure_indicators: str
-    genesis_hospitals_annual: str
-    genesis_hospital_staff_annual: str
-    genesis_population_subdivision_3: str
+    rki_vaccination_daily_state: str
+    rki_vaccination_daily_rate: str
+    rki_vaccination_daily_cumulative: str
+    owid_vaccination_daily: str
+    owid_vaccination_daily_manufacturer: str
+    divi_itcu_daily_countie: str
+    divi_itcu_daily_state: str
+    owid_covid_daily: str
+    estsat_death_weekly_agegroup: str
+    estsat_deathCause_annual_agegroup: str
+    estat_population_annual_agegroup: str
+    estat_population_annual_nuts_2: str
+    estat_lifeExpectancy_annual: str
+    estat_populationStructureIndicator_annual: str
+    genesis_hospital_annual: str
+    genesis_hospitalStaff_annual: str
+    genesis_population_subdivision3: str
 
 
 def get_cfg_path() -> Path:
@@ -138,16 +143,16 @@ def create_init_cfg(file_name: str = None) -> InitCfg:
     return _config
 
 
-def create_urls_cfg(file_name: str = None) -> UrlsCfg:
+def create_url_cfg(file_name: str = None) -> UrlCfg:
     if file_name is None:
         raise Exception("File name must be specified")
 
     config_file = read_cfg(file_name=file_name)
 
-    _config = UrlsCfg(**config_file.data)
+    _config = UrlCfg(**config_file.data)
     return _config
 
 
 cfg_db = create_db_cfg(file_name=CFG_DATABASE)
 cfg_init = create_init_cfg(file_name=CFG_INIT)
-cfg_urls = create_urls_cfg(file_name=CFG_URLS)
+cfg_urls = create_url_cfg(file_name=CFG_URLS)

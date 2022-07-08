@@ -17,14 +17,14 @@ def get_icd10(session: Session, icd10: str) -> Optional[Any]:
         A `row` object for the ICD10 or `None` if ICD10 not found.
     """
     icd10_row = (
-        session.query(tbl.ClassificationsICD10.icd10).filter(
-            tbl.ClassificationsICD10.icd10 == icd10
+        session.query(tbl.ClassificationICD10.icd10).filter(
+            tbl.ClassificationICD10.icd10 == icd10
         )
     ).one_or_none()
     return icd10_row
 
 
-def add_new_icd10(session: Session, icd10_dict: dict[str, dict[str, str]]) -> None:
+def insert_icd10(session: Session, icd10_dict: dict[str, dict[str, str]]) -> None:
     """
     Adds a new ICD10 entry to the local SQLite database.
 
@@ -43,11 +43,11 @@ def add_new_icd10(session: Session, icd10_dict: dict[str, dict[str, str]]) -> No
             continue
 
         # create new entry
-        new_icd10 = tbl.ClassificationsICD10(
+        entry = tbl.ClassificationICD10(
             icd10=icd10,
             description_en=value_dict.get("description_en"),
             description_de=value_dict.get("description_de"),
         )
-        new_icd10s.append(new_icd10)
+        new_icd10s.append(entry)
 
     session.add_all(new_icd10s)

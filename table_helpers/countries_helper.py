@@ -14,7 +14,7 @@ def get_country(
     iso_3166_1_alpha3: str = None,
     iso_3166_1_numeric: int = None,
     nuts_0: str = None,
-) -> Optional[tbl.Countries]:
+) -> Optional[tbl.Country]:
     """
     Get a specific country
 
@@ -48,38 +48,36 @@ def get_country(
         )
 
     if country_en is not None:
-        col = tbl.Countries.country_en
+        col = tbl.Country.country_en
         col_value = country_en
     if country_de is not None:
-        col = tbl.Countries.country_de
+        col = tbl.Country.country_de
         col_value = country_de
     if iso_3166_1_alpha2 is not None:
-        col = tbl.Countries.iso_3166_1_alpha2
+        col = tbl.Country.iso_3166_1_alpha2
         col_value = iso_3166_1_alpha2
     if iso_3166_1_alpha3 is not None:
-        col = tbl.Countries.iso_3166_1_alpha3
+        col = tbl.Country.iso_3166_1_alpha3
         col_value = iso_3166_1_alpha3
     if iso_3166_1_numeric is not None:
-        col = tbl.Countries.iso_3166_1_numeric
+        col = tbl.Country.iso_3166_1_numeric
         col_value = iso_3166_1_numeric
     if nuts_0 is not None:
-        col = tbl.Countries.nuts_0
+        col = tbl.Country.nuts_0
         col_value = nuts_0
 
     # query
-    row = (session.query(tbl.Countries).filter(col == col_value)).one_or_none()
+    row = (session.query(tbl.Country).filter(col == col_value)).one_or_none()
     return row
 
 
-# TODO: dict.get() return Optional[str], thus causing mypy error
+# dict.get() return Optional[str], thus causing mypy error
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 # mypy: ignore-errors
 
 
-def add_new_country(
-    session: Session, countries_dict: dict[str, dict[str, str]]
-) -> None:
+def insert_country(session: Session, countries_dict: dict[str, dict[str, str]]) -> None:
     """
     Adds a new Country entry to the local SQLite database.
 
@@ -88,9 +86,9 @@ def add_new_country(
 
         country_dict:
     """
-    new_countries = list()
+    new_entries = list()
 
-    for country_en, value_dict in countries_dict.items():
+    for country_en, values_dict in countries_dict.items():
 
         # check if entry already exist
         country_exist = get_country(session=session, country_en=country_en)
@@ -98,25 +96,25 @@ def add_new_country(
             continue
 
         # create new entry
-        new_country = tbl.Countries(
+        entry = tbl.Country(
             country_en=country_en,
-            country_de=value_dict.get("country_de"),
-            latitude=value_dict.get("latitude"),
-            longitude=value_dict.get("longitude"),
-            iso_3166_1_alpha2=value_dict.get("iso_3166_1_alpha2"),
-            iso_3166_1_alpha3=value_dict.get("iso_3166_1_alpha3"),
-            iso_3166_1_numeric=value_dict.get("iso_3166_1_numeric"),
-            nuts_0=value_dict.get("nuts_0"),
+            country_de=values_dict.get("country_de"),
+            latitude=values_dict.get("latitude"),
+            longitude=values_dict.get("longitude"),
+            iso_3166_1_alpha2=values_dict.get("iso_3166_1_alpha2"),
+            iso_3166_1_alpha3=values_dict.get("iso_3166_1_alpha3"),
+            iso_3166_1_numeric=values_dict.get("iso_3166_1_numeric"),
+            nuts_0=values_dict.get("nuts_0"),
         )
-        new_countries.append(new_country)
+        new_entries.append(entry)
 
-    session.add_all(new_countries)
+    session.add_all(new_entries)
     session.flush()
 
 
 def get_subdivision1(
     session: Session,
-    subdivision_1: str = None,
+    subdivision1: str = None,
     iso_3166_2: str = None,
     nuts_1: str = None,
     bundesland_id: int = None,
@@ -127,7 +125,7 @@ def get_subdivision1(
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
-        subdivision_1: Name of the subdivision in the countries language
+        subdivision1: Name of the subdivision in the countries language
         iso_3166_2: ISO 3166 code alphanumeric
         nuts_1: NUTS Level 1 code
         bundesland_id: ID of German Bundesland
@@ -140,7 +138,7 @@ def get_subdivision1(
     if all(
         v is None
         for v in [
-            subdivision_1,
+            subdivision1,
             iso_3166_2,
             nuts_1,
             bundesland_id,
@@ -150,96 +148,93 @@ def get_subdivision1(
             "Please provide either the subdiv. name, iso_3166, NUTS code or Bundesland ID"
         )
 
-    if subdivision_1 is not None:
-        col = tbl.CountriesSubdivs1.subdivision_1
-        col_value = subdivision_1
+    if subdivision1 is not None:
+        col = tbl.CountrySubdivision1.subdivision1
+        col_value = subdivision1
     if iso_3166_2 is not None:
-        col = tbl.CountriesSubdivs1.iso_3166_2
+        col = tbl.CountrySubdivision1.iso_3166_2
         col_value = iso_3166_2
     if nuts_1 is not None:
-        col = tbl.CountriesSubdivs1.nuts_1
+        col = tbl.CountrySubdivision1.nuts_1
         col_value = nuts_1
     if bundesland_id is not None:
-        col = tbl.CountriesSubdivs1.bundesland_id
+        col = tbl.CountrySubdivision1.bundesland_id
         col_value = bundesland_id
 
     # query
     row = (
-        (
-            session.query(
-                tbl.CountriesSubdivs1.subdivision_1,
-                tbl.CountriesSubdivs1.latitude.label("subdiv1_latitude"),
-                tbl.CountriesSubdivs1.longitude.label("subdiv1_longitude"),
-                tbl.CountriesSubdivs1.iso_3166_2,
-                tbl.CountriesSubdivs1.nuts_1,
-                tbl.Countries.country_en,
-                tbl.Countries.country_de,
-                tbl.Countries.latitude.label("country_latitude"),
-                tbl.Countries.longitude.label("country_longitude"),
-                tbl.Countries.iso_3166_1_alpha2,
-                tbl.Countries.iso_3166_1_alpha3,
-                tbl.Countries.iso_3166_1_numeric,
-                tbl.Countries.nuts_0,
-            )
-            .join(tbl.Countries)
-            .filter(col == col_value)
-        ).one_or_none()
-        # ._mapping
-    )
+        session.query(
+            tbl.CountrySubdivision1.subdivision1,
+            tbl.CountrySubdivision1.latitude.label("subdivision1_latitude"),
+            tbl.CountrySubdivision1.longitude.label("subdivision1_longitude"),
+            tbl.CountrySubdivision1.iso_3166_2,
+            tbl.CountrySubdivision1.nuts_1,
+            tbl.Country.country_en,
+            tbl.Country.country_de,
+            tbl.Country.latitude.label("country_latitude"),
+            tbl.Country.longitude.label("country_longitude"),
+            tbl.Country.iso_3166_1_alpha2,
+            tbl.Country.iso_3166_1_alpha3,
+            tbl.Country.iso_3166_1_numeric,
+            tbl.Country.nuts_0,
+        )
+        .join(tbl.Country)
+        .filter(col == col_value)
+    ).one_or_none()
 
     return row
 
 
-def add_new_subdivision1(
-    session: Session, subdivs1_dict: dict[str, dict[str, str]]
+def insert_subdivision1(
+    session: Session, subdivisions1_dict: dict[str, dict[str, str]]
 ) -> None:
     # TODO: change from nuts_1 to iso_3166_1 as key
     # TODO: Get rid of FK in dict, better read it via SQLAlchemy
     """
-    Adds a new Subdivsion Level 1 entry to the local SQLite database.
+    Adds a new Subdivision Level 1 entry to the local SQLite database.
     Please provide NUTS_1 code as key:
     https://en.wikipedia.org/wiki/First-level_NUTS_of_the_European_Union
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
 
-        `subdivs1_dict: {NUTS_1 : {countries_fk: value, ...}}`
+        `subdivisions1_dict: {NUTS_1 : {country_fk: value, ...}}`
     """
-    new_subdivs1 = list()
+    new_entries = list()
 
-    for nuts_1, value_dict in subdivs1_dict.items():
+    for nuts_1, values_dict in subdivisions1_dict.items():
 
         # check if entry already exist
-        subdiv1_exist = get_subdivision1(session=session, nuts_1=nuts_1)
+        subdivision1_exist = get_subdivision1(session=session, nuts_1=nuts_1)
 
-        if subdiv1_exist is not None:
+        if subdivision1_exist is not None:
             continue
 
         # create new entry
-        new_subdiv1 = tbl.CountriesSubdivs1(
-            countries_fk=value_dict.get("countries_fk"),
-            subdivision_1=value_dict.get("subdivision_1"),
-            latitude=value_dict.get("latitude"),
-            longitude=value_dict.get("longitude"),
-            iso_3166_2=value_dict.get("iso_3166_2"),
+        entry = tbl.CountrySubdivision1(
+            country_fk=values_dict.get("country_fk"),
+            subdivision1=values_dict.get("subdivision1"),
+            latitude=values_dict.get("latitude"),
+            longitude=values_dict.get("longitude"),
+            iso_3166_2=values_dict.get("iso_3166_2"),
             nuts_1=nuts_1,
-            bundesland_id=value_dict.get("bundesland_id"),
+            bundesland_id=values_dict.get("bundesland_id"),
         )
-        new_subdivs1.append(new_subdiv1)
+        new_entries.append(entry)
 
-    session.add_all(new_subdivs1)
+    session.add_all(new_entries)
     session.flush()
 
 
 def get_subdivision2(
-    session: Session, subdivision_2: str = None, nuts_2: str = None
+    session: Session, subdivision2: str = None, nuts_2: str = None
 ) -> Row:
     """
     Get a specific Subdivision Level 2
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
-        subdivision_2: Name of the subdivision in the countries language
+        subdivision2: Name of the subdivision in the countries language
         nuts_2: NUTS Level 2 code
 
     Returns:
@@ -247,102 +242,99 @@ def get_subdivision2(
     """
 
     # check if all parameters are None
-    if all(v is None for v in [subdivision_2, nuts_2]):
+    if all(v is None for v in [subdivision2, nuts_2]):
         raise RuntimeError(
             "Please provide either the subdiv. name, iso_3166, NUTS code or Bundesland ID"
         )
 
-    if subdivision_2 is not None:
-        col = tbl.CountriesSubdivs2.subdivision_2
-        col_value = subdivision_2
+    if subdivision2 is not None:
+        col = tbl.CountrySubdivision2.subdivision2
+        col_value = subdivision2
     if nuts_2 is not None:
-        col = tbl.CountriesSubdivs2.nuts_2
+        col = tbl.CountrySubdivision2.nuts_2
         col_value = nuts_2
 
     # query
     row = (
-        (
-            session.query(
-                tbl.CountriesSubdivs2.subdivision_2,
-                tbl.CountriesSubdivs2.latitude.label("subdiv2_latitude"),
-                tbl.CountriesSubdivs2.longitude.label("subdiv2_longitude"),
-                tbl.CountriesSubdivs2.nuts_2,
-                tbl.CountriesSubdivs1.subdivision_1,
-                tbl.CountriesSubdivs1.latitude.label("subdiv1_latitude"),
-                tbl.CountriesSubdivs1.longitude.label("subdiv1_longitude"),
-                tbl.CountriesSubdivs1.iso_3166_2,
-                tbl.CountriesSubdivs1.nuts_1,
-                tbl.Countries.country_en,
-                tbl.Countries.country_de,
-                tbl.Countries.latitude.label("country_latitude"),
-                tbl.Countries.longitude.label("country_longitude"),
-                tbl.Countries.iso_3166_1_alpha2,
-                tbl.Countries.iso_3166_1_alpha3,
-                tbl.Countries.iso_3166_1_numeric,
-                tbl.Countries.nuts_0,
-            )
-            .join(
-                tbl.CountriesSubdivs1,
-                tbl.CountriesSubdivs2.country_subdivs_1_fk
-                == tbl.CountriesSubdivs1.country_subdivs_1_id,
-            )
-            .join(
-                tbl.Countries,
-                tbl.CountriesSubdivs1.countries_fk == tbl.Countries.countries_id,
-            )
-            .filter(col == col_value)
-        ).one_or_none()
-        # ._mapping
-    )
+        session.query(
+            tbl.CountrySubdivision2.subdivision2,
+            tbl.CountrySubdivision2.latitude.label("subdivision2_latitude"),
+            tbl.CountrySubdivision2.longitude.label("subdivision2_longitude"),
+            tbl.CountrySubdivision2.nuts_2,
+            tbl.CountrySubdivision1.subdivision1,
+            tbl.CountrySubdivision1.latitude.label("subdivision1_latitude"),
+            tbl.CountrySubdivision1.longitude.label("subdivision1_longitude"),
+            tbl.CountrySubdivision1.iso_3166_2,
+            tbl.CountrySubdivision1.nuts_1,
+            tbl.Country.country_en,
+            tbl.Country.country_de,
+            tbl.Country.latitude.label("country_latitude"),
+            tbl.Country.longitude.label("country_longitude"),
+            tbl.Country.iso_3166_1_alpha2,
+            tbl.Country.iso_3166_1_alpha3,
+            tbl.Country.iso_3166_1_numeric,
+            tbl.Country.nuts_0,
+        )
+        .join(
+            tbl.CountrySubdivision1,
+            tbl.CountrySubdivision2.country_subdivision1_fk
+            == tbl.CountrySubdivision1.country_subdivision1_id,
+        )
+        .join(
+            tbl.Country,
+            tbl.CountrySubdivision1.country_fk == tbl.Country.country_id,
+        )
+        .filter(col == col_value)
+    ).one_or_none()
     return row
 
 
-def add_new_subdivision2(
-    session: Session, subdivs2_dict: dict[str, dict[str, str]]
+def insert_subdivision2(
+    session: Session, subdivisions2_dict: dict[str, dict[str, str]]
 ) -> None:
     # TODO: change from nuts_1 to iso_3166_1 as key
     # TODO: Get rid of FK in dict, better read it via SQLAlchemy
     """
-    Adds a new Subdivsion Level 2 entry to the local SQLite database.
+    Adds a new Subdivision Level 2 entry to the local SQLite database.
     Please provide NUTS_2 code as key:
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
 
-        `subdivs2_dict: {NUTS_2 : {country_subdivs_1_fk: value, ...}}`
+        `subdivisions2_dict: {NUTS_2 : {country_subdivision1_fk: value, ...}}`
     """
-    new_subdivs2 = list()
+    new_entries = list()
 
-    for nuts_2, value_dict in subdivs2_dict.items():
+    for nuts_2, values_dict in subdivisions2_dict.items():
 
         # check if entry already exist
-        subdiv2_exist = get_subdivision2(session=session, nuts_2=nuts_2)
-        if subdiv2_exist is not None:
+        subdivision2_exist = get_subdivision2(session=session, nuts_2=nuts_2)
+        if subdivision2_exist is not None:
             continue
 
         # create new entry
-        new_subdiv2 = tbl.CountriesSubdivs2(
-            country_subdivs_1_fk=value_dict.get("country_subdivs_1_fk"),
-            subdivision_2=value_dict.get("subdivision_2"),
-            latitude=value_dict.get("latitude"),
-            longitude=value_dict.get("longitude"),
+        entry = tbl.CountrySubdivision2(
+            country_subdivision1_fk=values_dict.get("country_subdivision1_fk"),
+            subdivision2=values_dict.get("subdivision2"),
+            latitude=values_dict.get("latitude"),
+            longitude=values_dict.get("longitude"),
             nuts_2=nuts_2,
         )
-        new_subdivs2.append(new_subdiv2)
+        new_entries.append(entry)
 
-    session.add_all(new_subdivs2)
+    session.add_all(new_entries)
     session.flush()
 
 
 def get_subdivision3(
-    session: Session, subdivision_3: str = None, nuts_3: str = None, ags: int = None
+    session: Session, subdivision3: str = None, nuts_3: str = None, ags: int = None
 ) -> Row:
     """
     Get a specific Subdivision Level 3
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
-        subdivision_3: Name of the subdivision in the countries language
+        subdivision3: Name of the subdivision in the countries language
         nuts_3: NUTS Level 3 code
         ags: !Germany only! Amtlicher Gemeindeschluessel
 
@@ -351,103 +343,100 @@ def get_subdivision3(
     """
 
     # check if all parameters are None
-    if all(v is None for v in [subdivision_3, nuts_3, ags]):
+    if all(v is None for v in [subdivision3, nuts_3, ags]):
         raise RuntimeError(
             "Please provide either the subdiv. name, iso_3166, NUTS code or Bundesland ID"
         )
 
-    if subdivision_3 is not None:
-        col = tbl.CountriesSubdivs3.subdivision_3
-        col_value = subdivision_3
+    if subdivision3 is not None:
+        col = tbl.CountrySubdivision3.subdivision3
+        col_value = subdivision3
     if nuts_3 is not None:
-        col = tbl.CountriesSubdivs3.nuts_3
+        col = tbl.CountrySubdivision3.nuts_3
         col_value = nuts_3
     if ags is not None:
-        col = tbl.CountriesSubdivs3.ags
+        col = tbl.CountrySubdivision3.ags
         col_value = ags
 
     # query
     row = (
-        (
-            session.query(
-                tbl.CountriesSubdivs3.subdivision_3,
-                tbl.CountriesSubdivs3.latitude.label("subdiv3_latitude"),
-                tbl.CountriesSubdivs3.longitude.label("subdiv3_longitude"),
-                tbl.CountriesSubdivs3.nuts_3,
-                tbl.CountriesSubdivs3.ags,
-                tbl.CountriesSubdivs2.subdivision_2,
-                tbl.CountriesSubdivs2.latitude.label("subdiv2_latitude"),
-                tbl.CountriesSubdivs2.longitude.label("subdiv2_longitude"),
-                tbl.CountriesSubdivs2.nuts_2,
-                tbl.CountriesSubdivs1.subdivision_1,
-                tbl.CountriesSubdivs1.latitude.label("subdiv1_latitude"),
-                tbl.CountriesSubdivs1.longitude.label("subdiv1_longitude"),
-                tbl.CountriesSubdivs1.iso_3166_2,
-                tbl.CountriesSubdivs1.nuts_1,
-                tbl.Countries.country_en,
-                tbl.Countries.country_de,
-                tbl.Countries.latitude.label("country_latitude"),
-                tbl.Countries.longitude.label("country_longitude"),
-                tbl.Countries.iso_3166_1_alpha2,
-                tbl.Countries.iso_3166_1_alpha3,
-                tbl.Countries.iso_3166_1_numeric,
-                tbl.Countries.nuts_0,
-            )
-            .join(
-                tbl.CountriesSubdivs2,
-                tbl.CountriesSubdivs3.country_subdivs_2_fk
-                == tbl.CountriesSubdivs2.country_subdivs_2_id,
-            )
-            .join(
-                tbl.CountriesSubdivs1,
-                tbl.CountriesSubdivs2.country_subdivs_1_fk
-                == tbl.CountriesSubdivs1.country_subdivs_1_id,
-            )
-            .join(
-                tbl.Countries,
-                tbl.CountriesSubdivs1.countries_fk == tbl.Countries.countries_id,
-            )
-            .filter(col == col_value)
-        ).one_or_none()
-        # ._mapping
-    )
+        session.query(
+            tbl.CountrySubdivision3.subdivision3,
+            tbl.CountrySubdivision3.latitude.label("subdivision3_latitude"),
+            tbl.CountrySubdivision3.longitude.label("subdivision3_longitude"),
+            tbl.CountrySubdivision3.nuts_3,
+            tbl.CountrySubdivision3.ags,
+            tbl.CountrySubdivision2.subdivision2,
+            tbl.CountrySubdivision2.latitude.label("subdivision2_latitude"),
+            tbl.CountrySubdivision2.longitude.label("subdivision2_longitude"),
+            tbl.CountrySubdivision2.nuts_2,
+            tbl.CountrySubdivision1.subdivision1,
+            tbl.CountrySubdivision1.latitude.label("subdivision1_latitude"),
+            tbl.CountrySubdivision1.longitude.label("subdivision1_longitude"),
+            tbl.CountrySubdivision1.iso_3166_2,
+            tbl.CountrySubdivision1.nuts_1,
+            tbl.Country.country_en,
+            tbl.Country.country_de,
+            tbl.Country.latitude.label("country_latitude"),
+            tbl.Country.longitude.label("country_longitude"),
+            tbl.Country.iso_3166_1_alpha2,
+            tbl.Country.iso_3166_1_alpha3,
+            tbl.Country.iso_3166_1_numeric,
+            tbl.Country.nuts_0,
+        )
+        .join(
+            tbl.CountrySubdivision2,
+            tbl.CountrySubdivision3.country_subdivision2_fk
+            == tbl.CountrySubdivision2.country_subdivision2_id,
+        )
+        .join(
+            tbl.CountrySubdivision1,
+            tbl.CountrySubdivision2.country_subdivision1_fk
+            == tbl.CountrySubdivision1.country_subdivision1_id,
+        )
+        .join(
+            tbl.Country,
+            tbl.CountrySubdivision1.country_fk == tbl.Country.country_id,
+        )
+        .filter(col == col_value)
+    ).one_or_none()
 
     return row
 
 
-def add_new_subdivision3(
-    session: Session, subdivs3_dict: dict[str, dict[str, str]]
+def insert_subdivision3(
+    session: Session, subdivisions3_dict: dict[str, dict[str, str]]
 ) -> None:
     # TODO: change from nuts_1 to iso_3166_1 as key
     # TODO: Get rid of FK in dict, better read it via SQLAlchemy
     """
-    Adds a new Subdivsion Level 3 entry to the local SQLite database.
+    Adds a new Subdivision Level 3 entry to the local SQLite database.
     Please provide NUTS_3 code as key:
 
     Args:
         session: `Session` object from `sqlalchemy.orm`
 
-        `subdivs3_dict: {NUTS_3 : {country_subdivs_2_fk: value, ...}}`
+        `subdivisions3_dict: {NUTS_3 : {country_subdivision2_fk: value, ...}}`
     """
-    new_subdivs3 = list()
+    new_entries = list()
 
-    for nuts_3, value_dict in subdivs3_dict.items():
+    for nuts_3, values_dict in subdivisions3_dict.items():
 
         # check if entry already exist
-        subdiv3_exist = get_subdivision3(session=session, nuts_3=nuts_3)
-        if subdiv3_exist is not None:
+        subdivision3_exist = get_subdivision3(session=session, nuts_3=nuts_3)
+        if subdivision3_exist is not None:
             continue
 
         # create new entry
-        new_subdiv3 = tbl.CountriesSubdivs3(
-            country_subdivs_2_fk=value_dict.get("country_subdivs_2_fk"),
-            subdivision_3=value_dict.get("subdivision_3"),
-            latitude=value_dict.get("latitude"),
-            longitude=value_dict.get("longitude"),
+        entry = tbl.CountrySubdivision3(
+            country_subdivision2_fk=values_dict.get("country_subdivision2_fk"),
+            subdivision3=values_dict.get("subdivision3"),
+            latitude=values_dict.get("latitude"),
+            longitude=values_dict.get("longitude"),
             nuts_3=nuts_3,
-            ags=value_dict.get("ags"),
+            ags=values_dict.get("ags"),
         )
-        new_subdivs3.append(new_subdiv3)
+        new_entries.append(entry)
 
-    session.add_all(new_subdivs3)
+    session.add_all(new_entries)
     session.flush()

@@ -31,7 +31,7 @@ def _calc_avg_age(agegroup: str, n_observations: int = 10) -> float:
     return avg_age / n_observations
 
 
-def get_agegroup_05y(session: Session, agegroup: str) -> Optional[Any]:
+def get_agegroup05y(session: Session, agegroup: str) -> Optional[Any]:
     """
     Get a specific agegroup of 05-year interval
 
@@ -42,15 +42,15 @@ def get_agegroup_05y(session: Session, agegroup: str) -> Optional[Any]:
     Returns:
         A `row` object for the provided agegroup or `None` if calendar year not found.
     """
-    agegroup_05y_row = (
-        session.query(tbl.Agegroups05y.agegroup).filter(
-            tbl.Agegroups05y.agegroup == agegroup
+    row = (
+        session.query(tbl.Agegroup05y.agegroup).filter(
+            tbl.Agegroup05y.agegroup == agegroup
         )
     ).one_or_none()
-    return agegroup_05y_row
+    return row
 
 
-def get_agegroups_05y(session: Session) -> list[tbl.Agegroups05y]:
+def get_agegroups05y(session: Session) -> list[tbl.Agegroup05y]:
     """
     Get a list of agegroup objects with a 05-year interval
 
@@ -58,15 +58,15 @@ def get_agegroups_05y(session: Session) -> list[tbl.Agegroups05y]:
         session: `Session` object from `sqlalchemy.orm`
 
     Returns:
-        A `list` of `Agegroups05y` objects
+        A `list` of `Agegroup05y` objects
     """
-    agegroups_05_list = (
-        session.query(tbl.Agegroups05y).order_by(tbl.Agegroups05y.agegroup)
+    agegroups05 = (
+        session.query(tbl.Agegroup05y).order_by(tbl.Agegroup05y.agegroup)
     ).all()
-    return agegroups_05_list
+    return agegroups05
 
 
-def get_agegroup_10y(session: Session, agegroup: str) -> Optional[Any]:
+def get_agegroup10y(session: Session, agegroup: str) -> Optional[Any]:
     """
     Get a specific agegroup of 10-year interval
 
@@ -77,15 +77,15 @@ def get_agegroup_10y(session: Session, agegroup: str) -> Optional[Any]:
     Returns:
         A `row` object for the provided agegroup or `None` if calendar year not found.
     """
-    agegroup_10y_row = (
-        session.query(tbl.Agegroups10y.agegroup).filter(
-            tbl.Agegroups10y.agegroup == agegroup
+    row = (
+        session.query(tbl.Agegroup10y.agegroup).filter(
+            tbl.Agegroup10y.agegroup == agegroup
         )
     ).one_or_none()
-    return agegroup_10y_row
+    return row
 
 
-def get_agegroups_10y(session: Session) -> list[tbl.Agegroups10y]:
+def get_agegroups10y(session: Session) -> list[tbl.Agegroup10y]:
     """
     Get a list of agegroup objects with a 10-year interval
 
@@ -93,15 +93,15 @@ def get_agegroups_10y(session: Session) -> list[tbl.Agegroups10y]:
         session: `Session` object from `sqlalchemy.orm`
 
     Returns:
-        A `list` of `Agegroups10y` objects
+        A `list` of `Agegroup10y` objects
     """
-    agegroups_10y_list = (
-        session.query(tbl.Agegroups10y).order_by(tbl.Agegroups10y.agegroup)
+    agegroups10y = (
+        session.query(tbl.Agegroup10y).order_by(tbl.Agegroup10y.agegroup)
     ).all()
-    return agegroups_10y_list
+    return agegroups10y
 
 
-def get_agegroup_rki(session: Session, agegroup: str) -> Optional[Any]:
+def get_agegroupRki(session: Session, agegroup: str) -> Optional[Any]:
     """
     Get a specific agegroup of RKI-year interval
 
@@ -112,15 +112,15 @@ def get_agegroup_rki(session: Session, agegroup: str) -> Optional[Any]:
     Returns:
         A `row` object for the provided agegroup or `None` if calendar year not found.
     """
-    agegroup_rki_row = (
-        session.query(tbl.AgegroupsRki.agegroup).filter(
-            tbl.AgegroupsRki.agegroup == agegroup
+    row = (
+        session.query(tbl.AgegroupRki.agegroup).filter(
+            tbl.AgegroupRki.agegroup == agegroup
         )
     ).one_or_none()
-    return agegroup_rki_row
+    return row
 
 
-def add_new_agegroups_05y(session: Session, agegroups: list[str]) -> None:
+def insert_agegroups05y(session: Session, agegroups: list[str]) -> None:
     """
     Adds a new agegroup with a 5-year-interval to the local SQLite database.
 
@@ -134,27 +134,27 @@ def add_new_agegroups_05y(session: Session, agegroups: list[str]) -> None:
         assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
 
         # check if agegroup already exist
-        agegroup_exists = get_agegroup_05y(session=session, agegroup=agegroup)
+        agegroup_exists = get_agegroup05y(session=session, agegroup=agegroup)
         if agegroup_exists is not None:
             continue
 
         # create new agegroup
-        new_agegroup = tbl.Agegroups05y(agegroup=agegroup)
-        new_agegroups.append(new_agegroup)
+        entry = tbl.Agegroup05y(agegroup=agegroup)
+        new_agegroups.append(entry)
 
     # add hardcoded special agegroups
-    _EIGHTYPLUS = tbl.Agegroups05y(agegroup="80+")
-    _UNK = tbl.Agegroups05y(agegroup="UNK")
+    _EIGHTYPLUS = tbl.Agegroup05y(agegroup="80+")
+    _UNK = tbl.Agegroup05y(agegroup="UNK")
 
-    if get_agegroup_05y(session=session, agegroup="80+") is None:
+    if get_agegroup05y(session=session, agegroup="80+") is None:
         new_agegroups.append(_EIGHTYPLUS)
-    if get_agegroup_05y(session=session, agegroup="UNK") is None:
+    if get_agegroup05y(session=session, agegroup="UNK") is None:
         new_agegroups.append(_UNK)
 
     session.add_all(new_agegroups)
 
 
-def add_new_agegroups_10y(session: Session, agegroups: list[str]) -> None:
+def insert_agegroups10y(session: Session, agegroups: list[str]) -> None:
     """
     Adds a new agegroup with a 10-year-interval to the local SQLite database.
     Calculates average age.
@@ -167,33 +167,33 @@ def add_new_agegroups_10y(session: Session, agegroups: list[str]) -> None:
         assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
 
         # check if agegroup already exist
-        agegroup_exists = get_agegroup_10y(session=session, agegroup=agegroup)
+        agegroup_exists = get_agegroup10y(session=session, agegroup=agegroup)
         if agegroup_exists is not None:
             continue
 
         n_observations = (_get_max_age(agegroup) - _get_min_age(agegroup)) + 1
         # create new agegroup
-        new_agegroup = tbl.Agegroups10y(
+        entry = tbl.Agegroup10y(
             agegroup=agegroup,
             number_observations=n_observations,
             avg_age=_calc_avg_age(agegroup, n_observations),
         )
-        new_agegroups.append(new_agegroup)
+        new_agegroups.append(entry)
 
     # add hardcoded special agegroups
-    _EIGHTYPLUS = tbl.Agegroups10y(agegroup="80+", number_observations=21, avg_age=90.0)
-    _UNK = tbl.Agegroups10y(agegroup="UNK", number_observations=0, avg_age=0)
+    _EIGHTYPLUS = tbl.Agegroup10y(agegroup="80+", number_observations=21, avg_age=90.0)
+    _UNK = tbl.Agegroup10y(agegroup="UNK", number_observations=0, avg_age=0)
 
-    if get_agegroup_10y(session=session, agegroup="80+") is None:
+    if get_agegroup10y(session=session, agegroup="80+") is None:
         new_agegroups.append(_EIGHTYPLUS)
-    if get_agegroup_10y(session=session, agegroup="UNK") is None:
+    if get_agegroup10y(session=session, agegroup="UNK") is None:
         new_agegroups.append(_UNK)
 
     # write to DB
     session.add_all(new_agegroups)
 
 
-def add_new_agegroups_rki(session: Session, agegroups: list[str]) -> None:
+def insert_agegroupsRki(session: Session, agegroups: list[str]) -> None:
     """
     Adds a new agegroup with a year-interval defined by RKI (Robert-Koch_Institut).
     Calculates average age.
@@ -206,26 +206,26 @@ def add_new_agegroups_rki(session: Session, agegroups: list[str]) -> None:
         assert agegroup.__contains__("-"), "Agegroup must contain delimiter '-'"
 
         # check if agegroup already exist
-        agegroup_exists = get_agegroup_rki(session=session, agegroup=agegroup)
+        agegroup_exists = get_agegroupRki(session=session, agegroup=agegroup)
         if agegroup_exists is not None:
             continue
 
         n_observations = (_get_max_age(agegroup) - _get_min_age(agegroup)) + 1
         # create new agegroup
-        new_agegroup = tbl.AgegroupsRki(
+        entry = tbl.AgegroupRki(
             agegroup=agegroup,
             number_observations=n_observations,
             avg_age=_calc_avg_age(agegroup, n_observations),
         )
-        new_agegroups.append(new_agegroup)
+        new_agegroups.append(entry)
 
     # add hardcoded special agegroups
-    _EIGHTYPLUS = tbl.AgegroupsRki(agegroup="80+", number_observations=21, avg_age=90.0)
-    _UNK = tbl.AgegroupsRki(agegroup="UNK", number_observations=0, avg_age=0)
+    _EIGHTYPLUS = tbl.AgegroupRki(agegroup="80+", number_observations=21, avg_age=90.0)
+    _UNK = tbl.AgegroupRki(agegroup="UNK", number_observations=0, avg_age=0)
 
-    if get_agegroup_rki(session=session, agegroup="80+") is None:
+    if get_agegroupRki(session=session, agegroup="80+") is None:
         new_agegroups.append(_EIGHTYPLUS)
-    if get_agegroup_rki(session=session, agegroup="UNK") is None:
+    if get_agegroupRki(session=session, agegroup="UNK") is None:
         new_agegroups.append(_UNK)
 
     # write to DB
