@@ -48,6 +48,8 @@ class Database:
             tbl.CountrySubdivision3.__tablename__,
             tbl.PopulationCountry.__tablename__,
             tbl.PopulationSubdivision1.__tablename__,
+            tbl.PopulationSubdivision2.__tablename__,
+            tbl.PopulationSubdivision3.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):

@@ -70,6 +70,16 @@ class CalendarYear(Base):
         backref=cfg_db.tables.calendar_year,
         cascade="all, delete",
     )
+    population_subdivision2: int = relationship(
+        "PopulationSubdivision2",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
+    population_subdivision3: int = relationship(
+        "PopulationSubdivision3",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
 
 
 class CalendarWeek(Base):
@@ -216,6 +226,11 @@ class CountrySubdivision2(Base):
         backref=cfg_db.tables.country_subdivision2,
         cascade="all, delete",
     )
+    population_subdivision2: int = relationship(
+        "PopulationSubdivision2",
+        backref=cfg_db.tables.country_subdivision2,
+        cascade="all, delete",
+    )
 
 
 class CountrySubdivision3(Base):
@@ -240,6 +255,12 @@ class CountrySubdivision3(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+    # relationships
+    population_subdivision3: int = relationship(
+        "PopulationSubdivision3",
+        backref=cfg_db.tables.country_subdivision3,
+        cascade="all, delete",
+    )
 
 
 class PopulationCountry(Base):
@@ -282,6 +303,66 @@ class PopulationSubdivision1(Base):
         Integer,
         ForeignKey(
             f"{_country_subdivision1.__tablename__}.{_country_subdivision1.country_subdivision1_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    population = Column(BigInteger)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+
+class PopulationSubdivision2(Base):
+    __tablename__ = cfg_db.tables.population_subdivision2
+    _country_subdivision2 = CountrySubdivision2
+    _calendar_year = CalendarYear
+
+    population_subdivision2_id = Column(Integer, primary_key=True)
+    country_subdivision2_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country_subdivision2.__tablename__}.{_country_subdivision2.country_subdivision2_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    population = Column(BigInteger)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+
+class PopulationSubdivision3(Base):
+    __tablename__ = cfg_db.tables.population_subdivision3
+    _country_subdivision3 = CountrySubdivision3
+    _calendar_year = CalendarYear
+
+    population_subdivision3_id = Column(Integer, primary_key=True)
+    country_subdivision3_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country_subdivision3.__tablename__}.{_country_subdivision3.country_subdivision3_id.name}",
             ondelete="CASCADE",
             onupdate="CASCADE",
         ),
