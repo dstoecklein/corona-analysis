@@ -220,7 +220,7 @@ def add_new_calendar_years(session: Session, start_year: int, end_year: int) -> 
     assert start_year >= 0, "`start_year can not be negative!"
     assert end_year >= 0, "`end_year can not be negative!"
 
-    YEAR_RANGE = [year for year in range(start_year, end_year+1)]
+    YEAR_RANGE = [year for year in range(start_year, end_year + 1)]
 
     def _add_calendar_weeks_n_days_to_session(year_obj: tbl.CalendarYears) -> None:
         """

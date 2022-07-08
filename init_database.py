@@ -11,15 +11,6 @@ from database.db import Database
 import pandas as pd
 
 def init_calendars(database: Database) -> None:
-    """
-    df_years = clh.create_calendar_years_df(init.from_values.calendar_start_year, init.from_values.calendar_end_year)
-    df_weeks = clh.create_calendar_weeks_df(init.from_values.calendar_start_year, init.from_values.calendar_end_year)
-    df_days = clh.create_calendar_days_df(init.from_values.calendar_start_year, init.from_values.calendar_end_year)
-
-    database.upsert_df(df=df_years, table_name=cfg_db.tables.calendar_years)
-    database.upsert_df(df=df_weeks, table_name=cfg_db.tables.calendar_weeks)
-    database.upsert_df(df=df_days, table_name=cfg_db.tables.calendar_days)
-    """
     with database.ManagedSessionMaker() as session:
         clh.add_new_calendar_years(
             session=session, 
@@ -37,6 +28,7 @@ def init_icd10(database: Database) -> None:
     df = pd.read_feather(cfg.get_files_path() / init.from_files.icd10.filename)
     df.set_index(init.from_files.icd10.index_col, inplace=True)
     icd10_dict = df.to_dict(orient="index")
+    
     with database.ManagedSessionMaker() as session:
         ich.add_new_icd10(session=session, icd10_dict=icd10_dict)
 

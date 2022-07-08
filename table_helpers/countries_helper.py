@@ -183,9 +183,8 @@ def get_subdivision1(
             )
             .join(tbl.Countries)
             .filter(col == col_value)
-        )
-        .one_or_none()
-        #._mapping
+        ).one_or_none()
+        # ._mapping
     )
 
     return row
@@ -212,7 +211,7 @@ def add_new_subdivision1(
 
         # check if entry already exist
         subdiv1_exist = get_subdivision1(session=session, nuts_1=nuts_1)
-        
+
         if subdiv1_exist is not None:
             continue
 
@@ -230,6 +229,7 @@ def add_new_subdivision1(
 
     session.add_all(new_subdivs1)
     session.flush()
+
 
 def get_subdivision2(
     session: Session, subdivision_2: str = None, nuts_2: str = None
@@ -291,9 +291,8 @@ def get_subdivision2(
                 tbl.CountriesSubdivs1.countries_fk == tbl.Countries.countries_id,
             )
             .filter(col == col_value)
-        )
-        .one_or_none()
-        #._mapping
+        ).one_or_none()
+        # ._mapping
     )
     return row
 
@@ -333,6 +332,7 @@ def add_new_subdivision2(
 
     session.add_all(new_subdivs2)
     session.flush()
+
 
 def get_subdivision3(
     session: Session, subdivision_3: str = None, nuts_3: str = None, ags: int = None
@@ -408,9 +408,8 @@ def get_subdivision3(
                 tbl.CountriesSubdivs1.countries_fk == tbl.Countries.countries_id,
             )
             .filter(col == col_value)
-        )
-        .one_or_none()
-        #._mapping
+        ).one_or_none()
+        # ._mapping
     )
 
     return row
