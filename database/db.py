@@ -56,6 +56,9 @@ class Database:
             tbl.MedianAge.__tablename__,
             tbl.MortalityWeeklyAgegroup.__tablename__,
             tbl.MortalityAnnualAgegroupCause.__tablename__,
+            tbl.VaccinationDaily.__tablename__,
+            tbl.VaccinationDailyManufacturer.__tablename__,
+            tbl.VaccinationDailySubdivision1.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):

@@ -72,6 +72,9 @@ class Table(BaseModel):
     mortality_annual_agegroup_cause: str
     hospital_annual: str
     hospital_annual_staff: str
+    vaccination_daily: str
+    vaccination_daily_manufacturer: str
+    vaccination_daily_subdivision1: str
 
 
 # PARENT CONFIGS

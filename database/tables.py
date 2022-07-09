@@ -156,6 +156,22 @@ class CalendarDay(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+    # relationships
+    vaccination_daily: int = relationship(
+        "VaccinationDaily",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
+    vaccination_daily_manufacturer: int = relationship(
+        "VaccinationDailyManufacturer",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
+    vaccination_daily_subdivision1: int = relationship(
+        "VaccinationDailySubdivision1",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
 
 
 class ClassificationICD10(Base):
@@ -212,6 +228,16 @@ class Country(Base):
         backref=cfg_db.tables.country,
         cascade="all, delete",
     )
+    vaccination_daily: int = relationship(
+        "VaccinationDaily",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    vaccination_daily_manufacturer: int = relationship(
+        "VaccinationDailyManufacturer",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
 
 
 class CountrySubdivision1(Base):
@@ -245,6 +271,11 @@ class CountrySubdivision1(Base):
     )
     population_subdivision1: int = relationship(
         "PopulationSubdivision1",
+        backref=cfg_db.tables.country_subdivision1,
+        cascade="all, delete",
+    )
+    vaccination_daily_subdivision1: int = relationship(
+        "VaccinationDailySubdivision1",
         backref=cfg_db.tables.country_subdivision1,
         cascade="all, delete",
     )
@@ -325,6 +356,17 @@ class Vaccine(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+    # relationships
+    vaccination_daily_manufacturer: int = relationship(
+        "VaccinationDailyManufacturer",
+        backref=cfg_db.tables.vaccine,
+        cascade="all, delete",
+    )
+    vaccination_daily_subdivision1: int = relationship(
+        "VaccinationDailySubdivision1",
+        backref=cfg_db.tables.vaccine,
+        cascade="all, delete",
+    )
 
 
 class VaccineSeries(Base):
@@ -336,6 +378,12 @@ class VaccineSeries(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+    # relationships
+    vaccination_daily_subdivision1: int = relationship(
+        "VaccinationDailySubdivision1",
+        backref=cfg_db.tables.vaccine_series,
+        cascade="all, delete",
+    )
 
 
 class PopulationCountry(Base):
@@ -671,6 +719,165 @@ class MortalityAnnualAgegroupCause(Base):
         fk2 = str(context.get_current_parameters()["calendar_year_fk"])
         fk3 = str(context.get_current_parameters()["agegroup10y_fk"])
         fk4 = str(context.get_current_parameters()["classification_icd10_fk"])
+        uq = fk1 + "-" + fk2 + "-" + fk3 + "-" + fk4
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class VaccinationDaily(Base):
+    __tablename__ = cfg_db.tables.vaccination_daily
+    _country = Country
+    _calendar_day = CalendarDay
+
+    vaccination_daily_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    total_vaccinations = Column(BigInteger)
+    first_vaccinated = Column(Integer)
+    second_vaccindated = Column(Integer)
+    booster_vaccinated = Column(Integer)
+    new_doses_raw = Column(Integer)
+    new_doses_7d_smoothed = Column(Integer)
+    total_vaccinations_rate = Column(Float)
+    first_vaccinated_rate = Column(Float)
+    second_vaccindated_rate = Column(Float)
+    booster_vaccinated_rate = Column(Float)
+    daily_vaccinations_first = Column(Integer)
+    daily_vaccinations_first_rate = Column(Integer)
+
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class VaccinationDailyManufacturer(Base):
+    __tablename__ = cfg_db.tables.vaccination_daily_manufacturer
+    _country = Country
+    _calendar_day = CalendarDay
+    _vaccine = Vaccine
+
+    vaccination_daily_manufacturer_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    vaccine_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_vaccine.__tablename__}.{_vaccine.vaccine_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    total_vaccinations = Column(BigInteger)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        fk3 = str(context.get_current_parameters()["vaccine_fk"])
+        uq = fk1 + "-" + fk2 + "-" + fk3
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class VaccinationDailySubdivision1(Base):
+    __tablename__ = cfg_db.tables.vaccination_daily_subdivision1
+    _country_subdivision1 = CountrySubdivision1
+    _calendar_day = CalendarDay
+    _vaccine = Vaccine
+    _vaccine_series = VaccineSeries
+
+    vaccination_daily_subdivision1_id = Column(Integer, primary_key=True)
+    country_subdivision1_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country_subdivision1.__tablename__}.{_country_subdivision1.country_subdivision1_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    vaccine_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_vaccine.__tablename__}.{_vaccine.vaccine_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    vaccine_series_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_vaccine_series.__tablename__}.{_vaccine_series.vaccine_series_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    total_vaccinations = Column(BigInteger)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_subdivision1_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        fk3 = str(context.get_current_parameters()["vaccine_fk"])
+        fk4 = str(context.get_current_parameters()["vaccine_series_fk"])
         uq = fk1 + "-" + fk2 + "-" + fk3 + "-" + fk4
         return uq
 

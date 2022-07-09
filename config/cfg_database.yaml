@@ -30,3 +30,7 @@ tables:
   # hospital
   hospital_annual: "hospital_annual"
   hospital_annual_staff: "hospital_annual_staff"
+  # vaccination
+  vaccination_daily: "vaccination_daily"
+  vaccination_daily_manufacturer: "vaccination_daily_manufacturer"
+  vaccination_daily_subdivision1: "vaccination_daily_subdivision1"
