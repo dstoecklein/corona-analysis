@@ -62,7 +62,9 @@ class Table(BaseModel):
     population_subdivision1: str
     population_subdivision2: str
     population_subdivision3: str
-
+    life_expectancy: str
+    median_age: str
+    
 
 # PARENT CONFIGS
 class InitCfg(BaseModel):

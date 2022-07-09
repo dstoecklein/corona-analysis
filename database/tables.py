@@ -80,6 +80,16 @@ class CalendarYear(Base):
         backref=cfg_db.tables.calendar_year,
         cascade="all, delete",
     )
+    life_expectancy: int = relationship(
+        "LifeExpectancy",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
+    median_age: int = relationship(
+        "MedianAge",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
 
 
 class CalendarWeek(Base):
@@ -160,6 +170,12 @@ class Country(Base):
     )
     population_country: int = relationship(
         "PopulationCountry", backref=cfg_db.tables.country, cascade="all, delete"
+    )
+    life_expectancy: int = relationship(
+        "LifeExpectancy", backref=cfg_db.tables.country, cascade="all, delete"
+    )
+    median_age: int = relationship(
+        "MedianAge", backref=cfg_db.tables.country, cascade="all, delete"
     )
 
 
@@ -378,6 +394,66 @@ class PopulationSubdivision3(Base):
         nullable=False,
     )
     population = Column(BigInteger)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+
+class LifeExpectancy(Base):
+    __tablename__ = cfg_db.tables.life_expectancy
+    _country = Country
+    _calendar_year = CalendarYear
+
+    life_expectancy_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    life_expectancy_at_birth = Column(Float)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+
+class MedianAge(Base):
+    __tablename__ = cfg_db.tables.median_age
+    _country = Country
+    _calendar_year = CalendarYear
+
+    median_age_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    median_age = Column(Float)
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()

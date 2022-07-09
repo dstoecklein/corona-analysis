@@ -50,9 +50,12 @@ class Database:
             tbl.PopulationSubdivision1.__tablename__,
             tbl.PopulationSubdivision2.__tablename__,
             tbl.PopulationSubdivision3.__tablename__,
+            tbl.LifeExpectancy.__tablename__,
+            tbl.MedianAge.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):
+            #Base.metadata.drop_all(self.engine) # drop all
             Base.metadata.create_all(self.engine)  # create tables
 
         Base.metadata.bind = self.engine

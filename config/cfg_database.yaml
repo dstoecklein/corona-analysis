@@ -18,3 +18,5 @@ tables:
   population_subdivision1: "population_subdivision1"
   population_subdivision2: "population_subdivision2"
   population_subdivision3: "population_subdivision3"
+  life_expectancy: "life_expectancy"
+  median_age: "median_age"
