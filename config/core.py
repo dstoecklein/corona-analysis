@@ -11,7 +11,6 @@ FILES_PATH = CWD / "files"
 
 # config files
 CFG_DATABASE = "cfg_database.yaml"
-CFG_TABLES = "cfg_tables.yaml"
 CFG_INIT = "cfg_init.yaml"
 CFG_URLS = "cfg_urls.yaml"
 
@@ -33,6 +32,7 @@ class File(BaseModel):
 class Value(BaseModel):
     calendar_start_year: int
     calendar_end_year: int
+    agegroup_labels: list
     agegroups_05y: list
     agegroups_10y: list
     agegroups_rki: list

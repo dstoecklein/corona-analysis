@@ -29,6 +29,7 @@ def _estat_pp_cols(df: pd.DataFrame) -> pd.DataFrame:
             "icd10",
             "resid",
             "indic_de",
+            "isced11",
         ):
             tmp[i] = tmp[i].fillna(0)
             tmp[i] = tmp[i].astype(int)
