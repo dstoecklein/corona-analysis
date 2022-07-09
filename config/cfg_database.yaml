@@ -19,6 +19,7 @@ tables:
   # population
   population_country: "population_country"
   population_country_agegroup: "population_country_agegroup"
+  population_country_agegroup_rki: "population_country_agegroup_rki"
   population_subdivision1: "population_subdivision1"
   population_subdivision2: "population_subdivision2"
   population_subdivision3: "population_subdivision3"
@@ -37,5 +38,14 @@ tables:
   # intensive care unit
   itcu_daily_subdivision1: "itcu_daily_subdivision1"
   itcu_daily_subdivision3: "itcu_daily_subdivision3"
-  # 
+  # covid
+  covid_daily: "covid_daily"
+  covid_daily_agegroup: "covid_daily_agegroup"
+  covid_daily_subdivision1: "covid_daily_subdivision1"
+  covid_daily_subdivision3: "covid_daily_subdivision3"
+  covid_weekly: "covid_weekly"
+  covid_annual: "covid_annual"
+  # covid various
+  rvalue_daily: "rvalue_daily"
+  covid_test_weekly: "covid_test_weekly"
   

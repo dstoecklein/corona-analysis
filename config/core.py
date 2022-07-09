@@ -63,6 +63,7 @@ class Table(BaseModel):
     vaccine_series: str
     population_country: str
     population_country_agegroup: str
+    population_country_agegroup_rki: str
     population_subdivision1: str
     population_subdivision2: str
     population_subdivision3: str
@@ -77,6 +78,14 @@ class Table(BaseModel):
     vaccination_daily_subdivision1: str
     itcu_daily_subdivision1: str
     itcu_daily_subdivision3: str
+    covid_daily: str
+    covid_daily_agegroup: str
+    covid_daily_subdivision1: str
+    covid_daily_subdivision3: str
+    covid_weekly: str
+    covid_annual: str
+    rvalue_daily: str
+    covid_test_weekly: str
 
 
 # PARENT CONFIGS

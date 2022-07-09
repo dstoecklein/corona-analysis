@@ -62,6 +62,14 @@ class Database:
             tbl.VaccinationDailySubdivision1.__tablename__,
             tbl.ItcuDailySubdivision1.__tablename__,
             tbl.ItcuDailySubdivision3.__tablename__,
+            tbl.CovidDaily.__tablename__,
+            tbl.CovidDailyAgegroup.__tablename__,
+            tbl.CovidDailySubdivision1.__tablename__,
+            tbl.CovidDailySubdivision3.__tablename__,
+            tbl.CovidWeekly.__tablename__,
+            tbl.CovidAnnual.__tablename__,
+            tbl.RValueDaily.__tablename__,
+            tbl.CovidTestWeekly.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):

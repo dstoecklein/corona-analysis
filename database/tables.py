@@ -57,6 +57,11 @@ class AgegroupRki(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+    covid_daily_agegroup: int = relationship(
+        "CovidDailyAgegroup",
+        backref=cfg_db.tables.agegroup_rki,
+        cascade="all, delete",
+    )
 
 
 class CalendarYear(Base):
@@ -106,6 +111,11 @@ class CalendarYear(Base):
         backref=cfg_db.tables.calendar_year,
         cascade="all, delete",
     )
+    covid_annual: int = relationship(
+        "CovidAnnual",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
 
 
 class CalendarWeek(Base):
@@ -133,6 +143,16 @@ class CalendarWeek(Base):
     )
     mortality_weekly_agegroup: int = relationship(
         "MortalityWeeklyAgegroup",
+        backref=cfg_db.tables.calendar_week,
+        cascade="all, delete",
+    )
+    covid_weekly: int = relationship(
+        "CovidWeekly",
+        backref=cfg_db.tables.calendar_week,
+        cascade="all, delete",
+    )
+    covid_test_weekly: int = relationship(
+        "CovidTestWeekly",
         backref=cfg_db.tables.calendar_week,
         cascade="all, delete",
     )
@@ -174,6 +194,31 @@ class CalendarDay(Base):
     )
     itcu_daily_subdivision3: int = relationship(
         "ItcuDailySubdivision3",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
+    covid_daily: int = relationship(
+        "CovidDaily",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
+    covid_daily_agegroup: int = relationship(
+        "CovidDailyAgegroup",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
+    covid_daily_subdivision1: int = relationship(
+        "CovidDailySubdivision1",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
+    covid_daily_subdivision3: int = relationship(
+        "CovidDailySubdivision3",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
+    rvalue_daily: int = relationship(
+        "RValueDaily",
         backref=cfg_db.tables.calendar_day,
         cascade="all, delete",
     )
@@ -243,6 +288,36 @@ class Country(Base):
         backref=cfg_db.tables.country,
         cascade="all, delete",
     )
+    covid_daily: int = relationship(
+        "CovidDaily",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    covid_daily_agegroup: int = relationship(
+        "CovidDailyAgegroup",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    covid_weekly: int = relationship(
+        "CovidWeekly",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    covid_annual: int = relationship(
+        "CovidAnnual",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    rvalue_daily: int = relationship(
+        "RValueDaily",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    covid_test_weekly: int = relationship(
+        "CovidTestWeekly",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
 
 
 class CountrySubdivision1(Base):
@@ -286,6 +361,11 @@ class CountrySubdivision1(Base):
     )
     itcu_daily_subdivision1: int = relationship(
         "ItcuDailySubdivision1",
+        backref=cfg_db.tables.country_subdivision1,
+        cascade="all, delete",
+    )
+    covid_daily_subdivision1: int = relationship(
+        "CovidDailySubdivision1",
         backref=cfg_db.tables.country_subdivision1,
         cascade="all, delete",
     )
@@ -355,6 +435,11 @@ class CountrySubdivision3(Base):
     )
     itcu_daily_subdivision3: int = relationship(
         "ItcuDailySubdivision3",
+        backref=cfg_db.tables.country_subdivision3,
+        cascade="all, delete",
+    )
+    covid_daily_subdivision3: int = relationship(
+        "CovidDailySubdivision3",
         backref=cfg_db.tables.country_subdivision3,
         cascade="all, delete",
     )
@@ -597,6 +682,55 @@ class PopulationSubdivision3(Base):
         fk1 = str(context.get_current_parameters()["country_subdivision3_fk"])
         fk2 = str(context.get_current_parameters()["calendar_year_fk"])
         uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class PopulationCountryAgegroupRki(Base):
+    __tablename__ = cfg_db.tables.population_country_agegroup_rki
+    _country = Country
+    _calendar_year = CalendarYear
+    _agegroup_rki = AgegroupRki
+
+    population_country_agegroup_rki_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    agegroup_rki_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_agegroup_rki.__tablename__}.{_agegroup_rki.agegroup_rki_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    population = Column(BigInteger)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        fk3 = str(context.get_current_parameters()["agegroup_rki_fk"])
+        uq = fk1 + "-" + fk2 + "-" + fk3
         return uq
 
     unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
@@ -1037,6 +1171,412 @@ class ItcuDailySubdivision3(Base):
     def _uq_key(context):
         fk1 = str(context.get_current_parameters()["country_subdivision3_fk"])
         fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class CovidDaily(Base):
+    __tablename__ = cfg_db.tables.covid_daily
+    _country = Country
+    _calendar_day = CalendarDay
+
+    covid_daily_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    cases = Column(Integer)
+    cases_delta = Column(Integer)
+    cases_delta_ref = Column(Integer)
+    cases_delta_ref_symptoms = Column(Integer)
+    cases_7d = Column(Integer)
+    cases_7d_symptoms = Column(Integer)
+    cases_7d_ref = Column(Integer)
+    cases_7d_ref_symptoms = Column(Integer)
+    deaths = Column(Integer)
+    deaths_delta = Column(Integer)
+    recovered = Column(Integer)
+    recovered_delta = Column(Integer)
+    active_cases = Column(Integer)
+    active_cases_delta = Column(Integer)
+    incidence_7d = Column(Float)
+    incidence_7d_symptoms = Column(Float)
+    incidence_7d_ref = Column(Float)
+    incidence_7d_ref_symptoms = Column(Float)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class CovidDailyAgegroup(Base):
+    __tablename__ = cfg_db.tables.covid_daily_agegroup
+    _country = Country
+    _calendar_day = CalendarDay
+    _agegroup_rki = AgegroupRki
+
+    covid_daily_agegroup_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    agegroup_rki_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_agegroup_rki.__tablename__}.{_agegroup_rki.agegroup_rki_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    cases = Column(Integer)
+    cases_delta = Column(Integer)
+    cases_delta_ref = Column(Integer)
+    cases_delta_ref_symptoms = Column(Integer)
+    cases_7d = Column(Integer)
+    cases_7d_symptoms = Column(Integer)
+    cases_7d_ref = Column(Integer)
+    cases_7d_ref_symptoms = Column(Integer)
+    deaths = Column(Integer)
+    deaths_delta = Column(Integer)
+    recovered = Column(Integer)
+    recovered_delta = Column(Integer)
+    active_cases = Column(Integer)
+    active_cases_delta = Column(Integer)
+    incidence_7d = Column(Float)
+    incidence_7d_symptoms = Column(Float)
+    incidence_7d_ref = Column(Float)
+    incidence_7d_ref_symptoms = Column(Float)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        fk3 = str(context.get_current_parameters()["agegroup_rki_fk"])
+        uq = fk1 + "-" + fk2 + "-" + fk3
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class CovidDailySubdivision1(Base):
+    __tablename__ = cfg_db.tables.covid_daily_subdivision1
+    _country_subdivision1 = CountrySubdivision1
+    _calendar_day = CalendarDay
+
+    covid_daily_subdivision1_id = Column(Integer, primary_key=True)
+    country_subdivision1_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country_subdivision1.__tablename__}.{_country_subdivision1.country_subdivision1_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    cases = Column(Integer)
+    cases_delta = Column(Integer)
+    cases_delta_ref = Column(Integer)
+    cases_delta_ref_symptoms = Column(Integer)
+    cases_7d = Column(Integer)
+    cases_7d_symptoms = Column(Integer)
+    cases_7d_ref = Column(Integer)
+    cases_7d_ref_symptoms = Column(Integer)
+    deaths = Column(Integer)
+    deaths_delta = Column(Integer)
+    recovered = Column(Integer)
+    recovered_delta = Column(Integer)
+    active_cases = Column(Integer)
+    active_cases_delta = Column(Integer)
+    incidence_7d = Column(Float)
+    incidence_7d_symptoms = Column(Float)
+    incidence_7d_ref = Column(Float)
+    incidence_7d_ref_symptoms = Column(Float)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_subdivision1_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class CovidDailySubdivision3(Base):
+    __tablename__ = cfg_db.tables.covid_daily_subdivision3
+    _country_subdivision3 = CountrySubdivision3
+    _calendar_day = CalendarDay
+
+    covid_daily_subdivision3_id = Column(Integer, primary_key=True)
+    country_subdivision3_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country_subdivision3.__tablename__}.{_country_subdivision3.country_subdivision3_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    cases = Column(Integer)
+    cases_delta = Column(Integer)
+    cases_delta_ref = Column(Integer)
+    cases_delta_ref_symptoms = Column(Integer)
+    cases_7d = Column(Integer)
+    cases_7d_symptoms = Column(Integer)
+    cases_7d_ref = Column(Integer)
+    cases_7d_ref_symptoms = Column(Integer)
+    deaths = Column(Integer)
+    deaths_delta = Column(Integer)
+    recovered = Column(Integer)
+    recovered_delta = Column(Integer)
+    active_cases = Column(Integer)
+    active_cases_delta = Column(Integer)
+    incidence_7d = Column(Float)
+    incidence_7d_symptoms = Column(Float)
+    incidence_7d_ref = Column(Float)
+    incidence_7d_ref_symptoms = Column(Float)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_subdivision3_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class CovidWeekly(Base):
+    __tablename__ = cfg_db.tables.covid_weekly
+    _country = Country
+    _calendar_week = CalendarWeek
+
+    covid_weekly_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_week_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_week.__tablename__}.{_calendar_week.calendar_week_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    cases = Column(Integer)
+    cases_delta = Column(Integer)
+    cases_delta_ref = Column(Integer)
+    cases_delta_ref_symptoms = Column(Integer)
+    deaths = Column(Integer)
+    deaths_delta = Column(Integer)
+    recovered = Column(Integer)
+    recovered_delta = Column(Integer)
+    active_cases = Column(Integer)
+    active_cases_delta = Column(Integer)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_week_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class CovidAnnual(Base):
+    __tablename__ = cfg_db.tables.covid_annual
+    _country = Country
+    _calendar_year = CalendarYear
+
+    covid_annual_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    cases = Column(Integer)
+    deaths = Column(Integer)
+    recovered = Column(Integer)
+    active_cases = Column(Integer)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class RValueDaily(Base):
+    __tablename__ = cfg_db.tables.rvalue_daily
+    _country = Country
+    _calendar_day= CalendarDay
+
+    rvalue_daily_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    point_estimation_covid = Column(Integer)
+    ll_prediction_interval_covid = Column(Integer)
+    ul_prediction_interval_covid = Column(Integer)
+    point_estimation_covid_smoothed = Column(Integer)
+    ll_prediction_interval_covid_smoothed = Column(Integer)
+    ul_prediction_interval_covid_smoothed = Column(Integer)
+    point_estimation_7_day_rvalue = Column(Float)
+    ll_prediction_interval_7_day_rvalue = Column(Float)
+    ul_prediction_interval_7_day_rvalue = Column(Float)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class CovidTestWeekly(Base):
+    __tablename__ = cfg_db.tables.covid_test_weekly
+    _country = Country
+    _calendar_week = CalendarWeek
+
+    covid_test_weekly_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_week_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_week.__tablename__}.{_calendar_week.calendar_week_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    total = Column(Integer)
+    positive = Column(Integer)
+    positive_percentage = Column(Float)
+    transferring_laboratories = Column(Integer)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_week_fk"])
         uq = fk1 + "-" + fk2
         return uq
 
