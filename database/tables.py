@@ -314,6 +314,30 @@ class CountrySubdivision3(Base):
     )
 
 
+class Vaccine(Base):
+    __tablename__ = cfg_db.tables.vaccine
+
+    vaccine_id = Column(Integer, primary_key=True)
+    brand_name1 = Column(String, nullable=False, unique=True)
+    brand_name2 = Column(String)
+    manufacturer = Column(String, nullable=False)
+    vaccine_type = Column(String)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+
+class VaccineSeries(Base):
+    __tablename__ = cfg_db.tables.vaccine_series
+
+    vaccine_series_id = Column(Integer, primary_key=True)
+    series = Column(Integer, nullable=False, unique=True)
+    description = Column(String)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+
 class PopulationCountry(Base):
     __tablename__ = cfg_db.tables.population_country
     _country = Country  # parent

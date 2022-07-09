@@ -2,6 +2,7 @@ db:
   dialect: 'sqlite:///'
   name: 'corona_analysis'
 tables:
+  # parent tables
   calendar_year: "_calendar_year"
   calendar_week: "_calendar_week"
   calendar_day: "_calendar_day"
@@ -13,6 +14,8 @@ tables:
   country_subdivision1: "_country_subdivision1"
   country_subdivision2: "_country_subdivision2"
   country_subdivision3: "_country_subdivision3"
+  vaccine: "_vaccine"
+  vaccine_series: "_vaccine_series"
   # population
   population_country: "population_country"
   population_country_agegroup: "population_country_agegroup"

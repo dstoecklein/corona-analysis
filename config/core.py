@@ -38,6 +38,8 @@ class Value(BaseModel):
     agegroups_rki: list
     incidence_reference_year: int
     berlin_districts: dict
+    vaccines: list[dict]
+    vaccine_series: dict
 
 
 class Database(BaseModel):
@@ -57,6 +59,8 @@ class Table(BaseModel):
     country_subdivision1: str
     country_subdivision2: str
     country_subdivision3: str
+    vaccine: str
+    vaccine_series: str
     population_country: str
     population_country_agegroup: str
     population_subdivision1: str

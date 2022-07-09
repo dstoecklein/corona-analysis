@@ -46,6 +46,8 @@ class Database:
             tbl.CountrySubdivision1.__tablename__,
             tbl.CountrySubdivision2.__tablename__,
             tbl.CountrySubdivision3.__tablename__,
+            tbl.Vaccine.__tablename__,
+            tbl.VaccineSeries.__tablename__,
             tbl.PopulationCountry.__tablename__,
             tbl.PopulationSubdivision1.__tablename__,
             tbl.PopulationSubdivision2.__tablename__,
@@ -199,7 +201,6 @@ class Database:
     #    table = self.metadata.tables.get(table_name)
     #    if table is not None:
     #        self.metadata.drop_all(self.engine, [table], checkfirst=True)
-
 
     # TODO: only update "updated_on", not "created_on"
     def upsert_df(self, df: pd.DataFrame, table_name: str) -> None:

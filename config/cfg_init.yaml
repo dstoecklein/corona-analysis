@@ -63,3 +63,66 @@ from_config:
     11010: 11000
     11011: 11000
     11012: 11000
+  vaccines:
+    - Comirnaty:
+        brand_name1: "Comirnaty"
+        brand_name2: ""
+        manufacturer: "Pfizer/BioNTech"
+        vaccine_type: "mRNA"
+    - Janssen:
+        brand_name1: "Janssen"
+        brand_name2: ""
+        manufacturer: "Johnson&Johnson"
+        vaccine_type: "Viral vector"
+    - Spikevax:
+        brand_name1: "Spikevax"
+        brand_name2: ""
+        manufacturer: "Moderna"
+        vaccine_type: "mRNA"
+    - Vaxzevria:
+        brand_name1: "Vaxzevria"
+        brand_name2: "Covishield"
+        manufacturer: "Oxford/AstraZeneca"
+        vaccine_type: "Viral vector"
+    - Sputnik V:
+        brand_name1: "Sputnik V"
+        brand_name2: ""
+        manufacturer: "Gamaleya Research Institute of Epidemiology"
+        vaccine_type: "mRNA"
+    - Sinopharm:
+        brand_name1: "Sinopharm"
+        brand_name2: ""
+        manufacturer: "Beijing Institute of Biological Products"
+        vaccine_type: "Inactivated"
+    - Convidecia:
+        brand_name1: "Convidecia"
+        brand_name2: ""
+        manufacturer: "CanSino Biologics"
+        vaccine_type: "Viral vector"
+    - Covaxin:
+        brand_name1: "Covaxin"
+        brand_name2: ""
+        manufacturer: "Bharat Biotech"
+        vaccine_type: "Inactivated"
+    - CoronaVac:
+        brand_name1: "CoronaVac"
+        brand_name2: ""
+        manufacturer: "Sinovac"
+        vaccine_type: "Inactivated"
+    - Nuvaxovid:
+        brand_name1: "Nuvaxovid"
+        brand_name2: "Covovax"
+        manufacturer: "Novavax"
+        vaccine_type: "Subunit"
+    - Vidprevtyn:
+        brand_name1: "Vidprevtyn"
+        brand_name2: ""
+        manufacturer: "Sanofi"
+        vaccine_type: "Subunit"
+  vaccine_series:
+    1: "vaccinated"
+    2: "fully vaccinated"
+    3: "boostered"
+    4: "boostered"
+    5: "boostered"
+    6: "boostered"
