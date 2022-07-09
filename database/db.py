@@ -70,6 +70,9 @@ class Database:
             tbl.CovidAnnual.__tablename__,
             tbl.RValueDaily.__tablename__,
             tbl.CovidTestWeekly.__tablename__,
+            tbl.PopulationCountryAgegroupRki.__tablename__,
+            tbl.HospitalAnnual.__tablename__,
+            tbl.HospitalAnnualStaff.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):

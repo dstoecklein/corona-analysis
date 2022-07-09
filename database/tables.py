@@ -62,6 +62,11 @@ class AgegroupRki(Base):
         backref=cfg_db.tables.agegroup_rki,
         cascade="all, delete",
     )
+    population_country_agegroup_rki: int = relationship(
+        "PopulationCountryAgegroupRki",
+        backref=cfg_db.tables.agegroup_rki,
+        cascade="all, delete",
+    )
 
 
 class CalendarYear(Base):
@@ -113,6 +118,21 @@ class CalendarYear(Base):
     )
     covid_annual: int = relationship(
         "CovidAnnual",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
+    population_country_agegroup_rki: int = relationship(
+        "PopulationCountryAgegroupRki",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
+    hospital_annual: int = relationship(
+        "HospitalAnnual",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
+    hospital_annual_staff: int = relationship(
+        "HospitalAnnualStaff",
         backref=cfg_db.tables.calendar_year,
         cascade="all, delete",
     )
@@ -315,6 +335,21 @@ class Country(Base):
     )
     covid_test_weekly: int = relationship(
         "CovidTestWeekly",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    population_country_agegroup_rki: int = relationship(
+        "PopulationCountryAgegroupRki",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    hospital_annual: int = relationship(
+        "HospitalAnnual",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
+    )
+    hospital_annual_staff: int = relationship(
+        "HospitalAnnualStaff",
         backref=cfg_db.tables.country,
         cascade="all, delete",
     )
@@ -1577,6 +1612,92 @@ class CovidTestWeekly(Base):
     def _uq_key(context):
         fk1 = str(context.get_current_parameters()["country_fk"])
         fk2 = str(context.get_current_parameters()["calendar_week_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class HospitalAnnual(Base):
+    __tablename__ = cfg_db.tables.hospital_annual
+    _country = Country
+    _calendar_year = CalendarYear
+
+    hospital_annual_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    hospitals = Column(Integer)
+    beds = Column(Integer)
+    beds_per_100000 = Column(Integer)
+    patients = Column(Integer)
+    patients_per_100000 = Column(Integer)
+    occupancy_days = Column(Integer)
+    avg_days_of_hospitalization = Column(Float)
+    avg_bed_occupancy_percent = Column(Float)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class HospitalAnnualStaff(Base):
+    __tablename__ = cfg_db.tables.hospital_annual_staff
+    _country = Country
+    _calendar_year = CalendarYear
+
+    hospital_annual_staff_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    staff = Column(Integer)
+    full_time_doctors = Column(Integer)
+    non_medical_staff = Column(Integer)
+    non_medical_staff_in_nursing_service = Column(Integer)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
         uq = fk1 + "-" + fk2
         return uq
 
