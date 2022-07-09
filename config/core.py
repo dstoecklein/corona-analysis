@@ -65,7 +65,9 @@ class Table(BaseModel):
     life_expectancy: str
     median_age: str
     mortality_weekly_agegroup: str
-    mortalityCause_annual_agegroup: str
+    mortality_annual_agegroup_cause: str
+    hospital_annual: str
+    hospital_annual_staff: str
 
 
 # PARENT CONFIGS
@@ -93,7 +95,7 @@ class UrlCfg(BaseModel):
     divi_itcu_daily_state: str
     owid_covid_daily: str
     estat_mortality_weekly_agegroup: str
-    estat_mortalityCause_annual_agegroup: str
+    estat_mortality_annual_agegroup_cause: str
     estat_population_annual_agegroup: str
     estat_population_annual_nuts_2: str
     estat_lifeExpectancy_annual: str

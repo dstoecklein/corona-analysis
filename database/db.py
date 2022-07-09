@@ -52,6 +52,8 @@ class Database:
             tbl.PopulationSubdivision3.__tablename__,
             tbl.LifeExpectancy.__tablename__,
             tbl.MedianAge.__tablename__,
+            tbl.MortalityWeeklyAgegroup.__tablename__,
+            tbl.MortalityAnnualAgegroupCause.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):
@@ -198,6 +200,8 @@ class Database:
     #    if table is not None:
     #        self.metadata.drop_all(self.engine, [table], checkfirst=True)
 
+
+    # TODO: only update "updated_on", not "created_on"
     def upsert_df(self, df: pd.DataFrame, table_name: str) -> None:
         """
         UPSERT (UPDATE if exist, INSERT if not exist) rows of a `pandas.DataFrame``to the local SQLite database.

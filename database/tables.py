@@ -34,6 +34,17 @@ class Agegroup10y(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+    # relationships
+    mortality_weekly_agegroup: int = relationship(
+        "MortalityWeeklyAgegroup",
+        backref=cfg_db.tables.agegroup_10y,
+        cascade="all, delete",
+    )
+    mortality_annual_agegroup_cause: int = relationship(
+        "MortalityAnnualAgegroupCause",
+        backref=cfg_db.tables.agegroup_10y,
+        cascade="all, delete",
+    )
 
 
 class AgegroupRki(Base):
@@ -90,6 +101,11 @@ class CalendarYear(Base):
         backref=cfg_db.tables.calendar_year,
         cascade="all, delete",
     )
+    mortality_annual_agegroup_cause: int = relationship(
+        "MortalityAnnualAgegroupCause",
+        backref=cfg_db.tables.calendar_year,
+        cascade="all, delete",
+    )
 
 
 class CalendarWeek(Base):
@@ -114,6 +130,11 @@ class CalendarWeek(Base):
     # relationships
     calendar_year: int = relationship(
         "CalendarDay", backref=cfg_db.tables.calendar_week, cascade="all, delete"
+    )
+    mortality_weekly_agegroup: int = relationship(
+        "MortalityWeeklyAgegroup",
+        backref=cfg_db.tables.calendar_week,
+        cascade="all, delete",
     )
 
 
@@ -147,6 +168,12 @@ class ClassificationICD10(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+    # relationships
+    mortality_annual_agegroup_cause: int = relationship(
+        "MortalityAnnualAgegroupCause",
+        backref=cfg_db.tables.classification_icd10,
+        cascade="all, delete",
+    )
 
 
 class Country(Base):
@@ -176,6 +203,14 @@ class Country(Base):
     )
     median_age: int = relationship(
         "MedianAge", backref=cfg_db.tables.country, cascade="all, delete"
+    )
+    mortality_weekly_agegroup: int = relationship(
+        "MortalityWeeklyAgegroup", backref=cfg_db.tables.country, cascade="all, delete"
+    )
+    mortality_annual_agegroup_cause: int = relationship(
+        "MortalityAnnualAgegroupCause",
+        backref=cfg_db.tables.country,
+        cascade="all, delete",
     )
 
 
@@ -552,6 +587,67 @@ class MortalityWeeklyAgegroup(Base):
         fk2 = str(context.get_current_parameters()["calendar_week_fk"])
         fk3 = str(context.get_current_parameters()["agegroup10y_fk"])
         uq = fk1 + "-" + fk2 + "-" + fk3
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class MortalityAnnualAgegroupCause(Base):
+    __tablename__ = cfg_db.tables.mortality_annual_agegroup_cause
+    _country = Country
+    _calendar_year = CalendarYear
+    _agegroup10y = Agegroup10y
+    _classification_icd10 = ClassificationICD10
+
+    mortality_annual_agegroup_cause_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    agegroup10y_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_agegroup10y.__tablename__}.{_agegroup10y.agegroup_10y_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    classification_icd10_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_classification_icd10.__tablename__}.{_classification_icd10.classification_icd10_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    deaths = Column(Integer)
+
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        fk3 = str(context.get_current_parameters()["agegroup10y_fk"])
+        fk4 = str(context.get_current_parameters()["classification_icd10_fk"])
+        uq = fk1 + "-" + fk2 + "-" + fk3 + "-" + fk4
         return uq
 
     unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)

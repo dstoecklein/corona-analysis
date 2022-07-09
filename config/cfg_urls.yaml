@@ -13,7 +13,7 @@ divi_itcu_daily_countie: 'https://diviexchange.blob.core.windows.net/%24web/zeit
 divi_itcu_daily_state: 'https://diviexchange.blob.core.windows.net/%24web/zeitreihe-bundeslaender.csv'
 owid_covid_daily: 'https://covid.ourworldindata.org/data/owid-covid-data.csv'
 estat_mortality_weekly_agegroup: 'demo_r_mwk_10'
-estat_mortalityCause_annual_agegroup: 'hlth_cd_aro'
+estat_mortality_annual_agegroup_cause: 'hlth_cd_aro'
 estat_population_annual_agegroup: 'demo_pjangroup'
 estat_population_annual_nuts_2: 'demo_r_d2jan'
 estat_lifeExpectancy_annual: 'demo_mlexpec'

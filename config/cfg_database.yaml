@@ -23,4 +23,7 @@ tables:
   median_age: "median_age"
   # mortality
   mortality_weekly_agegroup: "mortality_weekly_agegroup"
-  mortalityCause_annual_agegroup: "mortalityCause_annual_agegroup"
+  mortality_annual_agegroup_cause: "mortality_annual_agegroup_cause"
+  # hospital
+  hospital_annual: "hospital_annual"
+  hospital_annual_staff: "hospital_annual_staff"
