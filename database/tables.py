@@ -308,6 +308,14 @@ class PopulationCountry(Base):
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
 
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["countries_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
 
 class PopulationSubdivision1(Base):
     __tablename__ = cfg_db.tables.population_subdivision1
@@ -337,6 +345,14 @@ class PopulationSubdivision1(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_subdivision1_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
 
 
 class PopulationSubdivision2(Base):
@@ -368,6 +384,14 @@ class PopulationSubdivision2(Base):
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
 
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_subdivision2_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
 
 class PopulationSubdivision3(Base):
     __tablename__ = cfg_db.tables.population_subdivision3
@@ -397,6 +421,14 @@ class PopulationSubdivision3(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_subdivision3_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
 
 
 class LifeExpectancy(Base):
@@ -428,6 +460,14 @@ class LifeExpectancy(Base):
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
 
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
 
 class MedianAge(Base):
     __tablename__ = cfg_db.tables.median_age
@@ -457,3 +497,61 @@ class MedianAge(Base):
     # meta cols
     created_on = _get_created_on_col()
     updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class MortalityWeeklyAgegroup(Base):
+    __tablename__ = cfg_db.tables.mortality_weekly_agegroup
+    _country = Country
+    _calendar_week = CalendarWeek
+    _agegroup10y = Agegroup10y
+
+    mortality_weekly_agegroup_id = Column(Integer, primary_key=True)
+    country_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_week_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_week.__tablename__}.{_calendar_week.calendar_week_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    agegroup10y_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_agegroup10y.__tablename__}.{_agegroup10y.agegroup_10y_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    deaths = Column(Integer)
+
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_week_fk"])
+        fk3 = str(context.get_current_parameters()["agegroup10y_fk"])
+        uq = fk1 + "-" + fk2 + "-" + fk3
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)

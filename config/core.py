@@ -64,7 +64,9 @@ class Table(BaseModel):
     population_subdivision3: str
     life_expectancy: str
     median_age: str
-    
+    mortality_weekly_agegroup: str
+    mortalityCause_annual_agegroup: str
+
 
 # PARENT CONFIGS
 class InitCfg(BaseModel):
@@ -90,8 +92,8 @@ class UrlCfg(BaseModel):
     divi_itcu_daily_countie: str
     divi_itcu_daily_state: str
     owid_covid_daily: str
-    estsat_death_weekly_agegroup: str
-    estsat_deathCause_annual_agegroup: str
+    estat_mortality_weekly_agegroup: str
+    estat_mortalityCause_annual_agegroup: str
     estat_population_annual_agegroup: str
     estat_population_annual_nuts_2: str
     estat_lifeExpectancy_annual: str

@@ -13,6 +13,7 @@ tables:
   country_subdivision1: "_country_subdivision1"
   country_subdivision2: "_country_subdivision2"
   country_subdivision3: "_country_subdivision3"
+  # population
   population_country: "population_country"
   population_country_agegroup: "population_country_agegroup"
   population_subdivision1: "population_subdivision1"
@@ -20,3 +21,6 @@ tables:
   population_subdivision3: "population_subdivision3"
   life_expectancy: "life_expectancy"
   median_age: "median_age"
+  # mortality
+  mortality_weekly_agegroup: "mortality_weekly_agegroup"
+  mortalityCause_annual_agegroup: "mortalityCause_annual_agegroup"
