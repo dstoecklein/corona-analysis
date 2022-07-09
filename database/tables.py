@@ -172,6 +172,11 @@ class CalendarDay(Base):
         backref=cfg_db.tables.calendar_day,
         cascade="all, delete",
     )
+    itcu_daily_subdivision3: int = relationship(
+        "ItcuDailySubdivision3",
+        backref=cfg_db.tables.calendar_day,
+        cascade="all, delete",
+    )
 
 
 class ClassificationICD10(Base):
@@ -279,6 +284,11 @@ class CountrySubdivision1(Base):
         backref=cfg_db.tables.country_subdivision1,
         cascade="all, delete",
     )
+    itcu_daily_subdivision1: int = relationship(
+        "ItcuDailySubdivision1",
+        backref=cfg_db.tables.country_subdivision1,
+        cascade="all, delete",
+    )
 
 
 class CountrySubdivision2(Base):
@@ -340,6 +350,11 @@ class CountrySubdivision3(Base):
     # relationships
     population_subdivision3: int = relationship(
         "PopulationSubdivision3",
+        backref=cfg_db.tables.country_subdivision3,
+        cascade="all, delete",
+    )
+    itcu_daily_subdivision3: int = relationship(
+        "ItcuDailySubdivision3",
         backref=cfg_db.tables.country_subdivision3,
         cascade="all, delete",
     )
@@ -419,6 +434,55 @@ class PopulationCountry(Base):
         fk1 = str(context.get_current_parameters()["countries_fk"])
         fk2 = str(context.get_current_parameters()["calendar_year_fk"])
         uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class PopulationCountryAgegroup(Base):
+    __tablename__ = cfg_db.tables.population_country_agegroup
+    _country = Country  # parent
+    _calendar_year = CalendarYear  # parent
+    _agegroup10y = Agegroup10y
+
+    population_countries_agegroup_id = Column(Integer, primary_key=True)
+    countries_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country.__tablename__}.{_country.country_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_year_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_year.__tablename__}.{_calendar_year.calendar_year_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    agegroup10y_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_agegroup10y.__tablename__}.{_agegroup10y.agegroup_10y_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    population = Column(BigInteger)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["countries_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_year_fk"])
+        fk3 = str(context.get_current_parameters()["agegroup10y_fk"])
+        uq = fk1 + "-" + fk2 + "-" + fk3
         return uq
 
     unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
@@ -879,6 +943,101 @@ class VaccinationDailySubdivision1(Base):
         fk3 = str(context.get_current_parameters()["vaccine_fk"])
         fk4 = str(context.get_current_parameters()["vaccine_series_fk"])
         uq = fk1 + "-" + fk2 + "-" + fk3 + "-" + fk4
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class ItcuDailySubdivision1(Base):
+    __tablename__ = cfg_db.tables.itcu_daily_subdivision1
+    _country_subdivision1 = CountrySubdivision1
+    _calendar_day = CalendarDay
+
+    itcu_daily_subdivision1_id = Column(Integer, primary_key=True)
+    country_subdivision1_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country_subdivision1.__tablename__}.{_country_subdivision1.country_subdivision1_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    treatment_group = Column(String)
+    amount_reporting_areas = Column(Integer)
+    cases_covid = Column(Integer)
+    itcu_occupied = Column(Integer)
+    itcu_free = Column(Integer)
+    emergency_reserve_7d = Column(Integer)
+    free_capacities_invasive_treatment = Column(Integer)
+    free_capacities_invasive_treatment_covid = Column(Integer)
+    operating_situation_regular = Column(Integer)
+    operating_situation_partially_restricted = Column(Integer)
+    operating_situation_restricted = Column(Integer)
+    operating_situation_not_specified = Column(Integer)
+    cases_covid_initial_reception = Column(Integer)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_subdivision1_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        uq = fk1 + "-" + fk2
+        return uq
+
+    unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)
+
+
+class ItcuDailySubdivision3(Base):
+    __tablename__ = cfg_db.tables.itcu_daily_subdivision3
+    _country_subdivision3 = CountrySubdivision3
+    _calendar_day = CalendarDay
+
+    itcu_daily_subdivision3_id = Column(Integer, primary_key=True)
+    country_subdivision3_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_country_subdivision3.__tablename__}.{_country_subdivision3.country_subdivision3_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    calendar_day_fk = Column(
+        Integer,
+        ForeignKey(
+            f"{_calendar_day.__tablename__}.{_calendar_day.calendar_day_id.name}",
+            ondelete="CASCADE",
+            onupdate="CASCADE",
+        ),
+        nullable=False,
+    )
+    amount_hospital_locations = Column(Integer)
+    amount_reporting_areas = Column(Integer)
+    cases_covid = Column(Integer)
+    cases_covid_invasive_ventilated = Column(Integer)
+    itcu_free = Column(Integer)
+    itcu_free_adults = Column(Integer)
+    itcu_occupied = Column(Integer)
+    itcu_occupied_adults = Column(Integer)
+    # meta cols
+    created_on = _get_created_on_col()
+    updated_on = _get_updated_on_col()
+
+    def _uq_key(context):
+        fk1 = str(context.get_current_parameters()["country_subdivision3_fk"])
+        fk2 = str(context.get_current_parameters()["calendar_day_fk"])
+        uq = fk1 + "-" + fk2
         return uq
 
     unique_key = Column(String, default=_uq_key, onupdate=_uq_key, unique=True)

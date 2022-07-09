@@ -49,6 +49,7 @@ class Database:
             tbl.Vaccine.__tablename__,
             tbl.VaccineSeries.__tablename__,
             tbl.PopulationCountry.__tablename__,
+            tbl.PopulationCountryAgegroup.__tablename__,
             tbl.PopulationSubdivision1.__tablename__,
             tbl.PopulationSubdivision2.__tablename__,
             tbl.PopulationSubdivision3.__tablename__,
@@ -59,6 +60,8 @@ class Database:
             tbl.VaccinationDaily.__tablename__,
             tbl.VaccinationDailyManufacturer.__tablename__,
             tbl.VaccinationDailySubdivision1.__tablename__,
+            tbl.ItcuDailySubdivision1.__tablename__,
+            tbl.ItcuDailySubdivision3.__tablename__,
         ]
         inspected_tables = self.get_table_names()
         if any(table not in inspected_tables for table in expected_tables):

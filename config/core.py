@@ -75,6 +75,8 @@ class Table(BaseModel):
     vaccination_daily: str
     vaccination_daily_manufacturer: str
     vaccination_daily_subdivision1: str
+    itcu_daily_subdivision1: str
+    itcu_daily_subdivision3: str
 
 
 # PARENT CONFIGS

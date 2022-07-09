@@ -34,3 +34,8 @@ tables:
   vaccination_daily: "vaccination_daily"
   vaccination_daily_manufacturer: "vaccination_daily_manufacturer"
   vaccination_daily_subdivision1: "vaccination_daily_subdivision1"
+  # intensive care unit
+  itcu_daily_subdivision1: "itcu_daily_subdivision1"
+  itcu_daily_subdivision3: "itcu_daily_subdivision3"
+  # 
+  
