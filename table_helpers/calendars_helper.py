@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 
 import pandas as pd
@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 import database.tables as tbl
 
-"""
+
 def _create_base_calendar_df(start_year: int, end_year: int) -> pd.DataFrame:
     start_date = date(start_year, 1, 1)
     end_date = date(end_year, 12, 31)
@@ -40,7 +40,7 @@ def _create_base_calendar_df(start_year: int, end_year: int) -> pd.DataFrame:
     return df_base
 
 
-def create_calendar_years_df(start_year: int, end_year: int) -> pd.DataFrame:
+def create_calendar_year_df(start_year: int, end_year: int) -> pd.DataFrame:
     df_base = _create_base_calendar_df(start_year, end_year)
     df_years = (
         df_base.groupby(["iso_year"], as_index=False)
@@ -50,7 +50,7 @@ def create_calendar_years_df(start_year: int, end_year: int) -> pd.DataFrame:
     df_years.index = df_years.index.set_names(["ID"])
     df_years.index += 1
     df_years = df_years.reset_index().rename(
-        columns={df_years.index.name: "calendar_years_id"}
+        columns={df_years.index.name: "calendar_year_id"}
     )
     df_years = df_years.iloc[:, :2]  # only first two cols
 
@@ -60,9 +60,9 @@ def create_calendar_years_df(start_year: int, end_year: int) -> pd.DataFrame:
     return df_years
 
 
-def create_calendar_weeks_df(start_year: int, end_year: int) -> pd.DataFrame:
+def create_calendar_week_df(start_year: int, end_year: int) -> pd.DataFrame:
     df_base = _create_base_calendar_df(start_year, end_year)
-    df_years = create_calendar_years_df(start_year, end_year)
+    df_years = create_calendar_year_df(start_year, end_year)
 
     df_weeks = (
         df_base.groupby(["iso_key"], as_index=False)
@@ -77,9 +77,9 @@ def create_calendar_weeks_df(start_year: int, end_year: int) -> pd.DataFrame:
     df_weeks.index = df_weeks.index.set_names(["ID"])
     df_weeks.index += 1
     df_weeks = df_weeks.reset_index().rename(
-        columns={df_weeks.index.name: "calendar_weeks_id"}
+        columns={df_weeks.index.name: "calendar_week_id"}
     )
-    df_weeks.rename(columns={"calendar_years_id": "calendar_year_fk"}, inplace=True)
+    df_weeks.rename(columns={"calendar_year_id": "calendar_year_fk"}, inplace=True)
     df_weeks["iso_week"] = df_weeks["iso_week"].astype(int)
     df_weeks.drop(["iso_day", "iso_year"], axis=1, inplace=True)
 
@@ -89,9 +89,9 @@ def create_calendar_weeks_df(start_year: int, end_year: int) -> pd.DataFrame:
     return df_weeks
 
 
-def create_calendar_days_df(start_year: int, end_year: int) -> pd.DataFrame:
+def create_calendar_day_df(start_year: int, end_year: int) -> pd.DataFrame:
     df_base = _create_base_calendar_df(start_year, end_year)
-    df_weeks = create_calendar_weeks_df(start_year, end_year)
+    df_weeks = create_calendar_week_df(start_year, end_year)
 
     # create foreign key column to calendar_weeks_id
     df_day = df_base.merge(
@@ -101,13 +101,12 @@ def create_calendar_days_df(start_year: int, end_year: int) -> pd.DataFrame:
     df_day.drop(
         ["iso_year", "iso_week", "iso_key", "calendar_year_fk"], axis=1, inplace=True
     )
-    df_day.rename(columns={"calendar_weeks_id": "calendar_week_fk"}, inplace=True)
+    df_day.rename(columns={"calendar_week_id": "calendar_week_fk"}, inplace=True)
 
     df_day["created_on"] = datetime.now()
     df_day["updated_on"] = datetime.now()
 
     return df_day
-"""
 
 
 def get_calendar_year(session: Session, iso_year: int) -> Optional[tbl.CalendarYear]:
@@ -210,23 +209,24 @@ def get_calendar_days(session: Session, iso_year: int) -> list[Row]:
     return rows
 
 
+"""
 def insert_calendar_years(session: Session, start_year: int, end_year: int) -> None:
-    """
-    Inserts Calendar Years, ISO-weeks and ISO-days to the local SQLite database.
 
-    Args:
-        years: A list of years as `int`
-    """
-    assert start_year < end_year, "`start_year` can not be greater than `end_year`!"
-    assert start_year >= 0, "`start_year can not be negative!"
-    assert end_year >= 0, "`end_year can not be negative!"
+    #Inserts Calendar Years, ISO-weeks and ISO-days to the local SQLite database.
+
+    #Args:
+    #    years: A list of years as `int`
+
+    #assert start_year < end_year, "`start_year` can not be greater than `end_year`!"
+    #assert start_year >= 0, "`start_year can not be negative!"
+    #assert end_year >= 0, "`end_year can not be negative!"
 
     YEAR_RANGE = [year for year in range(start_year, end_year + 1)]
 
     def _add_calendar_weeks_n_days_to_session(year_obj: tbl.CalendarYear) -> None:
-        """
-        Helper function to create and add iso weeks and days to the session.
-        """
+     
+        #Helper function to create and add iso weeks and days to the session.
+     
         # create a date-range to figure out iso weeks and years
         date_range = pd.date_range(
             date(year_obj.iso_year, 1, 1), date(year_obj.iso_year, 12, 31)  # type: ignore
@@ -291,3 +291,4 @@ def insert_calendar_years(session: Session, start_year: int, end_year: int) -> N
         _add_calendar_weeks_n_days_to_session(year_obj=new_calendar_year)
 
     session.commit()
+"""

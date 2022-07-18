@@ -1534,7 +1534,7 @@ class CovidAnnual(Base):
 class RValueDaily(Base):
     __tablename__ = cfg_db.tables.rvalue_daily
     _country = Country
-    _calendar_day= CalendarDay
+    _calendar_day = CalendarDay
 
     rvalue_daily_id = Column(Integer, primary_key=True)
     country_fk = Column(

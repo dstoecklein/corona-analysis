@@ -7,7 +7,7 @@ import pandas as pd
 import requests
 from pygenesis.py_genesis_client import PyGenesisClient
 from pathlib import Path
-from config.core import config_db
+#from config.core import config_db
 
 def http_request(url: str, decode: bool = True) -> Union[io.StringIO, bytes]:
     response = requests.get(url)
@@ -107,7 +107,7 @@ def estat(code: str, purpose: str, save_file: bool, data_type: str, path: Path =
         code=code,
         flags=False
     )
-    df = _handle_german_umlauts_in_columns(df=df)
+    #df = _handle_german_umlauts_in_columns(df=df)
 
     if save_file:
         filename = datetime.now().strftime(purpose.upper() + '_%Y-%m-%d.' + data_type)
@@ -168,18 +168,18 @@ def divi(url: str, purpose: str, save_file: bool, data_type: str, path: Path = N
 
     return df
 
-
+"""
 def genesis(code: str, purpose: str, save_file: bool, data_type: str, path: Path = None) -> pd.DataFrame:
-    """
-    Reads a given URL from DeStatis and returns it as a Pandas Dataframe
 
-    :param config_db: Configuration file for the database and Genesis login
-    :param code: Code (table name) as per https://www-genesis.destatis.de/
-    :param purpose: Should indicate which type of data should be loaded (e.g. Tests, R-Value, etc.)
-    :param save_file: Determines if the file should be saved as .csv
-    :param path: Path in which the file should be saved
-    :return: pd.Dataframe
-    """
+    #Reads a given URL from DeStatis and returns it as a Pandas Dataframe
+
+    #:param config_db: Configuration file for the database and Genesis login
+    #:param code: Code (table name) as per https://www-genesis.destatis.de/
+    #:param purpose: Should indicate which type of data should be loaded (e.g. Tests, R-Value, etc.)
+    #:param save_file: Determines if the file should be saved as .csv
+    #:param path: Path in which the file should be saved
+    #:return: pd.Dataframe
+
 
     if save_file and path is None:
         raise RuntimeError('save_file is true but no path given')
@@ -212,7 +212,7 @@ def genesis(code: str, purpose: str, save_file: bool, data_type: str, path: Path
             )
 
     return df
-
+"""
 
 def owid(url: str, purpose: str, save_file: bool, data_type: str, path: Path = None) -> pd.DataFrame:
     """

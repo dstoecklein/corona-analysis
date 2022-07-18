@@ -1,0 +1,67 @@
+# populations
+alphanumeric_cols:
+  - "age"
+  - "sex"
+  - "unit"
+  - "geo"
+  - "geo\\time"
+  - "icd10"
+  - "resid"
+  - "indic_de"
+  - "isced11"
+  - "marsta"
+geo_map: 
+  "geo\\time": "geo"
+geo_col: "geo"
+age_col: "age"
+sex_col: "sex"
+level_col: "level"
+# labels
+agegroup_total_label: "TOTAL"
+agegroup_unkown_label: "UNK"
+agegroup_open_label: "Y_OPEN"
+agegroup_zero_label: "Y_LT1"
+agegroup_greater75_label: "Y_GE75"
+agegroup_greater85_label: "Y_GE85"
+sex_total_label: "T"
+agegroup_bins_05y: 
+  - 0
+  - 4
+  - 9
+  - 14
+  - 19
+  - 24
+  - 29
+  - 34
+  - 39
+  - 44
+  - 49
+  - 54
+  - 59
+  - 64
+  - 69
+  - 74
+  - 79
+  - 99
+  - 999
+agegroup_bins_10y: 
+  - 0
+  - 9
+  - 19
+  - 29
+  - 39
+  - 49
+  - 59
+  - 69
+  - 79
+  - 99
+  - 999
+agegroup_bins_rki: 
+  - 0
+  - 4
+  - 14
+  - 34
+  - 59
+  - 79
+  - 99
+  - 999

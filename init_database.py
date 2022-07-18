@@ -3,6 +3,7 @@ from table_helpers import (
     agegroups_helper as aggh,
     countries_helper as counh,
     classifications_helper as clash,
+    vaccines_helper as vach,
 )
 from config import core as cfg
 from config.core import cfg_init as init
@@ -11,12 +12,22 @@ from database.db import Database
 import pandas as pd
 
 def init_calendars(database: Database) -> None:
-    with database.ManagedSessionMaker() as session:
-        calh.insert_calendar_years(
-            session=session, 
-            start_year=init.from_config.calendar_start_year,
-            end_year=init.from_config.calendar_end_year
-        )
+
+    # calendar
+    df_years = calh.create_calendar_year_df(init.from_config.calendar_start_year, init.from_config.calendar_end_year)
+    df_weeks = calh.create_calendar_week_df(init.from_config.calendar_start_year, init.from_config.calendar_end_year)
+    df_days = calh.create_calendar_day_df(init.from_config.calendar_start_year, init.from_config.calendar_end_year)
+
+    database.upsert_df(df=df_years, table_name=cfg_db.tables.calendar_year)
+    database.upsert_df(df=df_weeks, table_name=cfg_db.tables.calendar_week)
+    database.upsert_df(df=df_days, table_name=cfg_db.tables.calendar_day)
+
+    #with database.ManagedSessionMaker() as session:
+    #    calh.insert_calendar_years(
+    #        session=session, 
+    #        start_year=init.from_config.calendar_start_year,
+    #        end_year=init.from_config.calendar_end_year
+    #    )
 
 def init_agegroups(database: Database) -> None:
     with database.ManagedSessionMaker() as session:
@@ -59,11 +70,19 @@ def init_countries(database: Database) -> None:
         counh.insert_subdivision2(session=session, subdivisions2_dict=subdivisions2_dict)
         counh.insert_subdivision3(session=session, subdivisions3_dict=subdivisions3_dict)
 
+def init_vaccines(database: Database) -> None:
+    with database.ManagedSessionMaker() as session:
+        vach.upsert_vaccine(session=session, vaccines=init.from_config.vaccines)
+        vach.upsert_vaccine_series(session=session, vaccine_series=init.from_config.vaccine_series)
+
+
 def main(database: Database) -> None:
     init_calendars(database=database)
     init_agegroups(database=database)
     init_classifications(database=database)
     init_countries(database=database)
+    init_vaccines(database=database)
+
 
 if __name__ == "__main__":
     database = Database(db_uri=f"{cfg_db.db.dialect}{cfg_db.db.name}.db")

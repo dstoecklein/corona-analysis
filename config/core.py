@@ -13,6 +13,7 @@ FILES_PATH = CWD / "files"
 CFG_DATABASE = "cfg_database.yaml"
 CFG_INIT = "cfg_init.yaml"
 CFG_URLS = "cfg_urls.yaml"
+CFG_ESTAT = "cfg_estat_yaml"
 
 
 # CHILD CONFIGS
@@ -32,10 +33,9 @@ class File(BaseModel):
 class Value(BaseModel):
     calendar_start_year: int
     calendar_end_year: int
-    agegroup_labels: list
-    agegroups_05y: list
-    agegroups_10y: list
-    agegroups_rki: list
+    agegroups_05y: list[str]
+    agegroups_10y: list[str]
+    agegroups_rki: list[str]
     incidence_reference_year: int
     berlin_districts: dict
     vaccines: list[dict]
@@ -123,6 +123,25 @@ class UrlCfg(BaseModel):
     genesis_population_subdivision3: str
 
 
+class EstatCfg(BaseModel):
+    alphanumeric_cols: list[str]
+    geo_map: dict
+    geo_col: str
+    age_col: str
+    sex_col: str
+    level_col: str
+    agegroup_total_label: str
+    agegroup_unkown_label: str
+    agegroup_open_label: str
+    agegroup_zero_label: str
+    agegroup_greater75_label: str
+    agegroup_greater85_label: str
+    sex_total_label: str
+    agegroup_bins_05y: list[int]
+    agegroup_bins_10y: list[int]
+    agegroup_bins_rki: list[int]
+
+
 def get_cfg_path() -> Path:
     return CFG_PATH
 
@@ -177,6 +196,17 @@ def create_url_cfg(file_name: str = None) -> UrlCfg:
     return _config
 
 
+def create_estat_cfg(file_name: str = None) -> EstatCfg:
+    if file_name is None:
+        raise Exception("File name must be specified")
+
+    config_file = read_cfg(file_name=file_name)
+
+    _config = EstatCfg(**config_file.data)
+    return _config
+
+
 cfg_db = create_db_cfg(file_name=CFG_DATABASE)
 cfg_init = create_init_cfg(file_name=CFG_INIT)
 cfg_urls = create_url_cfg(file_name=CFG_URLS)
+cfg_estat = create_estat_cfg(file_name=CFG_ESTAT)
