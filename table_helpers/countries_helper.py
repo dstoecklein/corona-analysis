@@ -1,3 +1,4 @@
+import pandas as pd
 from typing import Optional
 
 from sqlalchemy.engine.row import Row
@@ -5,6 +6,99 @@ from sqlalchemy.orm import Session
 
 import database.tables as tbl
 
+def get_countries_with_subdivisions_df(session: Session) -> pd.DataFrame:
+    """
+    Get all countries with all subdivisions as Pandas DataFrame
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+        Pandas DataFrame
+       
+    """
+    countries_df = pd.read_sql(
+        session.query(
+            tbl.Country.country_id,
+            tbl.Country.country_en,
+            tbl.Country.country_de,
+            tbl.Country.latitude.label("country_latitude"),
+            tbl.Country.longitude.label("country_longitude"),
+            tbl.Country.iso_3166_1_alpha2,
+            tbl.Country.iso_3166_1_alpha3,
+            tbl.Country.nuts_0,
+            tbl.CountrySubdivision1.country_subdivision1_id,
+            tbl.CountrySubdivision1.country_fk,
+            tbl.CountrySubdivision1.subdivision1,
+            tbl.CountrySubdivision1.latitude.label("subdivision1_latitude"),
+            tbl.CountrySubdivision1.longitude.label("subdivision1_longitude"),
+            tbl.CountrySubdivision1.iso_3166_2,
+            tbl.CountrySubdivision1.bundesland_id,
+            tbl.CountrySubdivision2.country_subdivision2_id,
+            tbl.CountrySubdivision2.country_subdivision1_fk,
+            tbl.CountrySubdivision2.subdivision2,
+            tbl.CountrySubdivision2.latitude.label("subdivision2_latitude"),
+            tbl.CountrySubdivision2.longitude.label("subdivision2_longitude"),
+            tbl.CountrySubdivision2.nuts_2,
+            tbl.CountrySubdivision3.country_subdivision3_id,
+            tbl.CountrySubdivision3.country_subdivision2_fk,
+            tbl.CountrySubdivision3.subdivision3,
+            tbl.CountrySubdivision3.latitude.label("subdivision3_latitude"),
+            tbl.CountrySubdivision3.longitude.label("subdivision3_longitude"),
+            tbl.CountrySubdivision3.nuts_3,
+            tbl.CountrySubdivision3.ags,
+        )
+        .join(
+            tbl.CountrySubdivision1,
+            tbl.Country.country_id == tbl.CountrySubdivision1.country_fk,
+        )
+        .join(
+            tbl.CountrySubdivision2,
+            tbl.CountrySubdivision1.country_subdivision1_id == tbl.CountrySubdivision2.country_subdivision1_fk,
+        )
+        .join(
+            tbl.CountrySubdivision3,
+            tbl.CountrySubdivision2.country_subdivision2_id == tbl.CountrySubdivision3.country_subdivision2_fk,
+        )
+        .order_by(tbl.Country.country_id)
+        .statement, 
+        session.bind
+    )
+    return countries_df
+
+def get_countries(session: Session) -> list[tbl.Country]:
+    """
+    Get all countries in database
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+       `list` of `Country` objects
+    """
+    countries = (
+        session.query(tbl.Country).order_by(tbl.Country.country_id)
+    ).all()
+    return countries
+   
+def get_countries_df(session: Session) -> pd.DataFrame:
+    """
+    Get all countries in database as Pandas DataFrame
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+        Pandas DataFrame
+       
+    """
+    countries_df = pd.read_sql(
+        session.query(tbl.Country)
+        .order_by(tbl.Country.country_id)
+        .statement, 
+        session.bind
+    )
+    return countries_df
 
 def get_country(
     session: Session,
@@ -111,6 +205,41 @@ def insert_country(session: Session, countries_dict: dict[str, dict[str, str]]) 
     session.add_all(new_entries)
     session.flush()
 
+
+def get_subdivisions1(session: Session) -> list[tbl.CountrySubdivision1]:
+    """
+    Get all Subdivision of Level 1 in database
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+       `list` of `CountrySubdivision1` objects
+    """
+    subdivisions1 = (
+        session.query(tbl.CountrySubdivision1)
+        .order_by(tbl.CountrySubdivision1.country_subdivision1_id)
+    ).all()
+    return subdivisions1
+   
+def get_subdivisions1_df(session: Session) -> pd.DataFrame:
+    """
+    Get all Subdivision of Level 1 in database as Pandas DataFrame
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+        Pandas DataFrame
+       
+    """
+    subdivisions1_df = pd.read_sql(
+        session.query(tbl.CountrySubdivision1)
+        .order_by(tbl.CountrySubdivision1.country_subdivision1_id)
+        .statement, 
+        session.bind
+    )
+    return subdivisions1_df
 
 def get_subdivision1(
     session: Session,
@@ -225,6 +354,40 @@ def insert_subdivision1(
     session.add_all(new_entries)
     session.flush()
 
+def get_subdivisions2(session: Session) -> list[tbl.CountrySubdivision2]:
+    """
+    Get all Subdivision of Level 2 in database
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+       `list` of `CountrySubdivision2` objects
+    """
+    subdivisions2 = (
+        session.query(tbl.CountrySubdivision2)
+        .order_by(tbl.CountrySubdivision2.country_subdivision2_id)
+    ).all()
+    return subdivisions2
+   
+def get_subdivisions2_df(session: Session) -> pd.DataFrame:
+    """
+    Get all Subdivision of Level 2 in database as Pandas DataFrame
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+        Pandas DataFrame
+       
+    """
+    subdivisions2_df = pd.read_sql(
+        session.query(tbl.CountrySubdivision2)
+        .order_by(tbl.CountrySubdivision2.country_subdivision2_id)
+        .statement, 
+        session.bind
+    )
+    return subdivisions2_df
 
 def get_subdivision2(
     session: Session, subdivision2: str = None, nuts_2: str = None
@@ -325,6 +488,40 @@ def insert_subdivision2(
     session.add_all(new_entries)
     session.flush()
 
+def get_subdivisions3(session: Session) -> list[tbl.CountrySubdivision3]:
+    """
+    Get all Subdivision of Level 3 in database
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+       `list` of `CountrySubdivision3` objects
+    """
+    subdivisions3 = (
+        session.query(tbl.CountrySubdivision3)
+        .order_by(tbl.CountrySubdivision3.country_subdivision3_id)
+    ).all()
+    return subdivisions3
+   
+def get_subdivisions3_df(session: Session) -> pd.DataFrame:
+    """
+    Get all Subdivision of Level 3 in database as Pandas DataFrame
+
+    Args:
+        session: `Session` object from `sqlalchemy.orm`
+
+    Returns:
+        Pandas DataFrame
+       
+    """
+    subdivisions3_df = pd.read_sql(
+        session.query(tbl.CountrySubdivision3)
+        .order_by(tbl.CountrySubdivision3.country_subdivision3_id)
+        .statement, 
+        session.bind
+    )
+    return subdivisions3_df
 
 def get_subdivision3(
     session: Session, subdivision3: str = None, nuts_3: str = None, ags: int = None
