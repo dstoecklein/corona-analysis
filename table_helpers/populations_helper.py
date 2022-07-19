@@ -5,7 +5,7 @@ from config.core import cfg_estat as cfg_estat
 from config.core import cfg_init as init
 from table_helpers.agegroups_helper import get_agegroups10y_df, get_agegroups_rki_df
 from table_helpers.calendars_helper import get_calendar_years_df
-from table_helpers.countries_helper import get_countries_df
+from table_helpers.countries_helper import get_countries_df, get_subdivisions1_df
 
 
 def _cast_to_numeric_dtype(df: pd.DataFrame, as_int: bool = True) -> pd.DataFrame:
@@ -269,3 +269,67 @@ def transform_population_countries_agegroups_rki(
     ).sum()
 
     return tmp
+
+
+def transform_population_subdivision1(session: Session, df: pd.DataFrame) -> pd.DataFrame:
+    tmp = df.copy()
+
+    tmp = _cast_to_numeric_dtype(df=tmp, as_int=True)
+    tmp = _preprocess(
+        df=tmp,
+        nuts_level=1,
+        drop_cols=["unit", "sex"],
+        id_vars=["geo", "level", "age"],
+        var_name="year",
+        value_name="population",
+    )
+    df_subdivision1 = get_subdivisions1_df(session)
+    df_years = get_calendar_years_df(session)
+
+    # Total populations for countries
+    tmp = tmp[tmp[cfg_estat.age_col] == cfg_estat.agegroup_total_label]
+    
+    # merge countries fk
+    tmp = tmp.merge(df_subdivision1, how="left", left_on="geo", right_on="nuts_1")
+    tmp = tmp[
+        tmp["country_subdivision1_id"].notna()
+    ]  # if no foreign key merged, then region is probably not available
+    
+    # merge calendar years fk
+    tmp = tmp.merge(df_years, how="left", left_on="year", right_on="iso_year")
+    tmp = tmp[tmp["calendar_year_id"].notna()]
+    # create unique key
+    tmp.rename(
+        {"country_subdivision1_id": "country_subdivision1_fk", "calendar_year_id": "calendar_year_fk"},
+        axis=1,
+        inplace=True,
+    )
+    tmp["country_subdivision1_fk"] = tmp["country_subdivision1_fk"].astype(int)
+    tmp["calendar_year_fk"] = tmp["calendar_year_fk"].astype(int)
+
+    tmp["unique_key"] = (
+        tmp["country_subdivision1_fk"].astype(str) + "-" + tmp["calendar_year_fk"].astype(str)
+    )
+
+    tmp = tmp[["country_subdivision1_fk", "calendar_year_fk", "population", "unique_key"]]
+    
+    return tmp
+
+"""
+if __name__ == "__main__":
+    from database.db import Database
+    from config.core import cfg_db, cfg_urls
+    from utils.get_data import estat
+    database = Database(db_uri=f"{cfg_db.db.dialect}{cfg_db.db.name}.db")
+    
+    df = estat(
+        code=cfg_urls.estat_population_annual_nuts_2,
+        purpose="POPULATION_NUTS2",
+        save_file=False,
+        data_type="csv",
+        path=None,
+    )
+    with database.ManagedSessionMaker() as session:
+        tmp = transform_population_subdivision1(session, df)
+        #tmp.to_csv("tmp.csv", sep=";", index=False)
+"""

@@ -69,22 +69,32 @@ def init_vaccines(database: Database) -> None:
         vach.upsert_vaccine_series(session=session, vaccine_series=init.from_config.vaccine_series)
 
 def init_population(database: Database) -> None:
-    df = estat(
+    df_population_countries = estat(
         code=cfg_urls.estat_population_annual_agegroup,
         purpose="POPULATION",
         save_file=False,
         data_type="csv",
         path=None,
     )
+    df_population_subdivision2 = estat(
+        code=cfg_urls.estat_population_annual_nuts_2,
+        purpose="POPULATION_SUBDIVS",
+        save_file=False,
+        data_type="csv",
+        path=None,
+    )
     with database.ManagedSessionMaker() as session:
-        tmp_population = poph.transform_population_countries(session, df=df)
+        tmp_population = poph.transform_population_countries(session, df=df_population_countries)
         database.upsert_df(df=tmp_population, table_name=cfg_db.tables.population_country)
 
-        tmp_population_agegroups = poph.transform_population_countries_agegroups(session, df=df)
+        tmp_population_agegroups = poph.transform_population_countries_agegroups(session, df=df_population_countries)
         database.upsert_df(df=tmp_population_agegroups, table_name=cfg_db.tables.population_country_agegroup)
         
-        tmp_population_rki = poph.transform_population_countries_agegroups_rki(session, df=df)
+        tmp_population_rki = poph.transform_population_countries_agegroups_rki(session, df=df_population_countries)
         database.upsert_df(df=tmp_population_rki, table_name=cfg_db.tables.population_country_agegroup_rki)
+
+        tmp_population_subdiv1 = poph.transform_population_subdivision1(session, df=df_population_subdivision2)
+        database.upsert_df(df=tmp_population_subdiv1, table_name=cfg_db.tables.population_subdivision1)
 
 def main(database: Database) -> None:
     init_calendars(database=database)
