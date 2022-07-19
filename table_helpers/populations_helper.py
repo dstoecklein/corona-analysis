@@ -73,9 +73,9 @@ def transform_population_countries(session: Session, df: pd.DataFrame) -> pd.Dat
     tmp["calendar_year_fk"] = tmp["calendar_year_fk"].astype(int)
     
     tmp["unique_key"] = \
-        tmp["country_fk"].astype(str).str.zfill(2) + \
+        tmp["country_fk"].astype(str) + \
         "-" + \
-        tmp["calendar_year_fk"].astype(str).str.zfill(2)
+        tmp["calendar_year_fk"].astype(str)
 
     tmp = tmp[["country_fk", "calendar_year_fk", "population", "unique_key"]]
     
@@ -144,14 +144,14 @@ def transform_population_countries_agegroups(session: Session, df: pd.DataFrame)
 
     # create unique key
     tmp["unique_key"] = \
-        tmp["country_fk"].astype(str).str.zfill(2) + \
+        tmp["country_fk"].astype(str) + \
         "-" + \
-        tmp["calendar_year_fk"].astype(str).str.zfill(2) + \
+        tmp["calendar_year_fk"].astype(str) + \
         "-" + \
-        tmp["agegroup10y_fk"].astype(str).str.zfill(2)
+        tmp["agegroup10y_fk"].astype(str)
     
     tmp = tmp[["country_fk", "calendar_year_fk", "agegroup10y_fk", "population", "unique_key"]]
-    tmp = tmp.groupby(["country_fk", "calendar_year_fk", "agegroup10y_fk"], as_index=False).sum()
+    tmp = tmp.groupby(["country_fk", "calendar_year_fk", "agegroup10y_fk", "unique_key"], as_index=False).sum()
 
     return tmp
 
@@ -219,13 +219,13 @@ def transform_population_countries_agegroups_rki(session: Session, df: pd.DataFr
 
     # create unique key
     tmp["unique_key"] = \
-        tmp["country_fk"].astype(str).str.zfill(2) + \
+        tmp["country_fk"].astype(str) + \
         "-" + \
-        tmp["calendar_year_fk"].astype(str).str.zfill(2) + \
+        tmp["calendar_year_fk"].astype(str) + \
         "-" + \
-        tmp["agegroup_rki_fk"].astype(str).str.zfill(2)
+        tmp["agegroup_rki_fk"].astype(str)
     
     tmp = tmp[["country_fk", "calendar_year_fk", "agegroup_rki_fk", "population", "unique_key"]]
-    tmp = tmp.groupby(["country_fk", "calendar_year_fk", "agegroup_rki_fk"], as_index=False).sum()
+    tmp = tmp.groupby(["country_fk", "calendar_year_fk", "agegroup_rki_fk", "unique_key"], as_index=False).sum()
 
     return tmp
