@@ -526,8 +526,8 @@ class PopulationCountry(Base):
     _country = Country  # parent
     _calendar_year = CalendarYear  # parent
 
-    population_countries_id = Column(Integer, primary_key=True)
-    countries_fk = Column(
+    population_country_id = Column(Integer, primary_key=True)
+    country_fk = Column(
         Integer,
         ForeignKey(
             f"{_country.__tablename__}.{_country.country_id.name}",
@@ -551,7 +551,7 @@ class PopulationCountry(Base):
     updated_on = _get_updated_on_col()
 
     def _uq_key(context):
-        fk1 = str(context.get_current_parameters()["countries_fk"])
+        fk1 = str(context.get_current_parameters()["country_fk"])
         fk2 = str(context.get_current_parameters()["calendar_year_fk"])
         uq = fk1 + "-" + fk2
         return uq
@@ -566,7 +566,7 @@ class PopulationCountryAgegroup(Base):
     _agegroup10y = Agegroup10y
 
     population_countries_agegroup_id = Column(Integer, primary_key=True)
-    countries_fk = Column(
+    country_fk = Column(
         Integer,
         ForeignKey(
             f"{_country.__tablename__}.{_country.country_id.name}",
@@ -599,7 +599,7 @@ class PopulationCountryAgegroup(Base):
     updated_on = _get_updated_on_col()
 
     def _uq_key(context):
-        fk1 = str(context.get_current_parameters()["countries_fk"])
+        fk1 = str(context.get_current_parameters()["country_fk"])
         fk2 = str(context.get_current_parameters()["calendar_year_fk"])
         fk3 = str(context.get_current_parameters()["agegroup10y_fk"])
         uq = fk1 + "-" + fk2 + "-" + fk3

@@ -14,7 +14,7 @@ divi_itcu_daily_state: 'https://diviexchange.blob.core.windows.net/%24web/zeitre
 owid_covid_daily: 'https://covid.ourworldindata.org/data/owid-covid-data.csv'
 estat_mortality_weekly_agegroup: 'demo_r_mwk_10'
 estat_mortality_annual_agegroup_cause: 'hlth_cd_aro'
-estat_population_annual_agegroup: 'demo_pjangroup'
+estat_population_annual_agegroup: 'demo_pjan'
 estat_population_annual_nuts_2: 'demo_r_d2jan'
 estat_lifeExpectancy_annual: 'demo_mlexpec'
 estat_populationStructureIndicator_annual: 'demo_pjanind'
