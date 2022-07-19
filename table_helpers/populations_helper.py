@@ -212,7 +212,7 @@ def transform_population_countries_agegroups_rki(session: Session, df: pd.DataFr
             "calendar_year_id": "calendar_year_fk",
             "agegroup_rki_id": "agegroup_rki_fk",
         }, axis=1, inplace=True)
-    tmp.to_csv("test.csv", sep=";", index=False)
+
     tmp["country_fk"] = tmp["country_fk"].astype(int)
     tmp["calendar_year_fk"] = tmp["calendar_year_fk"].astype(int)
     tmp["agegroup_rki_fk"] = tmp["agegroup_rki_fk"].astype(int)
