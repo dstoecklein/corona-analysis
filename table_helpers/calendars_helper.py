@@ -159,8 +159,8 @@ def get_calendar_years_df(session: Session) -> pd.DataFrame:
             tbl.CalendarYear.iso_year,
         )
         .order_by(tbl.CalendarYear.iso_year)
-        .statement, 
-        session.bind
+        .statement,
+        session.bind,
     )
     return years_df
 
@@ -204,8 +204,8 @@ def get_calendar_weeks_df(session: Session) -> pd.DataFrame:
             tbl.CalendarWeek.iso_key,
         )
         .order_by(tbl.CalendarWeek.iso_week)
-        .statement, 
-        session.bind
+        .statement,
+        session.bind,
     )
     return weeks_df
 

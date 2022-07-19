@@ -1,12 +1,11 @@
-from operator import indexOf
 import pandas as pd
 from sqlalchemy.orm import Session
 
 from config.core import cfg_estat as cfg_estat
 from config.core import cfg_init as init
-from table_helpers.countries_helper import get_countries_df
-from table_helpers.calendars_helper import get_calendar_years_df
 from table_helpers.agegroups_helper import get_agegroups10y_df, get_agegroups_rki_df
+from table_helpers.calendars_helper import get_calendar_years_df
+from table_helpers.countries_helper import get_countries_df
 
 
 def _cast_to_numeric_dtype(df: pd.DataFrame, as_int: bool = True) -> pd.DataFrame:
@@ -63,26 +62,33 @@ def transform_population_countries(session: Session, df: pd.DataFrame) -> pd.Dat
     tmp = tmp[tmp[cfg_estat.age_col] == cfg_estat.agegroup_total_label]
     # merge countries fk
     tmp = tmp.merge(df_countries, how="left", left_on="geo", right_on="nuts_0")
-    tmp = tmp[tmp['country_id'].notna()]  # if no foreign key merged, then region is probably not available   
+    tmp = tmp[
+        tmp["country_id"].notna()
+    ]  # if no foreign key merged, then region is probably not available
     # merge calendar years fk
     tmp = tmp.merge(df_years, how="left", left_on="year", right_on="iso_year")
-    tmp = tmp[tmp['calendar_year_id'].notna()] 
+    tmp = tmp[tmp["calendar_year_id"].notna()]
     # create unique key
-    tmp.rename({"country_id": "country_fk", "calendar_year_id": "calendar_year_fk"}, axis=1, inplace=True)
+    tmp.rename(
+        {"country_id": "country_fk", "calendar_year_id": "calendar_year_fk"},
+        axis=1,
+        inplace=True,
+    )
     tmp["country_fk"] = tmp["country_fk"].astype(int)
     tmp["calendar_year_fk"] = tmp["calendar_year_fk"].astype(int)
-    
-    tmp["unique_key"] = \
-        tmp["country_fk"].astype(str) + \
-        "-" + \
-        tmp["calendar_year_fk"].astype(str)
+
+    tmp["unique_key"] = (
+        tmp["country_fk"].astype(str) + "-" + tmp["calendar_year_fk"].astype(str)
+    )
 
     tmp = tmp[["country_fk", "calendar_year_fk", "population", "unique_key"]]
-    
+
     return tmp
 
 
-def transform_population_countries_agegroups(session: Session, df: pd.DataFrame) -> pd.DataFrame:
+def transform_population_countries_agegroups(
+    session: Session, df: pd.DataFrame
+) -> pd.DataFrame:
     tmp = df.copy()
 
     tmp = _cast_to_numeric_dtype(df=tmp, as_int=True)
@@ -113,7 +119,7 @@ def transform_population_countries_agegroups(session: Session, df: pd.DataFrame)
     # replace all other ages with numeric values and remove 'Y' prefix
     tmp[cfg_estat.age_col] = tmp[cfg_estat.age_col].astype(str).str.replace("Y", "")
     tmp[cfg_estat.age_col] = pd.to_numeric(tmp[cfg_estat.age_col], errors="coerce")
-    
+
     # 10-year interval
     tmp["agegroup10y"] = pd.cut(
         tmp[cfg_estat.age_col],
@@ -121,42 +127,57 @@ def transform_population_countries_agegroups(session: Session, df: pd.DataFrame)
         include_lowest=True,
         labels=init.from_config.agegroups_10y,
     )
-   
+
     # merge countries fk
     tmp = tmp.merge(df_countries, how="left", left_on="geo", right_on="nuts_0")
-    tmp = tmp[tmp['country_id'].notna()]  # if no foreign key merged, then region is probably not available
+    tmp = tmp[
+        tmp["country_id"].notna()
+    ]  # if no foreign key merged, then region is probably not available
     # merge calendar years fk
     tmp = tmp.merge(df_years, how="left", left_on="year", right_on="iso_year")
-    tmp = tmp[tmp['calendar_year_id'].notna()]
+    tmp = tmp[tmp["calendar_year_id"].notna()]
     # merge agegroups fk
-    tmp = tmp.merge(df_agegroups10y_df, how="left", left_on="agegroup10y", right_on="agegroup")
-    tmp = tmp[tmp['agegroup_10y_id'].notna()]  
+    tmp = tmp.merge(
+        df_agegroups10y_df, how="left", left_on="agegroup10y", right_on="agegroup"
+    )
+    tmp = tmp[tmp["agegroup_10y_id"].notna()]
     # rename id to fk
     tmp.rename(
         {
-            "country_id": "country_fk", 
+            "country_id": "country_fk",
             "calendar_year_id": "calendar_year_fk",
             "agegroup_10y_id": "agegroup10y_fk",
-        }, axis=1, inplace=True)
+        },
+        axis=1,
+        inplace=True,
+    )
     tmp["country_fk"] = tmp["country_fk"].astype(int)
     tmp["calendar_year_fk"] = tmp["calendar_year_fk"].astype(int)
     tmp["agegroup10y_fk"] = tmp["agegroup10y_fk"].astype(int)
 
     # create unique key
-    tmp["unique_key"] = \
-        tmp["country_fk"].astype(str) + \
-        "-" + \
-        tmp["calendar_year_fk"].astype(str) + \
-        "-" + \
-        tmp["agegroup10y_fk"].astype(str)
-    
-    tmp = tmp[["country_fk", "calendar_year_fk", "agegroup10y_fk", "population", "unique_key"]]
-    tmp = tmp.groupby(["country_fk", "calendar_year_fk", "agegroup10y_fk", "unique_key"], as_index=False).sum()
+    tmp["unique_key"] = (
+        tmp["country_fk"].astype(str)
+        + "-"
+        + tmp["calendar_year_fk"].astype(str)
+        + "-"
+        + tmp["agegroup10y_fk"].astype(str)
+    )
+
+    tmp = tmp[
+        ["country_fk", "calendar_year_fk", "agegroup10y_fk", "population", "unique_key"]
+    ]
+    tmp = tmp.groupby(
+        ["country_fk", "calendar_year_fk", "agegroup10y_fk", "unique_key"],
+        as_index=False,
+    ).sum()
 
     return tmp
 
 
-def transform_population_countries_agegroups_rki(session: Session, df: pd.DataFrame) -> pd.DataFrame:
+def transform_population_countries_agegroups_rki(
+    session: Session, df: pd.DataFrame
+) -> pd.DataFrame:
     tmp = df.copy()
 
     tmp = _cast_to_numeric_dtype(df=tmp, as_int=True)
@@ -187,7 +208,7 @@ def transform_population_countries_agegroups_rki(session: Session, df: pd.DataFr
     # replace all other ages with numeric values and remove 'Y' prefix
     tmp[cfg_estat.age_col] = tmp[cfg_estat.age_col].astype(str).str.replace("Y", "")
     tmp[cfg_estat.age_col] = pd.to_numeric(tmp[cfg_estat.age_col], errors="coerce")
-    
+
     # rki-year interval
     tmp["agegroup_rki"] = pd.cut(
         tmp[cfg_estat.age_col],
@@ -195,37 +216,56 @@ def transform_population_countries_agegroups_rki(session: Session, df: pd.DataFr
         include_lowest=True,
         labels=init.from_config.agegroups_rki,
     )
-   
+
     # merge countries fk
     tmp = tmp.merge(df_countries, how="left", left_on="geo", right_on="nuts_0")
-    tmp = tmp[tmp['country_id'].notna()]  # if no foreign key merged, then region is probably not available
+    tmp = tmp[
+        tmp["country_id"].notna()
+    ]  # if no foreign key merged, then region is probably not available
     # merge calendar years fk
     tmp = tmp.merge(df_years, how="left", left_on="year", right_on="iso_year")
-    tmp = tmp[tmp['calendar_year_id'].notna()]
+    tmp = tmp[tmp["calendar_year_id"].notna()]
     # merge agegroups fk
-    tmp = tmp.merge(df_agegroups_rki_df, how="left", left_on="agegroup_rki", right_on="agegroup")
-    tmp = tmp[tmp['agegroup_rki_id'].notna()]  
+    tmp = tmp.merge(
+        df_agegroups_rki_df, how="left", left_on="agegroup_rki", right_on="agegroup"
+    )
+    tmp = tmp[tmp["agegroup_rki_id"].notna()]
     # rename id to fk
     tmp.rename(
         {
-            "country_id": "country_fk", 
+            "country_id": "country_fk",
             "calendar_year_id": "calendar_year_fk",
             "agegroup_rki_id": "agegroup_rki_fk",
-        }, axis=1, inplace=True)
+        },
+        axis=1,
+        inplace=True,
+    )
 
     tmp["country_fk"] = tmp["country_fk"].astype(int)
     tmp["calendar_year_fk"] = tmp["calendar_year_fk"].astype(int)
     tmp["agegroup_rki_fk"] = tmp["agegroup_rki_fk"].astype(int)
 
     # create unique key
-    tmp["unique_key"] = \
-        tmp["country_fk"].astype(str) + \
-        "-" + \
-        tmp["calendar_year_fk"].astype(str) + \
-        "-" + \
-        tmp["agegroup_rki_fk"].astype(str)
-    
-    tmp = tmp[["country_fk", "calendar_year_fk", "agegroup_rki_fk", "population", "unique_key"]]
-    tmp = tmp.groupby(["country_fk", "calendar_year_fk", "agegroup_rki_fk", "unique_key"], as_index=False).sum()
+    tmp["unique_key"] = (
+        tmp["country_fk"].astype(str)
+        + "-"
+        + tmp["calendar_year_fk"].astype(str)
+        + "-"
+        + tmp["agegroup_rki_fk"].astype(str)
+    )
+
+    tmp = tmp[
+        [
+            "country_fk",
+            "calendar_year_fk",
+            "agegroup_rki_fk",
+            "population",
+            "unique_key",
+        ]
+    ]
+    tmp = tmp.groupby(
+        ["country_fk", "calendar_year_fk", "agegroup_rki_fk", "unique_key"],
+        as_index=False,
+    ).sum()
 
     return tmp

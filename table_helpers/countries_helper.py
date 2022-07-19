@@ -1,10 +1,11 @@
-import pandas as pd
 from typing import Optional
 
+import pandas as pd
 from sqlalchemy.engine.row import Row
 from sqlalchemy.orm import Session
 
 import database.tables as tbl
+
 
 def get_countries_with_subdivisions_df(session: Session) -> pd.DataFrame:
     """
@@ -15,7 +16,7 @@ def get_countries_with_subdivisions_df(session: Session) -> pd.DataFrame:
 
     Returns:
         Pandas DataFrame
-       
+
     """
     countries_df = pd.read_sql(
         session.query(
@@ -54,17 +55,20 @@ def get_countries_with_subdivisions_df(session: Session) -> pd.DataFrame:
         )
         .join(
             tbl.CountrySubdivision2,
-            tbl.CountrySubdivision1.country_subdivision1_id == tbl.CountrySubdivision2.country_subdivision1_fk,
+            tbl.CountrySubdivision1.country_subdivision1_id
+            == tbl.CountrySubdivision2.country_subdivision1_fk,
         )
         .join(
             tbl.CountrySubdivision3,
-            tbl.CountrySubdivision2.country_subdivision2_id == tbl.CountrySubdivision3.country_subdivision2_fk,
+            tbl.CountrySubdivision2.country_subdivision2_id
+            == tbl.CountrySubdivision3.country_subdivision2_fk,
         )
         .order_by(tbl.Country.country_id)
-        .statement, 
-        session.bind
+        .statement,
+        session.bind,
     )
     return countries_df
+
 
 def get_countries(session: Session) -> list[tbl.Country]:
     """
@@ -76,11 +80,10 @@ def get_countries(session: Session) -> list[tbl.Country]:
     Returns:
        `list` of `Country` objects
     """
-    countries = (
-        session.query(tbl.Country).order_by(tbl.Country.country_id)
-    ).all()
+    countries = (session.query(tbl.Country).order_by(tbl.Country.country_id)).all()
     return countries
-   
+
+
 def get_countries_df(session: Session) -> pd.DataFrame:
     """
     Get all countries in database as Pandas DataFrame
@@ -90,15 +93,14 @@ def get_countries_df(session: Session) -> pd.DataFrame:
 
     Returns:
         Pandas DataFrame
-       
+
     """
     countries_df = pd.read_sql(
-        session.query(tbl.Country)
-        .order_by(tbl.Country.country_id)
-        .statement, 
-        session.bind
+        session.query(tbl.Country).order_by(tbl.Country.country_id).statement,
+        session.bind,
     )
     return countries_df
+
 
 def get_country(
     session: Session,
@@ -217,11 +219,13 @@ def get_subdivisions1(session: Session) -> list[tbl.CountrySubdivision1]:
        `list` of `CountrySubdivision1` objects
     """
     subdivisions1 = (
-        session.query(tbl.CountrySubdivision1)
-        .order_by(tbl.CountrySubdivision1.country_subdivision1_id)
+        session.query(tbl.CountrySubdivision1).order_by(
+            tbl.CountrySubdivision1.country_subdivision1_id
+        )
     ).all()
     return subdivisions1
-   
+
+
 def get_subdivisions1_df(session: Session) -> pd.DataFrame:
     """
     Get all Subdivision of Level 1 in database as Pandas DataFrame
@@ -231,15 +235,16 @@ def get_subdivisions1_df(session: Session) -> pd.DataFrame:
 
     Returns:
         Pandas DataFrame
-       
+
     """
     subdivisions1_df = pd.read_sql(
         session.query(tbl.CountrySubdivision1)
         .order_by(tbl.CountrySubdivision1.country_subdivision1_id)
-        .statement, 
-        session.bind
+        .statement,
+        session.bind,
     )
     return subdivisions1_df
+
 
 def get_subdivision1(
     session: Session,
@@ -354,6 +359,7 @@ def insert_subdivision1(
     session.add_all(new_entries)
     session.flush()
 
+
 def get_subdivisions2(session: Session) -> list[tbl.CountrySubdivision2]:
     """
     Get all Subdivision of Level 2 in database
@@ -365,11 +371,13 @@ def get_subdivisions2(session: Session) -> list[tbl.CountrySubdivision2]:
        `list` of `CountrySubdivision2` objects
     """
     subdivisions2 = (
-        session.query(tbl.CountrySubdivision2)
-        .order_by(tbl.CountrySubdivision2.country_subdivision2_id)
+        session.query(tbl.CountrySubdivision2).order_by(
+            tbl.CountrySubdivision2.country_subdivision2_id
+        )
     ).all()
     return subdivisions2
-   
+
+
 def get_subdivisions2_df(session: Session) -> pd.DataFrame:
     """
     Get all Subdivision of Level 2 in database as Pandas DataFrame
@@ -379,15 +387,16 @@ def get_subdivisions2_df(session: Session) -> pd.DataFrame:
 
     Returns:
         Pandas DataFrame
-       
+
     """
     subdivisions2_df = pd.read_sql(
         session.query(tbl.CountrySubdivision2)
         .order_by(tbl.CountrySubdivision2.country_subdivision2_id)
-        .statement, 
-        session.bind
+        .statement,
+        session.bind,
     )
     return subdivisions2_df
+
 
 def get_subdivision2(
     session: Session, subdivision2: str = None, nuts_2: str = None
@@ -488,6 +497,7 @@ def insert_subdivision2(
     session.add_all(new_entries)
     session.flush()
 
+
 def get_subdivisions3(session: Session) -> list[tbl.CountrySubdivision3]:
     """
     Get all Subdivision of Level 3 in database
@@ -499,11 +509,13 @@ def get_subdivisions3(session: Session) -> list[tbl.CountrySubdivision3]:
        `list` of `CountrySubdivision3` objects
     """
     subdivisions3 = (
-        session.query(tbl.CountrySubdivision3)
-        .order_by(tbl.CountrySubdivision3.country_subdivision3_id)
+        session.query(tbl.CountrySubdivision3).order_by(
+            tbl.CountrySubdivision3.country_subdivision3_id
+        )
     ).all()
     return subdivisions3
-   
+
+
 def get_subdivisions3_df(session: Session) -> pd.DataFrame:
     """
     Get all Subdivision of Level 3 in database as Pandas DataFrame
@@ -513,15 +525,16 @@ def get_subdivisions3_df(session: Session) -> pd.DataFrame:
 
     Returns:
         Pandas DataFrame
-       
+
     """
     subdivisions3_df = pd.read_sql(
         session.query(tbl.CountrySubdivision3)
         .order_by(tbl.CountrySubdivision3.country_subdivision3_id)
-        .statement, 
-        session.bind
+        .statement,
+        session.bind,
     )
     return subdivisions3_df
+
 
 def get_subdivision3(
     session: Session, subdivision3: str = None, nuts_3: str = None, ags: int = None

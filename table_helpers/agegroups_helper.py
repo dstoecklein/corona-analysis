@@ -1,4 +1,5 @@
 from typing import Any, Optional
+
 import pandas as pd
 from sqlalchemy.orm import Session
 
@@ -100,6 +101,7 @@ def get_agegroups10y(session: Session) -> list[tbl.Agegroup10y]:
     ).all()
     return agegroups10y
 
+
 def get_agegroups10y_df(session: Session) -> pd.DataFrame:
     """
     Get all agegroups of 10y-interval as pandas dataframe
@@ -119,9 +121,10 @@ def get_agegroups10y_df(session: Session) -> pd.DataFrame:
         )
         .order_by(tbl.Agegroup10y.agegroup)
         .statement,
-        session.bind
+        session.bind,
     )
     return agegroups10y
+
 
 def get_agegroup_rki(session: Session, agegroup: str) -> Optional[Any]:
     """
@@ -140,6 +143,7 @@ def get_agegroup_rki(session: Session, agegroup: str) -> Optional[Any]:
         )
     ).one_or_none()
     return row
+
 
 def get_agegroups_rki_df(session: Session) -> pd.DataFrame:
     """
@@ -160,9 +164,10 @@ def get_agegroups_rki_df(session: Session) -> pd.DataFrame:
         )
         .order_by(tbl.AgegroupRki.agegroup)
         .statement,
-        session.bind
+        session.bind,
     )
     return agegroups_rki
+
 
 def insert_agegroups05y(session: Session, agegroups: list[str]) -> None:
     """
@@ -185,15 +190,16 @@ def insert_agegroups05y(session: Session, agegroups: list[str]) -> None:
         new_agegroups.append(entry)
 
     # add hardcoded special agegroups
-    #_EIGHTYPLUS = tbl.Agegroup05y(agegroup="80+")
-    #_UNK = tbl.Agegroup05y(agegroup="UNK")
+    # _EIGHTYPLUS = tbl.Agegroup05y(agegroup="80+")
+    # _UNK = tbl.Agegroup05y(agegroup="UNK")
 
-    #if get_agegroup05y(session=session, agegroup="80+") is None:
+    # if get_agegroup05y(session=session, agegroup="80+") is None:
     #    new_agegroups.append(_EIGHTYPLUS)
-    #if get_agegroup05y(session=session, agegroup="UNK") is None:
+    # if get_agegroup05y(session=session, agegroup="UNK") is None:
     #    new_agegroups.append(_UNK)
 
     session.add_all(new_agegroups)
+
 
 def insert_agegroups10y(session: Session, agegroups: list[str]) -> None:
     """
@@ -207,9 +213,7 @@ def insert_agegroups10y(session: Session, agegroups: list[str]) -> None:
     for agegroup in agegroups:
         if agegroup == "80+":
             new_agegroup = tbl.Agegroup10y(
-                agegroup="80+", 
-                number_observations=21, 
-                avg_age=90.0
+                agegroup="80+", number_observations=21, avg_age=90.0
             )
             if get_agegroup10y(session=session, agegroup="80+") is None:
                 new_agegroups.append(new_agegroup)
@@ -217,9 +221,7 @@ def insert_agegroups10y(session: Session, agegroups: list[str]) -> None:
 
         if agegroup == "UNK":
             new_agegroup = tbl.Agegroup10y(
-                agegroup="UNK", 
-                number_observations=0, 
-                avg_age=0
+                agegroup="UNK", number_observations=0, avg_age=0
             )
             if get_agegroup10y(session=session, agegroup="UNK") is None:
                 new_agegroups.append(new_agegroup)
@@ -257,9 +259,7 @@ def insert_agegroupsRki(session: Session, agegroups: list[str]) -> None:
     for agegroup in agegroups:
         if agegroup == "80+":
             new_agegroup = tbl.AgegroupRki(
-                agegroup="80+", 
-                number_observations=21, 
-                avg_age=90.0
+                agegroup="80+", number_observations=21, avg_age=90.0
             )
             if get_agegroup_rki(session=session, agegroup="80+") is None:
                 new_agegroups.append(new_agegroup)
@@ -267,9 +267,7 @@ def insert_agegroupsRki(session: Session, agegroups: list[str]) -> None:
 
         if agegroup == "UNK":
             new_agegroup = tbl.AgegroupRki(
-                agegroup="UNK", 
-                number_observations=0, 
-                avg_age=0
+                agegroup="UNK", number_observations=0, avg_age=0
             )
             if get_agegroup_rki(session=session, agegroup="UNK") is None:
                 new_agegroups.append(new_agegroup)
