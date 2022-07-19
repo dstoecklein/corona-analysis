@@ -116,6 +116,7 @@ class UrlCfg(BaseModel):
     estat_mortality_annual_agegroup_cause: str
     estat_population_annual_agegroup: str
     estat_population_annual_nuts_2: str
+    estat_population_annual_nuts_3: str
     estat_lifeExpectancy_annual: str
     estat_populationStructureIndicator_annual: str
     genesis_hospital_annual: str

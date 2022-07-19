@@ -76,9 +76,16 @@ def init_population(database: Database) -> None:
         data_type="csv",
         path=None,
     )
-    df_population_subdivision2 = estat(
+    df_population_subdivisions = estat(
         code=cfg_urls.estat_population_annual_nuts_2,
-        purpose="POPULATION_SUBDIVS",
+        purpose="POPULATION_NUTS2",
+        save_file=False,
+        data_type="csv",
+        path=None,
+    )
+    df_population_subdivisions3 = estat(
+        code=cfg_urls.estat_population_annual_nuts_3,
+        purpose="POPULATION_NUTS3",
         save_file=False,
         data_type="csv",
         path=None,
@@ -93,8 +100,14 @@ def init_population(database: Database) -> None:
         tmp_population_rki = poph.transform_population_countries_agegroups_rki(session, df=df_population_countries)
         database.upsert_df(df=tmp_population_rki, table_name=cfg_db.tables.population_country_agegroup_rki)
 
-        tmp_population_subdiv1 = poph.transform_population_subdivision1(session, df=df_population_subdivision2)
+        tmp_population_subdiv1 = poph.transform_population_subdivision1(session, df=df_population_subdivisions)
         database.upsert_df(df=tmp_population_subdiv1, table_name=cfg_db.tables.population_subdivision1)
+
+        tmp_population_subdiv2 = poph.transform_population_subdivision2(session, df=df_population_subdivisions)
+        database.upsert_df(df=tmp_population_subdiv2, table_name=cfg_db.tables.population_subdivision2)
+
+        tmp_population_subdiv3 = poph.transform_population_subdivision3(session, df=df_population_subdivisions3)
+        database.upsert_df(df=tmp_population_subdiv3, table_name=cfg_db.tables.population_subdivision3)
 
 def main(database: Database) -> None:
     init_calendars(database=database)
